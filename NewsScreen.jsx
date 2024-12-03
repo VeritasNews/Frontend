@@ -33,6 +33,13 @@ const navigationItems = [
 ];
 
 export const NewsScreen = ({ navigation }) => {
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric',
+  });
+
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -56,9 +63,8 @@ export const NewsScreen = ({ navigation }) => {
 
         <View style={styles.brandingContainer}>
           <Text style={styles.brandingTitle}>The Veritas</Text>
-          <Text style={styles.brandingDate}>Friday, November 22, 2024</Text>
+          <Text style={styles.brandingDate}>{currentDate}</Text>
         </View>
-
         <View style={styles.contentDivider} />
 
         <View style={styles.articleContainer}>
