@@ -43,14 +43,6 @@ export const NewsScreen = ({ navigation }) => {
   return (
     <ScrollView>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.statusBar}>
-            <Text style={styles.timeText}>14:42</Text>
-          </View>
-          <View style={styles.headerIcons}>
-          </View>
-        </View>
-
         <View style={styles.categoryContainer}>
           {categories.map((category, index) => (
             <CategoryButton
