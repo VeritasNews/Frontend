@@ -1,9 +1,9 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NewsScreen } from './NewsScreen';
-import { MessagesScreen } from './MessagesScreen';
-import { ProfileScreen } from './ProfileScreen';
+import { NewsScreen } from './views/NewsScreen';
+import { MessagesScreen } from './views/MessagesScreen';
+import { ProfileScreen } from './views/ProfileScreen';
 
 const Stack = createStackNavigator();
 

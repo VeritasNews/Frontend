@@ -1,13 +1,23 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import COLORS from '../theme/colors';
+import FONTS from '../theme/fonts';
 
 export const CategoryButton = ({ label, isActive }) => {
   return (
-    <View style={[styles.categoryButton, isActive ? styles.activeCategory : null]}>
+    <View
+      style={[
+        styles.categoryButton,
+        isActive ? styles.activeCategory : null,
+      ]}
+    >
       <Text
         accessible
         accessibilityLabel={`Category: ${label}`}
-        style={[styles.categoryText, isActive ? styles.activeCategoryText : null]}
+        style={[
+          styles.categoryText,
+          isActive ? styles.activeCategoryText : null,
+        ]}
       >
         {label}
       </Text>
@@ -19,22 +29,24 @@ const styles = StyleSheet.create({
   categoryButton: {
     alignSelf: 'stretch',
     borderRadius: 16,
-    borderColor: 'rgba(240, 241, 250, 1)',
     borderWidth: 1,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 8,
   },
   activeCategory: {
-    borderColor: 'rgba(169, 17, 1, 1)',
-    backgroundColor: 'rgba(169, 17, 1, 1)',
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primary,
   },
   categoryText: {
-    fontSize: 12,
-    color: '#2E0505',
-    fontWeight: '600',
+    fontSize: FONTS.sizes.medium,
+    color: COLORS.textDefault,
+    fontWeight: FONTS.weights.semiBold,
+    fontFamily: FONTS.families.primary,
   },
   activeCategoryText: {
-    color: '#FFF',
+    color: COLORS.white,
   },
 });
