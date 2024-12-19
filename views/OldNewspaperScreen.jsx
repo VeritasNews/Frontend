@@ -50,6 +50,101 @@ const OldNewspaperScreen = () => {
       content:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
     },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
+    {
+      title: "Why Walk to Work?",
+      content:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sed interdum tortor. Cras ac fringilla elit. Proin vel ligula id libero convallis posuere.",
+    },
   ];
 
   if (!fontsLoaded) {
@@ -59,8 +154,10 @@ const OldNewspaperScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image style={styles.logo} source={VeritasLogo} />
-        <Text style={styles.title}>Veritas</Text>
+        <View style={styles.row}>
+          <Image style={styles.logo} source={VeritasLogo} />
+          <Text style={styles.title}>Veritas</Text>
+        </View>
         <Text style={styles.date}>{currentDate}</Text>
       </View>
 
@@ -110,15 +207,20 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   logo: {
-    width: 80,
-    height: 80,
+    marginRight: 8,
+    width: 60,
+    height: 60,
     resizeMode: "contain",
-    marginBottom: 8,
   },
   title: {
     fontSize: FONTS.sizes.xLarge,
@@ -126,9 +228,10 @@ const styles = StyleSheet.create({
     color: COLORS.textDefault,
   },
   date: {
-    fontSize: FONTS.sizes.medium,
+    fontSize: FONTS.sizes.small,
     fontFamily: "OldStandard",
     color: COLORS.textMuted,
+    marginTop: 4,
   },
   scrollContent: {
     flexGrow: 1,

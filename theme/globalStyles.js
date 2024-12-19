@@ -1,13 +1,13 @@
 // globalStyles.js
-import { StyleSheet } from 'react-native';
-import COLORS from './colors';
-import FONTS from './fonts';
+import { StyleSheet } from "react-native";
+import COLORS from "./colors";
+import FONTS from "./fonts";
 
 const GLOBAL_STYLES = StyleSheet.create({
   containerCenter: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: COLORS.white,
   },
   textBase: {
@@ -32,7 +32,7 @@ const GLOBAL_STYLES = StyleSheet.create({
     color: COLORS.primary,
     fontSize: FONTS.sizes.xLarge,
     fontWeight: FONTS.weights.bold,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   brandingDate: {
     color: COLORS.textMuted,
