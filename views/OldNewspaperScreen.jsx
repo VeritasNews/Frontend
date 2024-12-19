@@ -10,11 +10,13 @@ import {
 } from "react-native";
 import { useFonts } from "expo-font";
 import { GLOBAL_STYLES, COLORS, FONTS } from "../theme/globalStyles";
+import ScenarioTwo from "./ScenarioTwo";
 
 const VeritasLogo = require("../assets/set2_no_bg.png");
 const PaperTexture = require("../assets/paper_texture.png");
 
 const OldNewspaperScreen = () => {
+  const [isScenarioOne, setIsScenarioOne] = useState(true);
   const currentDate = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
     year: "numeric",
@@ -151,29 +153,41 @@ const OldNewspaperScreen = () => {
     return null;
   }
 
+  const ScenarioOne = () => (
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ImageBackground source={PaperTexture} style={styles.contentBackground}>
+        {articles.map((article, index) => (
+          <ExpandableArticle
+            key={index}
+            title={article.title}
+            content={article.content}
+            charLimit={150}
+          />
+        ))}
+      </ImageBackground>
+    </ScrollView>
+  );
+
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.row}>
           <Image style={styles.logo} source={VeritasLogo} />
           <Text style={styles.title}>Veritas</Text>
         </View>
         <Text style={styles.date}>{currentDate}</Text>
+        <TouchableOpacity
+          style={styles.switchButton}
+          onPress={() => setIsScenarioOne(!isScenarioOne)}
+        >
+          <Text style={styles.switchText}>
+            {isScenarioOne ? "Newspaper Mode" : "Scroll Mode"}
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Scrollable content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <ImageBackground source={PaperTexture} style={styles.contentBackground}>
-          {articles.map((article, index) => (
-            <ExpandableArticle
-              key={index}
-              title={article.title}
-              content={article.content}
-              charLimit={150} // Limit of preview
-            />
-          ))}
-        </ImageBackground>
-      </ScrollView>
+      {isScenarioOne ? <ScenarioOne /> : <ScenarioTwo />}
     </View>
   );
 };
@@ -210,6 +224,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+    position: "relative",
   },
   row: {
     flexDirection: "row",
@@ -232,6 +247,19 @@ const styles = StyleSheet.create({
     fontFamily: "OldStandard",
     color: COLORS.textMuted,
     marginTop: 4,
+  },
+  switchButton: {
+    position: "absolute",
+    right: 16,
+    top: 16,
+    backgroundColor: COLORS.primary,
+    padding: 8,
+    borderRadius: 4,
+  },
+  switchText: {
+    color: COLORS.white,
+    fontSize: FONTS.sizes.small,
+    fontFamily: "OldStandard-Bold",
   },
   scrollContent: {
     flexGrow: 1,
