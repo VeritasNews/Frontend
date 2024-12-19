@@ -36,11 +36,11 @@ const navigationItems = [
 ];
 
 export const NewsScreen = ({ navigation }) => {
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: '2-digit',
-    year: 'numeric',
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "2-digit",
+    year: "numeric",
   });
 
   return (
