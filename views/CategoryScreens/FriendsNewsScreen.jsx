@@ -13,7 +13,7 @@ const categories = [
   { label: "Friends", route: "Friends", isActive: true },
   { label: "Tech", route: "Tech", isActive: false },
   { label: "Arts", route: "Arts", isActive: false },
-  { label: "Sports", route: "Sports", isActive: false },
+  { label: "Scrollable", route: "Scrollable", isActive: false },
 ];
 const navigationItems = [
     {
@@ -295,23 +295,17 @@ const navigationItems = [
       color: COLORS.white,
     },
     navigationBar: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-      alignItems: "center",
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      paddingVertical: 12,
-      backgroundColor: COLORS.white,
-      borderRadius: 15,
-      position: 'absolute',
-      bottom: 0,  // Keep it at the bottom
-      zIndex: 10,
-      marginBottom: Platform.select({
-        ios: 380,    // 470 for iOS
-        android: 470, // 470 for Android
-        web: 220,     // 20 for web
-      }),
-    },
+        flexDirection: "row",
+        justifyContent: "space-around",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        paddingVertical: 12,
+        backgroundColor: COLORS.white,
+        borderRadius: 15,
+        position: 'absolute',
+        bottom: 0,  // Keep it at the bottom
+      },
   });
   
   export default FriendsNewsScreen;

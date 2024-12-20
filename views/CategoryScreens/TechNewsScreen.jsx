@@ -13,7 +13,7 @@ const categories = [
   { label: "Friends", route: "Friends", isActive: false },
   { label: "Tech", route: "Tech", isActive: true },
   { label: "Arts", route: "Arts", isActive: false },
-  { label: "Sports", route: "Sports", isActive: false },
+  { label: "Scrollable", route: "Scrollable", isActive: false },
 ];
 const navigationItems = [
     {
@@ -305,12 +305,6 @@ const navigationItems = [
       borderRadius: 15,
       position: 'absolute',
       bottom: 0,  // Keep it at the bottom
-      zIndex: 10,
-      marginBottom: Platform.select({
-        ios: 380,    // 470 for iOS
-        android: 470, // 470 for Android
-        web: 220,     // 20 for web
-      }),
     },
   });
   

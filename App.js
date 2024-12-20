@@ -12,6 +12,8 @@ import ArtsNewsScreen from './views/CategoryScreens/ArtsNewsScreen'; // Import y
 import TechNewsScreen from './views/CategoryScreens/TechNewsScreen';
 import FriendsNewsScreen from './views/CategoryScreens/FriendsNewsScreen';
 
+import ScrollableScreen from './views/ScrollableScreen';
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -30,6 +32,8 @@ export default function App() {
         <Stack.Screen name="Arts" options={{ headerShown: false }} component={ArtsNewsScreen} />
         <Stack.Screen name="Tech" options={{ headerShown: false }} component={TechNewsScreen} />
         <Stack.Screen name="Friends" options={{ headerShown: false }} component={FriendsNewsScreen} />
+
+        <Stack.Screen name="Scrollable" options={{ headerShown: false }} component={ScrollableScreen} />
 
         <Stack.Screen name="OldNews" component={OldNewsScreen} />
 

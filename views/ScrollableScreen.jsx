@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, ScrollView, Platform } from "react-native";
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
 
 const articles = [
   {
@@ -31,7 +31,15 @@ const articles = [
   },
 ];
 
-const ScrollableScreen = () => {
+const categories = [
+    { label: "For You Page", route: "ForYou", isActive: false },
+    { label: "Friends", route: "Friends", isActive: false },
+    { label: "Tech", route: "Tech", isActive: false },
+    { label: "Arts", route: "Arts", isActive: false },
+    { label: "Scrollable", route: "Scrollable", isActive: true },
+];
+
+const ScrollableScreen = ({ navigation }) => {
   const renderArticle = (article, index) => {
     return (
       <View key={index} style={styles.article}>
@@ -49,26 +57,59 @@ const ScrollableScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.centerContainer}>
-        {/* This is the "Workers Demand Better Conditions" article with image on the side */}
-        <View style={styles.article}>
-          <Text style={styles.articleTitle}>Workers Demand Better Conditions</Text>
-          <View style={styles.contentContainerRow}>
-            <Image source={require("../assets/image2.jpg")} style={styles.articleImageSide} />
-            <View style={styles.contentTextContainer}>
-              <Text style={styles.articleText}>
-                Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation.
-              </Text>
-            </View>
+      {/* Header with Logo and Date */}
+      <View style={styles.headerLine} />
+      <View style={styles.header}>
+        <Image source={require('../assets/set2_no_bg.png')} style={styles.logo} />
+        <Text style={styles.title}>Veritas</Text>
+        <Text style={styles.date}>December 20, 2024</Text>
+      </View>
+      <View style={styles.headerLine} />
+
+      {/* Categories Bar */}
+      <View style={styles.categoryContainer}>
+        {categories.map((category, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.categoryButton, category.isActive && styles.activeCategoryButton]}
+            onPress={() => {
+              // Navigate to the category's route
+              navigation.navigate(category.route);
+            }}
+          >
+            <Text
+              style={[styles.categoryButtonText, category.isActive && styles.activeCategoryButtonText]}
+            >
+              {category.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Conditionally Render Centered Container for Web */}
+      {Platform.OS === "web" ? (
+        <View style={styles.centeredContainer}>
+          <View style={styles.centerContainer}>
+            {articles.map((article, index) => renderArticle(article, index))}
           </View>
         </View>
+      ) : (
+        <View style={styles.nonCenteredContainer}>
+          {articles.map((article, index) => renderArticle(article, index))}
+        </View>
+      )}
 
-        {/* Render remaining articles */}
-        {articles.map((article, index) => {
-          if (article.title !== "Workers Demand Better Conditions") {
-            return renderArticle(article, index);
-          }
-        })}
+      {/* Navigation Bar */}
+      <View style={styles.navigationBar}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+          <Text style={styles.navItemText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('About')}>
+          <Text style={styles.navItemText}>About</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Contact')}>
+          <Text style={styles.navItemText}>Contact</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -76,22 +117,80 @@ const ScrollableScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: 50,
+    alignItems: "center",
     padding: 3,
     backgroundColor: "#f4f4f4",
-    flexGrow: 1, // Ensure ScrollView content stretches when the content is less
+  },
+  headerLine: {
+    height: 1,
+    backgroundColor: "#141413",
+    width: "100%",
+  },
+  header: {
+    flexDirection: "row",  // Align logo and title horizontally
+    alignItems: "center",  // Vertically center the logo and title
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  logo: {
+    width: 60,
+    height: 60,
+    resizeMode: "contain",
+  },
+  title: {
+    fontSize: 24,
+    fontFamily: "OldStandard-Bold",
+    color: "#a91101",
+    marginLeft: 10,  // Space between logo and title
+  },
+  date: {
+    fontSize: 14,
+    fontFamily: "OldStandard",
+    color: "#888",
+    marginTop: 4,
+    marginLeft: 10,  // Space between title and date
+  },
+  categoryContainer: {
+    flexDirection: "row",
+    marginTop: 8,
+    paddingHorizontal: 14,
+    marginBottom: 12,
+  },
+  categoryButton: {
+    backgroundColor: "#f0f0f0",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    marginRight: 2,
+    marginLeft: 2,
+    marginBottom: 10,
+  },
+  activeCategoryButton: {
+    backgroundColor: "#a91101",  // Active button color
+  },
+  categoryButtonText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  activeCategoryButtonText: {
+    color: "#fff",  // Text color for active category
+  },
+  centeredContainer: {
+    flex: 1,  // Allow this container to take up remaining space
+    justifyContent: "center",  // Vertically center its content
+    alignItems: "center",  // Horizontally center its content
+    width: "100%",  // Make sure it spans the entire width
+    paddingBottom: 50, // Space for navigation bar
+  },
+  nonCenteredContainer: {
+    width: "100%",
+    paddingBottom: 50,
   },
   centerContainer: {
-    flexDirection: "column", // Adjusted to single column for better readability
+    flexDirection: "column",
     width: "100%",
-    ...Platform.select({
-      web: {
-        maxWidth: 1200,
-        marginHorizontal: "auto",
-      },
-      default: {
-        width: "100%",
-      },
-    }),
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 10,
@@ -105,55 +204,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 6,
     padding: 8,
-    marginBottom: 5,
+    marginBottom: 8,
     elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   articleTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 3,
+    fontFamily: "OldStandard-Bold",
     color: "#333",
-    textAlign: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "#333",
-    paddingBottom: 4,
   },
   largeTitle: {
     fontSize: 18,
-    color: "#000",
   },
   contentContainer: {
-    backgroundColor: "#D9D9D9",
-    borderRadius: 4,
-    padding: 8,
-  },
-  contentContainerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
+    marginTop: 8,
   },
   articleImage: {
     width: "100%",
     height: undefined,
     aspectRatio: 16 / 9,
     maxHeight: 200,
-    borderRadius: 4,
+    borderRadius: 2,
     marginBottom: 8,
     resizeMode: "cover",
-  },
-  articleImageSide: {
-    width: 120,
-    height: 100,
-    borderRadius: 4,
-    marginRight: 16,
-    resizeMode: "cover",
-  },
-  contentTextContainer: {
-    flex: 1,
   },
   articleText: {
     fontSize: 14,
@@ -164,6 +240,27 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#ccc",
     marginVertical: 8,
+  },
+  navigationBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    paddingVertical: 12,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
+  navItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  navItemText: {
+    fontSize: 14,
+    color: "#333",
   },
 });
 
