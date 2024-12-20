@@ -37,8 +37,8 @@ const ScenarioTwo = () => {
       {/* Main Article */}
       <View style={styles.mainArticle}>
         <Text style={styles.articleTitle}>{articles[0].title}</Text>
-        <Image source={BahceliImage} style={styles.articleImage} />
         <View style={styles.horizontalLine} />
+        <Image source={BahceliImage} style={styles.articleImage} />
         <Text style={styles.articleText}>{articles[0].content}</Text>
       </View>
 

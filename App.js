@@ -5,17 +5,34 @@ import { NewsScreen } from "./views/NewsScreen";
 import { MessagesScreen } from "./views/MessagesScreen";
 import { ProfileScreen } from "./views/ProfileScreen";
 import OldNewsScreen from "./views/OldNewspaperScreen";
+import MainPage from "./views/CategoryScreens/MainPage";
+import ScenarioTwo from "./views/ScenarioTwo";
+//category screens
+import ArtsNewsScreen from './views/CategoryScreens/ArtsNewsScreen'; // Import your screens
+import TechNewsScreen from './views/CategoryScreens/TechNewsScreen';
+import FriendsNewsScreen from './views/CategoryScreens/FriendsNewsScreen';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="OldNews">
+      <Stack.Navigator initialRouteName="ForYou">
+        <Stack.Screen 
+          name="ForYou" 
+          component={MainPage} 
+          options={{ headerShown: false }}  // Hide header for MainPage
+        />
+        <Stack.Screen name="News" options={{ headerShown: false }} component={NewsScreen} />
+        <Stack.Screen name="Messages" options={{ headerShown: false }} component={MessagesScreen} />
+        <Stack.Screen name="Profile" options={{ headerShown: false }} component={ProfileScreen} />
+
+        <Stack.Screen name="Arts" options={{ headerShown: false }} component={ArtsNewsScreen} />
+        <Stack.Screen name="Tech" options={{ headerShown: false }} component={TechNewsScreen} />
+        <Stack.Screen name="Friends" options={{ headerShown: false }} component={FriendsNewsScreen} />
+
         <Stack.Screen name="OldNews" component={OldNewsScreen} />
-        <Stack.Screen name="News" component={NewsScreen} />
-        <Stack.Screen name="Messages" component={MessagesScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

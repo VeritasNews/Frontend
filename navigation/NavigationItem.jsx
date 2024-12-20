@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   navigationItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 12,
+    marginHorizontal: 50,
   },
   navigationIcon: {
     width: 24,
