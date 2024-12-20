@@ -35,45 +35,43 @@ const navigationItems = [
       route: "Profile",
     },
   ];
-  
   const articles = [
     {
-      title: "Rare Picasso Sketch Sold",
-      content: "A rare sketch by Picasso fetches $12M at an auction in London.",
+      title: "Nadir Picasso Çizimi Satıldı",
+      content: "Picasso'ya ait nadir bir çizim, Londra'daki bir müzayedede 12 milyon dolara satıldı.",
       image: require("../../assets/image8.jpg"),
-      date: "December 16, 2024",
+      date: "16 Aralık 2024",
     },
     {
-      title: "Renaissance Art Exhibit Opens",
-      content: "A major exhibit showcasing rare Renaissance masterpieces debuts in Paris.",
-      date: "December 20, 2024",
+      title: "Rönesans Sanatı Sergisi Açıldı",
+      content: "Paris'te nadir Rönesans başyapıtlarını sergileyen büyük bir sergi açıldı.",
+      date: "20 Aralık 2024",
     },
     {
-      title: "Digital Art Gains Recognition",
-      content: "Major galleries now feature digital art, signaling a shift in artistic trends.",
-      date: "December 19, 2024",
+      title: "Dijital Sanat Tanınırlık Kazanıyor",
+      content: "Büyük galeriler artık dijital sanat sergileyerek sanatsal eğilimlerde bir değişim yaşanıyor.",
+      date: "19 Aralık 2024",
     },
     {
-      title: "Street Art Festival Draws Crowds",
-      content: "Renowned street artists gather for a vibrant festival in New York City.",
-      date: "December 18, 2024",
+      title: "Sokak Sanatı Festivali Kalabalık Topladı",
+      content: "Ünlü sokak sanatçıları, New York'ta renkli bir festivalde buluşuyor.",
+      date: "18 Aralık 2024",
     },
     {
-      title: "AI-Generated Art Sparks Debate",
-      content: "Critics and enthusiasts discuss the value of AI-generated artworks.",
-      date: "December 17, 2024",
+      title: "Yapay Zeka Üretimi Sanat Tartışmalara Yol Açtı",
+      content: "Eleştirmenler ve meraklılar, yapay zeka ile üretilen sanat eserlerinin değerini tartışıyor.",
+      date: "17 Aralık 2024",
     },
-   
     {
-      title: "Theater Revival Post-Pandemic",
-      content: "Broadway sees a resurgence in attendance with new innovative plays.",
+      title: "Pandemi Sonrası Tiyatro Canlanıyor",
+      content: "Broadway, yenilikçi oyunlarla izleyici katılımında yeniden bir yükseliş yaşıyor.",
       image: require("../../assets/image7.jpg"),
-      date: "December 15, 2024",
+      date: "15 Aralık 2024",
     },
     {
-      title: "Turkish Filmmaker Wins Cannes",
-      content: "A Turkish director wins the Palme d'Or with a deeply moving drama.",
-      date: "December 14, 2024",
+      title: "Türk Yönetmen Cannes'da Ödül Kazandı",
+      content: "Bir Türk yönetmen, Cannes Film Festivali'nde duygusal bir dramayla Palme d'Or ödülünü kazandı.",
+      date: "14 Aralık 2024",
     },
   ];
   

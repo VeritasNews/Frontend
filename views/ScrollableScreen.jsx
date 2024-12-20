@@ -6,44 +6,44 @@ const articles = [
     title: "Bahçeli, Öcalan'ı Mecliste Konuşmaya Çağırıyor: Silah Bırakımını İlan Etmeli",
     content: "Bahçeli, Öcalan'ı Meclis'te DEM grubunda silahları bırakıp terörün sonunu ilan etmeye çağırdı.  \"Umut Hakkı\"ndan yararlanma teklifini de gündeme getirdi.",
     image: require("../assets/bahceli.jpg"),
-    date: "December 20, 2024", // Add date
+    date: "20 Aralık 2024",
   },
   {
     title: "Erdoğan, Sudan Egemenlik Konseyi Başkanı ile Görüştü",
     content: "Cumhurbaşkanı Erdoğan, Sudan Egemenlik Konseyi Başkanı Burhan ile görüştü.  Görüşmede Türkiye-Sudan ilişkileri, bölgesel konular ve Türkiye'nin Somali-Etiyopya anlaşmazlığındaki rolü ele alındı. Erdoğan, Sudan-BAE ihtilafında da arabuluculuk teklif etti.",
-    date: "December 18, 2024", // Add date
+    date: "18 Aralık 2024",
   },
   {
     title: "2026 Dünya Kupası Avrupa Elemeleri'nde Türkiye'nin Rakipleri Belli Oldu",
     content: "2026 Dünya Kupası Avrupa Elemeleri'nde A Milli Takım, E Grubu'nda İspanya-Hollanda maçının galibi, Gürcistan ve Bulgaristan ile mücadele edecek.  Grup maçları Eylül 2025'te başlayacak.",
     image: require("../assets/image2.jpg"),
-    date: "December 19, 2024", // Add date
+    date: "19 Aralık 2024",
   },
-  
   {
     title: "Türkiye-ABD Dışişleri Bakanları Görüşmesi",
     content: "Türkiye Dışişleri Bakanı Hakan Fidan ve ABD Dışişleri Bakanı Antony Blinken, 19 Aralık 2024 tarihinde Ankara'da bir araya geldi. Görüşmede Suriye ve Gazze'deki durum ele alındı.",
     image: require("../assets/image1.jpg"),
-    date: "December 17, 2024", // Add date
+    date: "17 Aralık 2024",
   },
   {
-    title: "Economic Impact of Strikes",
-    content: "The strikes have begun to affect the local economy, with businesses reporting losses as transportation halts.",
+    title: "Grevin Ekonomik Etkisi",
+    content: "Grevin yerel ekonomiye etkisi başlıyor, işletmeler taşıma durmalarından dolayı zarar bildirmeye başladı.",
     image: require("../assets/image3.jpg"),
-    date: "December 16, 2024", // Add date
+    date: "16 Aralık 2024",
   },
   {
-    title: "Calls for Negotiation",
-    content: "Both sides agree on the need for negotiation, with talks scheduled to begin next week to resolve the ongoing crisis.",
-    date: "December 15, 2024", // Add date
+    title: "Müzakereler İçin Çağrılar",
+    content: "Her iki taraf da müzakerelere ihtiyaç duyulduğunda hemfikir ve gelecek hafta çözüm için görüşmelerin başlaması planlanıyor.",
+    date: "15 Aralık 2024",
   },
   {
     title: "Bahçeli, Öcalan'ı Meclis'te Konuşmaya Çağırıyor: Silah Bırakımını İlan Etsin",
     content: "MHP lideri Bahçeli, Öcalan'ın Meclis'te DEM partisine gelerek terörün sonlandığını ilan etmesini istedi. Bu adımın \"umut hakkı\" yasasıyla Öcalan'ın serbest kalmasının önünü açabileceğini belirtti. Bahçeli, terörle mücadelede ortak aklı ve milli birliği savundu.",
     image: require("../assets/bahceli.jpg"),
-    date: "December 14, 2024", // Add date
+    date: "14 Aralık 2024",
   },
 ];
+
 
 const categories = [
     { label: "For You Page", route: "ForYou", isActive: false },

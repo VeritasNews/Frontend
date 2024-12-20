@@ -38,45 +38,46 @@ const navigationItems = [
   
   const articles = [
     {
-      title: "Growing Support for Strikers",
-      content: "Public support for the strike grows as more citizens join the protests, pushing for systemic changes.",
-      date: "December 20, 2024", // Add date
+      title: "Grevcilerin Destek Kazanması",
+      content: "Grevin desteği arttıkça daha fazla vatandaş protestolara katılarak, sistemik değişiklikler için baskı yapıyor.",
+      date: "20 Aralık 2024",
     },
     {
-      title: "Workers Demand Better Conditions",
-      content: "Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation. Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation.",
+      title: "İşçiler Daha İyi Koşullar Talep Ediyor",
+      content: "Grevciler, daha iyi maaşlar ve çalışma koşulları talep ediyor, bu da ülke genelinde işçi haklarıyla ilgili tartışmaları tetikliyor.",
       image: require("../../assets/image2.jpg"),
-      date: "December 19, 2024", // Add date
+      date: "19 Aralık 2024",
     },
     {
-      title: "Government Stance",
-      content: "Government officials remain firm in their stance, calling for an end to disruptions and a return to normalcy.",
-      date: "December 18, 2024", // Add date
+      title: "Hükümetin Tutumu",
+      content: "Hükümet yetkilileri, kesintilerin sona ermesini ve normale dönülmesini isteyen kararlı bir tutum sergiliyor.",
+      date: "18 Aralık 2024",
     },
     {
-      title: "Protestors Face Resistance",
-      content: "Despite widespread support, protestors face significant resistance from law enforcement, leading to escalating tensions.",
+      title: "Protestocular Dirençle Karşılaşıyor",
+      content: "Geniş çapta destek olmasına rağmen, protestocular güvenlik güçlerinden büyük dirençle karşılaşıyor, bu da gerilimin artmasına yol açıyor.",
       image: require("../../assets/image4.jpg"),
-      date: "December 17, 2024", // Add date
+      date: "17 Aralık 2024",
     },
     {
-      title: "Economic Impact of Strikes",
-      content: "The strikes have begun to affect the local economy, with businesses reporting losses as transportation halts.",
+      title: "Grevin Ekonomik Etkisi",
+      content: "Grevin yerel ekonomiyi etkilemeye başladığı, işletmelerin taşımacılık durmalarından dolayı kayıplar bildirdiği belirtiliyor.",
       image: require("../../assets/image3.jpg"),
-      date: "December 16, 2024", // Add date
+      date: "16 Aralık 2024",
     },
     {
-      title: "Calls for Negotiation",
-      content: "Both sides agree on the need for negotiation, with talks scheduled to begin next week to resolve the ongoing crisis.",
-      date: "December 15, 2024", // Add date
+      title: "Müzakereler İçin Çağrılar",
+      content: "Her iki taraf da müzakerelere ihtiyaç duyulduğu konusunda hemfikir, gelecek hafta başlayan görüşmelerle mevcut kriz çözülmeye çalışılacak.",
+      date: "15 Aralık 2024",
     },
     {
       title: "Bahçeli, Öcalan'ı Meclis'te Konuşmaya Çağırıyor: Silah Bırakımını İlan Etsin",
       content: "MHP lideri Bahçeli, Öcalan'ın Meclis'te DEM partisine gelerek terörün sonlandığını ilan etmesini istedi. Bu adımın \"umut hakkı\" yasasıyla Öcalan'ın serbest kalmasının önünü açabileceğini belirtti. Bahçeli, terörle mücadelede ortak aklı ve milli birliği savundu.",
       image: require("../../assets/bahceli.jpg"),
-      date: "December 14, 2024", // Add date
+      date: "14 Aralık 2024",
     },
   ];
+  
   
   const FriendsNewsScreen = ({ navigation }) => {
       const renderArticle = (article, index) => {

@@ -38,47 +38,48 @@ const navigationItems = [
   
   const articles = [
     {
-      title: "AI Breakthrough in Healthcare",
-      content: "New AI models can now detect diseases with over 95% accuracy, revolutionizing diagnostics.",
+      title: "Sağlıkta AI Atılımı",
+      content: "Yeni AI modelleri artık hastalıkları %95'in üzerinde doğrulukla tespit edebiliyor, bu da tanıyı devrim niteliğinde değiştiriyor.",
       image: require("../../assets/image5.jpg"),
-      date: "December 20, 2024",
+      date: "20 Aralık 2024",
     },
     {
-      title: "Quantum Computing Milestone",
-      content: "Researchers achieve a record-breaking quantum computation speed, opening doors to advanced simulations.",
+      title: "Kuantum Hesaplama Dönüm Noktası",
+      content: "Araştırmacılar, gelişmiş simülasyonlara kapı aralayan rekor kıran bir kuantum hesaplama hızına ulaştılar.",
       //image: require("../../assets/quantum.jpg"),
-      date: "December 19, 2024",
+      date: "19 Aralık 2024",
     },
     {
-      title: "Electric Cars Dominate 2024",
-      content: "EVs surpass traditional cars in sales, marking a major shift in the automotive industry.",
-      date: "December 18, 2024",
+      title: "Elektrikli Arabalar 2024'te Dominant Oluyor",
+      content: "EV'ler, satışlarda geleneksel arabaları geride bırakarak otomotiv endüstrisinde büyük bir değişim yaratıyor.",
+      date: "18 Aralık 2024",
     },
     {
-      title: "Meta Unveils AR Glasses",
-      content: "Meta launches lightweight AR glasses for seamless virtual experiences.",
+      title: "Meta AR Gözlüklerini Tanıttı",
+      content: "Meta, kesintisiz sanal deneyimler için hafif AR gözlüklerini piyasaya sürdü.",
       //image: require("../../assets/meta_glasses.jpg"),
-      date: "December 17, 2024",
+      date: "17 Aralık 2024",
     },
     {
-      title: "New Chip Technology Released",
-      content: "Tech firms introduce 2nm chips, boosting smartphone performance and efficiency.",
+      title: "Yeni Çip Teknolojisi Duyuruldu",
+      content: "Teknoloji firmaları, akıllı telefon performansını ve verimliliği artıran 2nm çipleri tanıttı.",
       //image: require("../../assets/chip.jpg"),
-      date: "December 16, 2024",
+      date: "16 Aralık 2024",
     },
     {
-      title: "5G Expands Globally",
-      content: "5G networks now cover 80% of the world, enhancing internet speeds and connectivity.",
+      title: "5G Küresel Olarak Yayılıyor",
+      content: "5G ağları artık dünyanın %80'ini kapsıyor, internet hızlarını ve bağlantıyı artırıyor.",
       image: require("../../assets/image6.jpg"),
-      date: "December 15, 2024",
+      date: "15 Aralık 2024",
     },
     {
-      title: "Türkiye Invests in Tech Hubs",
-      content: "Government funds new tech hubs to support AI and robotics innovation in Türkiye.",
+      title: "Türkiye, Teknoloji Merkezlerine Yatırım Yapıyor",
+      content: "Hükümet, Türkiye'deki AI ve robotik yeniliklerini desteklemek için yeni teknoloji merkezlerine yatırım yapıyor.",
       //image: require("../../assets/turkey_tech.jpg"),
-      date: "December 14, 2024",
+      date: "14 Aralık 2024",
     },
   ];
+  
   
   
   const TechNewsScreen = ({ navigation }) => {
