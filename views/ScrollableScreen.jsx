@@ -3,31 +3,45 @@ import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Platform }
 
 const articles = [
   {
-    title: "Growing Support for Strikers",
-    content: "Public support for the strike grows as more citizens join the protests, pushing for systemic changes.",
+    title: "Bahçeli, Öcalan'ı Mecliste Konuşmaya Çağırıyor: Silah Bırakımını İlan Etmeli",
+    content: "Bahçeli, Öcalan'ı Meclis'te DEM grubunda silahları bırakıp terörün sonunu ilan etmeye çağırdı.  \"Umut Hakkı\"ndan yararlanma teklifini de gündeme getirdi.",
+    image: require("../assets/bahceli.jpg"),
+    date: "December 20, 2024", // Add date
   },
   {
-    title: "Government Stance",
-    content: "Government officials remain firm in their stance, calling for an end to disruptions and a return to normalcy.",
+    title: "Erdoğan, Sudan Egemenlik Konseyi Başkanı ile Görüştü",
+    content: "Cumhurbaşkanı Erdoğan, Sudan Egemenlik Konseyi Başkanı Burhan ile görüştü.  Görüşmede Türkiye-Sudan ilişkileri, bölgesel konular ve Türkiye'nin Somali-Etiyopya anlaşmazlığındaki rolü ele alındı. Erdoğan, Sudan-BAE ihtilafında da arabuluculuk teklif etti.",
+    date: "December 18, 2024", // Add date
   },
   {
-    title: "Protestors Face Resistance",
-    content: "Despite widespread support, protestors face significant resistance from law enforcement, leading to escalating tensions.",
+    title: "2026 Dünya Kupası Avrupa Elemeleri'nde Türkiye'nin Rakipleri Belli Oldu",
+    content: "2026 Dünya Kupası Avrupa Elemeleri'nde A Milli Takım, E Grubu'nda İspanya-Hollanda maçının galibi, Gürcistan ve Bulgaristan ile mücadele edecek.  Grup maçları Eylül 2025'te başlayacak.",
+    image: require("../assets/image2.jpg"),
+    date: "December 19, 2024", // Add date
+  },
+  
+  {
+    title: "Türkiye-ABD Dışişleri Bakanları Görüşmesi",
+    content: "Türkiye Dışişleri Bakanı Hakan Fidan ve ABD Dışişleri Bakanı Antony Blinken, 19 Aralık 2024 tarihinde Ankara'da bir araya geldi. Görüşmede Suriye ve Gazze'deki durum ele alındı.",
     image: require("../assets/image1.jpg"),
+    date: "December 17, 2024", // Add date
   },
   {
     title: "Economic Impact of Strikes",
     content: "The strikes have begun to affect the local economy, with businesses reporting losses as transportation halts.",
     image: require("../assets/image3.jpg"),
+    date: "December 16, 2024", // Add date
   },
   {
     title: "Calls for Negotiation",
     content: "Both sides agree on the need for negotiation, with talks scheduled to begin next week to resolve the ongoing crisis.",
+    date: "December 15, 2024", // Add date
   },
   {
     title: "Bahçeli, Öcalan'ı Meclis'te Konuşmaya Çağırıyor: Silah Bırakımını İlan Etsin",
     content: "MHP lideri Bahçeli, Öcalan'ın Meclis'te DEM partisine gelerek terörün sonlandığını ilan etmesini istedi. Bu adımın \"umut hakkı\" yasasıyla Öcalan'ın serbest kalmasının önünü açabileceğini belirtti. Bahçeli, terörle mücadelede ortak aklı ve milli birliği savundu.",
     image: require("../assets/bahceli.jpg"),
+    date: "December 14, 2024", // Add date
   },
 ];
 

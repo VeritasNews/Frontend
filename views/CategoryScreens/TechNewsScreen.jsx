@@ -38,45 +38,48 @@ const navigationItems = [
   
   const articles = [
     {
-      title: "Growing Support for Strikers",
-      content: "Public support for the strike grows as more citizens join the protests, pushing for systemic changes.",
-      date: "December 20, 2024", // Add date
+      title: "AI Breakthrough in Healthcare",
+      content: "New AI models can now detect diseases with over 95% accuracy, revolutionizing diagnostics.",
+      image: require("../../assets/image5.jpg"),
+      date: "December 20, 2024",
     },
     {
-      title: "Workers Demand Better Conditions",
-      content: "Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation. Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation.",
-      image: require("../../assets/image2.jpg"),
-      date: "December 19, 2024", // Add date
+      title: "Quantum Computing Milestone",
+      content: "Researchers achieve a record-breaking quantum computation speed, opening doors to advanced simulations.",
+      //image: require("../../assets/quantum.jpg"),
+      date: "December 19, 2024",
     },
     {
-      title: "Government Stance",
-      content: "Government officials remain firm in their stance, calling for an end to disruptions and a return to normalcy.",
-      date: "December 18, 2024", // Add date
+      title: "Electric Cars Dominate 2024",
+      content: "EVs surpass traditional cars in sales, marking a major shift in the automotive industry.",
+      date: "December 18, 2024",
     },
     {
-      title: "Protestors Face Resistance",
-      content: "Despite widespread support, protestors face significant resistance from law enforcement, leading to escalating tensions.",
-      image: require("../../assets/image1.jpg"),
-      date: "December 17, 2024", // Add date
+      title: "Meta Unveils AR Glasses",
+      content: "Meta launches lightweight AR glasses for seamless virtual experiences.",
+      //image: require("../../assets/meta_glasses.jpg"),
+      date: "December 17, 2024",
     },
     {
-      title: "Economic Impact of Strikes",
-      content: "The strikes have begun to affect the local economy, with businesses reporting losses as transportation halts.",
-      image: require("../../assets/image3.jpg"),
-      date: "December 16, 2024", // Add date
+      title: "New Chip Technology Released",
+      content: "Tech firms introduce 2nm chips, boosting smartphone performance and efficiency.",
+      //image: require("../../assets/chip.jpg"),
+      date: "December 16, 2024",
     },
     {
-      title: "Calls for Negotiation",
-      content: "Both sides agree on the need for negotiation, with talks scheduled to begin next week to resolve the ongoing crisis.",
-      date: "December 15, 2024", // Add date
+      title: "5G Expands Globally",
+      content: "5G networks now cover 80% of the world, enhancing internet speeds and connectivity.",
+      image: require("../../assets/image6.jpg"),
+      date: "December 15, 2024",
     },
     {
-      title: "Bahçeli, Öcalan'ı Meclis'te Konuşmaya Çağırıyor: Silah Bırakımını İlan Etsin",
-      content: "MHP lideri Bahçeli, Öcalan'ın Meclis'te DEM partisine gelerek terörün sonlandığını ilan etmesini istedi. Bu adımın \"umut hakkı\" yasasıyla Öcalan'ın serbest kalmasının önünü açabileceğini belirtti. Bahçeli, terörle mücadelede ortak aklı ve milli birliği savundu.",
-      image: require("../../assets/bahceli.jpg"),
-      date: "December 14, 2024", // Add date
+      title: "Türkiye Invests in Tech Hubs",
+      content: "Government funds new tech hubs to support AI and robotics innovation in Türkiye.",
+      //image: require("../../assets/turkey_tech.jpg"),
+      date: "December 14, 2024",
     },
   ];
+  
   
   const TechNewsScreen = ({ navigation }) => {
       const renderArticle = (article, index) => {
@@ -294,18 +297,7 @@ const navigationItems = [
     activeCategoryButtonText: {
       color: COLORS.white,
     },
-    navigationBar: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-      alignItems: "center",
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      paddingVertical: 12,
-      backgroundColor: COLORS.white,
-      borderRadius: 15,
-      position: 'absolute',
-      bottom: 0,  // Keep it at the bottom
-    },
+
   });
   
   export default TechNewsScreen;

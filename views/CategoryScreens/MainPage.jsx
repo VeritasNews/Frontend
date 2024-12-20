@@ -1,6 +1,12 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, ScrollView, Platform, TouchableOpacity } from "react-native";
-import { NavigationItem } from "../../navigation/NavigationItem"; // Import NavigationItem
+import {
+  ScrollView,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';import { NavigationItem } from "../../navigation/NavigationItem"; // Import NavigationItem
 import { CategoryButton } from "../../components/CategoryButton"; // Import CategoryButton
 import { GLOBAL_STYLES } from "../../theme/globalStyles"; // Import global styles
 import COLORS from "../../theme/colors"; // Import COLORS
@@ -39,24 +45,26 @@ const navigationItems = [
 
 const articles = [
   {
-    title: "Growing Support for Strikers",
-    content: "Public support for the strike grows as more citizens join the protests, pushing for systemic changes.",
+    title: "Bahçeli, Öcalan'ı Mecliste Konuşmaya Çağırıyor: Silah Bırakımını İlan Etmeli",
+    content: "Bahçeli, Öcalan'ı Meclis'te DEM grubunda silahları bırakıp terörün sonunu ilan etmeye çağırdı.  \"Umut Hakkı\"ndan yararlanma teklifini de gündeme getirdi.",
+    image: require("../../assets/bahceli.jpg"),
     date: "December 20, 2024", // Add date
   },
   {
-    title: "Workers Demand Better Conditions",
-    content: "Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation. Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation.",
-    image: require("../../assets/image2.jpg"),
-    date: "December 19, 2024", // Add date
-  },
-  {
-    title: "Government Stance",
-    content: "Government officials remain firm in their stance, calling for an end to disruptions and a return to normalcy.",
+    title: "Erdoğan, Sudan Egemenlik Konseyi Başkanı ile Görüştü",
+    content: "Cumhurbaşkanı Erdoğan, Sudan Egemenlik Konseyi Başkanı Burhan ile görüştü.  Görüşmede Türkiye-Sudan ilişkileri, bölgesel konular ve Türkiye'nin Somali-Etiyopya anlaşmazlığındaki rolü ele alındı. Erdoğan, Sudan-BAE ihtilafında da arabuluculuk teklif etti.",
     date: "December 18, 2024", // Add date
   },
   {
-    title: "Protestors Face Resistance",
-    content: "Despite widespread support, protestors face significant resistance from law enforcement, leading to escalating tensions.",
+    title: "2026 Dünya Kupası Avrupa Elemeleri'nde Türkiye'nin Rakipleri Belli Oldu",
+    content: "2026 Dünya Kupası Avrupa Elemeleri'nde A Milli Takım, E Grubu'nda İspanya-Hollanda maçının galibi, Gürcistan ve Bulgaristan ile mücadele edecek.  Grup maçları Eylül 2025'te başlayacak.",
+    image: require("../../assets/image2.jpg"),
+    date: "December 19, 2024", // Add date
+  },
+  
+  {
+    title: "Türkiye-ABD Dışişleri Bakanları Görüşmesi",
+    content: "Türkiye Dışişleri Bakanı Hakan Fidan ve ABD Dışişleri Bakanı Antony Blinken, 19 Aralık 2024 tarihinde Ankara'da bir araya geldi. Görüşmede Suriye ve Gazze'deki durum ele alındı.",
     image: require("../../assets/image1.jpg"),
     date: "December 17, 2024", // Add date
   },
@@ -80,63 +88,86 @@ const articles = [
 ];
 
 const MainPage = ({ navigation }) => {
-    const renderArticle = (article, index) => {
-      const isImageOnSide = article.title === "Workers Demand Better Conditions";  // Check if the image should be on the side
-  
-      return (
-        <View key={index} style={styles.article}>
-          <Text style={[styles.articleTitle, article.title === "Growing Support for Strikers" && styles.largeTitle]}>
-            {article.title}
-          </Text>
-          <View
-            style={[styles.contentContainer, isImageOnSide && styles.contentContainerRow]}  // Apply special style if the image should be on the side
-          >
-            {article.image && <Image source={article.image} style={isImageOnSide ? styles.articleImageSide : styles.articleImage} />}
-            <View style={styles.horizontalLine} />
-            <Text style={styles.articleText}>{article.content}</Text>
-          </View>
-        </View>
-      );
-    };
-  
-    // Divide articles into 2 columns
-    const columns = [[], []];
-    articles.forEach((article, index) => {
-      columns[index % 2].push(renderArticle(article, index));
-    });
-  
+  const renderArticle = (article, index) => {
+    const isImageOnSide = article.title === "Workers Demand Better Conditions"; // Check if the image should be on the side
+
     return (
+      <View key={index} style={styles.article}>
+        <Text
+          style={[
+            styles.articleTitle,
+            article.title === "Growing Support for Strikers" && styles.largeTitle,
+          ]}
+        >
+          {article.title}
+        </Text>
+        <View
+          style={[
+            styles.contentContainer,
+            isImageOnSide && styles.contentContainerRow,
+          ]} // Apply special style if the image should be on the side
+        >
+          {article.image && (
+            <Image
+              source={article.image}
+              style={
+                isImageOnSide ? styles.articleImageSide : styles.articleImage
+              }
+            />
+          )}
+          <View style={styles.horizontalLine} />
+          <Text style={styles.articleText}>{article.content}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  // Divide articles into 2 columns
+  const columns = [[], []];
+  articles.forEach((article, index) => {
+    columns[index % 2].push(renderArticle(article, index));
+  });
+
+  return (
+    <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Line above the header */}
         <View style={styles.headerLine} />
-  
+
         {/* Header with Logo and Title */}
         <View style={styles.header}>
           <Image source={VeritasLogo} style={styles.logo} />
           <Text style={styles.title}>Veritas</Text> {/* Title next to logo */}
           <Text style={styles.date}>December 20, 2024</Text> {/* Date under logo */}
         </View>
-  
+
         {/* Line below the header */}
         <View style={styles.headerLine} />
-  
+
         {/* Categories Bar */}
         <View style={styles.categoryContainer}>
           {categories.map((category, index) => (
             <TouchableOpacity
               key={index}
-              style={[styles.categoryButton, category.isActive && styles.activeCategoryButton]}
+              style={[
+                styles.categoryButton,
+                category.isActive && styles.activeCategoryButton,
+              ]}
               onPress={() => navigation.navigate(category.route)} // Navigate to the respective screen
             >
               <Text
-                style={[styles.categoryButtonText, category.isActive && styles.activeCategoryButtonText]}
+                style={[
+                  styles.categoryButtonText,
+                  category.isActive && styles.activeCategoryButtonText,
+                ]}
               >
                 {category.label}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-  
+
+        {/* Content Section */}
         <View style={styles.centerContainer}>
           {columns.map((column, columnIndex) => (
             <View key={columnIndex} style={styles.column}>
@@ -144,7 +175,7 @@ const MainPage = ({ navigation }) => {
             </View>
           ))}
         </View>
-  
+
         {/* Navigation Bar */}
         <View style={styles.navigationBar}>
           {navigationItems.map((item, index) => (
@@ -158,7 +189,8 @@ const MainPage = ({ navigation }) => {
           ))}
         </View>
       </ScrollView>
-    );
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({

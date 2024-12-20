@@ -38,45 +38,45 @@ const navigationItems = [
   
   const articles = [
     {
-      title: "Growing Support for Strikers",
-      content: "Public support for the strike grows as more citizens join the protests, pushing for systemic changes.",
-      date: "December 20, 2024", // Add date
+      title: "Rare Picasso Sketch Sold",
+      content: "A rare sketch by Picasso fetches $12M at an auction in London.",
+      image: require("../../assets/image8.jpg"),
+      date: "December 16, 2024",
     },
     {
-      title: "Workers Demand Better Conditions",
-      content: "Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation. Striking workers demand better wages and working conditions, sparking debates about labor rights across the nation.",
-      image: require("../../assets/image2.jpg"),
-      date: "December 19, 2024", // Add date
+      title: "Renaissance Art Exhibit Opens",
+      content: "A major exhibit showcasing rare Renaissance masterpieces debuts in Paris.",
+      date: "December 20, 2024",
     },
     {
-      title: "Government Stance",
-      content: "Government officials remain firm in their stance, calling for an end to disruptions and a return to normalcy.",
-      date: "December 18, 2024", // Add date
+      title: "Digital Art Gains Recognition",
+      content: "Major galleries now feature digital art, signaling a shift in artistic trends.",
+      date: "December 19, 2024",
     },
     {
-      title: "Protestors Face Resistance",
-      content: "Despite widespread support, protestors face significant resistance from law enforcement, leading to escalating tensions.",
-      image: require("../../assets/image1.jpg"),
-      date: "December 17, 2024", // Add date
+      title: "Street Art Festival Draws Crowds",
+      content: "Renowned street artists gather for a vibrant festival in New York City.",
+      date: "December 18, 2024",
     },
     {
-      title: "Economic Impact of Strikes",
-      content: "The strikes have begun to affect the local economy, with businesses reporting losses as transportation halts.",
-      image: require("../../assets/image3.jpg"),
-      date: "December 16, 2024", // Add date
+      title: "AI-Generated Art Sparks Debate",
+      content: "Critics and enthusiasts discuss the value of AI-generated artworks.",
+      date: "December 17, 2024",
+    },
+   
+    {
+      title: "Theater Revival Post-Pandemic",
+      content: "Broadway sees a resurgence in attendance with new innovative plays.",
+      image: require("../../assets/image7.jpg"),
+      date: "December 15, 2024",
     },
     {
-      title: "Calls for Negotiation",
-      content: "Both sides agree on the need for negotiation, with talks scheduled to begin next week to resolve the ongoing crisis.",
-      date: "December 15, 2024", // Add date
-    },
-    {
-      title: "Bahçeli, Öcalan'ı Meclis'te Konuşmaya Çağırıyor: Silah Bırakımını İlan Etsin",
-      content: "MHP lideri Bahçeli, Öcalan'ın Meclis'te DEM partisine gelerek terörün sonlandığını ilan etmesini istedi. Bu adımın \"umut hakkı\" yasasıyla Öcalan'ın serbest kalmasının önünü açabileceğini belirtti. Bahçeli, terörle mücadelede ortak aklı ve milli birliği savundu.",
-      image: require("../../assets/bahceli.jpg"),
-      date: "December 14, 2024", // Add date
+      title: "Turkish Filmmaker Wins Cannes",
+      content: "A Turkish director wins the Palme d'Or with a deeply moving drama.",
+      date: "December 14, 2024",
     },
   ];
+  
   
   const ArtsNewsScreen = ({ navigation }) => {
       const renderArticle = (article, index) => {
@@ -145,17 +145,7 @@ const navigationItems = [
           </View>
     
           {/* Navigation Bar */}
-          <View style={styles.navigationBar}>
-            {navigationItems.map((item, index) => (
-              <NavigationItem
-                key={index}
-                icon={item.icon}
-                label={item.label}
-                isActive={item.isActive}
-                onPress={() => navigation.navigate(item.route)}
-              />
-            ))}
-          </View>
+          
         </ScrollView>
       );
   };
@@ -294,18 +284,7 @@ const navigationItems = [
     activeCategoryButtonText: {
       color: COLORS.white,
     },
-    navigationBar: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: COLORS.border,
-        paddingVertical: 12,
-        backgroundColor: COLORS.white,
-        borderRadius: 15,
-        position: 'absolute',
-        bottom: 0,  // Keep it at the bottom
-    },
+    
   });
   
   export default ArtsNewsScreen;

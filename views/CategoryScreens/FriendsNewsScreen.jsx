@@ -56,7 +56,7 @@ const navigationItems = [
     {
       title: "Protestors Face Resistance",
       content: "Despite widespread support, protestors face significant resistance from law enforcement, leading to escalating tensions.",
-      image: require("../../assets/image1.jpg"),
+      image: require("../../assets/image4.jpg"),
       date: "December 17, 2024", // Add date
     },
     {
@@ -294,18 +294,7 @@ const navigationItems = [
     activeCategoryButtonText: {
       color: COLORS.white,
     },
-    navigationBar: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: COLORS.border,
-        paddingVertical: 12,
-        backgroundColor: COLORS.white,
-        borderRadius: 15,
-        position: 'absolute',
-        bottom: 0,  // Keep it at the bottom
-      },
+  
   });
   
   export default FriendsNewsScreen;
