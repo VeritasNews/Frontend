@@ -14,15 +14,17 @@ import FriendsNewsScreen from './views/CategoryScreens/FriendsNewsScreen';
 
 import ScrollableScreen from './views/ScrollableScreen';
 
+import ArticlesScreen from './views/ArticlesScreen';
+
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="ForYou">
+      <Stack.Navigator initialRouteName="ArticlesScreen">
         <Stack.Screen 
-          name="ForYou" 
-          component={MainPage} 
+          name="ArticlesScreen" 
+          component={ArticlesScreen} 
           options={{ headerShown: false }}  // Hide header for MainPage
         />
         <Stack.Screen name="News" options={{ headerShown: false }} component={NewsScreen} />
