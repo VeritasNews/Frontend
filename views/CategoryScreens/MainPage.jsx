@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   View,
@@ -6,13 +6,16 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-} from 'react-native';import { NavigationItem } from "../../navigation/NavigationItem"; // Import NavigationItem
-import { CategoryButton } from "../../components/CategoryButton"; // Import CategoryButton
-import { GLOBAL_STYLES } from "../../theme/globalStyles"; // Import global styles
-import COLORS from "../../theme/colors"; // Import COLORS
-import FONTS from "../../theme/fonts"; // Import FONTS
+  ActivityIndicator,
+} from "react-native";
+import { getArticles } from "../../utils/api"; // Import the API function
+import { NavigationItem } from "../../navigation/NavigationItem";
+import { CategoryButton } from "../../components/CategoryButton";
+import { GLOBAL_STYLES } from "../../theme/globalStyles";
+import COLORS from "../../theme/colors";
+import FONTS from "../../theme/fonts";
 
-const VeritasLogo = require("../../assets/set2_no_bg.png"); // Path to your logo image
+const VeritasLogo = require("../../assets/set2_no_bg.png");
 
 const categories = [
   { label: "For You Page", route: "ForYou", isActive: true },
@@ -43,52 +46,27 @@ const navigationItems = [
   },
 ];
 
-const articles = [
-  {
-    title: "Bahçeli, Öcalan'ı Mecliste Konuşmaya Çağırıyor: Silah Bırakımını İlan Etmeli",
-    content: "Bahçeli, Öcalan'ı Meclis'te DEM grubunda silahları bırakıp terörün sonunu ilan etmeye çağırdı.  \"Umut Hakkı\"ndan yararlanma teklifini de gündeme getirdi.",
-    image: require("../../assets/bahceli.jpg"),
-    date: "20 Aralık 2024",
-  },
-  {
-    title: "Erdoğan, Sudan Egemenlik Konseyi Başkanı ile Görüştü",
-    content: "Cumhurbaşkanı Erdoğan, Sudan Egemenlik Konseyi Başkanı Burhan ile görüştü.  Görüşmede Türkiye-Sudan ilişkileri, bölgesel konular ve Türkiye'nin Somali-Etiyopya anlaşmazlığındaki rolü ele alındı. Erdoğan, Sudan-BAE ihtilafında da arabuluculuk teklif etti.",
-    date: "18 Aralık 2024",
-  },
-  {
-    title: "2026 Dünya Kupası Avrupa Elemeleri'nde Türkiye'nin Rakipleri Belli Oldu",
-    content: "2026 Dünya Kupası Avrupa Elemeleri'nde A Milli Takım, E Grubu'nda İspanya-Hollanda maçının galibi, Gürcistan ve Bulgaristan ile mücadele edecek.  Grup maçları Eylül 2025'te başlayacak.",
-    image: require("../../assets/image2.jpg"),
-    date: "19 Aralık 2024",
-  },
-  {
-    title: "Türkiye-ABD Dışişleri Bakanları Görüşmesi",
-    content: "Türkiye Dışişleri Bakanı Hakan Fidan ve ABD Dışişleri Bakanı Antony Blinken, 19 Aralık 2024 tarihinde Ankara'da bir araya geldi. Görüşmede Suriye ve Gazze'deki durum ele alındı.",
-    image: require("../../assets/image1.jpg"),
-    date: "17 Aralık 2024",
-  },
-  {
-    title: "Grevin Ekonomik Etkisi",
-    content: "Grevin yerel ekonomiye etkisi başlıyor, işletmeler taşıma durmalarından dolayı zarar bildirmeye başladı.",
-    image: require("../../assets/image3.jpg"),
-    date: "16 Aralık 2024",
-  },
-  {
-    title: "Müzakereler İçin Çağrılar",
-    content: "Her iki taraf da müzakerelere ihtiyaç duyulduğunda hemfikir ve gelecek hafta çözüm için görüşmelerin başlaması planlanıyor.",
-    date: "15 Aralık 2024",
-  },
-  {
-    title: "Bahçeli, Öcalan'ı Meclis'te Konuşmaya Çağırıyor: Silah Bırakımını İlan Etsin",
-    content: "MHP lideri Bahçeli, Öcalan'ın Meclis'te DEM partisine gelerek terörün sonlandığını ilan etmesini istedi. Bu adımın \"umut hakkı\" yasasıyla Öcalan'ın serbest kalmasının önünü açabileceğini belirtti. Bahçeli, terörle mücadelede ortak aklı ve milli birliği savundu.",
-    image: require("../../assets/bahceli.jpg"),
-    date: "14 Aralık 2024",
-  },
-];
-
 const MainPage = ({ navigation }) => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  const fetchArticles = async () => {
+    try {
+      const data = await getArticles();
+      setArticles(data);
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderArticle = (article, index) => {
-    const isImageOnSide = article.title === "Workers Demand Better Conditions"; // Check if the image should be on the side
+    const isImageOnSide = article.title === "Workers Demand Better Conditions"; // Example condition for side image
 
     return (
       <View key={index} style={styles.article}>
@@ -104,7 +82,7 @@ const MainPage = ({ navigation }) => {
           style={[
             styles.contentContainer,
             isImageOnSide && styles.contentContainerRow,
-          ]} // Apply special style if the image should be on the side
+          ]}
         >
           {article.image && (
             <Image
@@ -329,14 +307,10 @@ const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: "row",
     justifyContent: "space-around",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingVertical: 12,
-    backgroundColor: COLORS.white,
-    borderRadius: 15,
-    position: 'absolute',
-    bottom: 0,  // Keep it at the bottom
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
   },
 });
 

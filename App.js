@@ -21,10 +21,10 @@ const Stack = createStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="ArticlesScreen">
+      <Stack.Navigator initialRouteName="MainPage">
         <Stack.Screen 
-          name="ArticlesScreen" 
-          component={ArticlesScreen} 
+          name="MainPage" 
+          component={MainPage} 
           options={{ headerShown: false }}  // Hide header for MainPage
         />
         <Stack.Screen name="News" options={{ headerShown: false }} component={NewsScreen} />
