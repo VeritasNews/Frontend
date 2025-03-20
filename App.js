@@ -1,38 +1,29 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+
+// Import Screens
 import { MessagesScreen } from "./views/MessagesScreen";
 import { ProfileScreen } from "./views/ProfileScreen";
 import MainPage from "./views/CategoryScreens/MainPage";
-//category screens
-import ArtsNewsScreen from './views/CategoryScreens/ArtsNewsScreen'; // Import your screens
-import TechNewsScreen from './views/CategoryScreens/TechNewsScreen';
-import FriendsNewsScreen from './views/CategoryScreens/FriendsNewsScreen';
-
+import SiyasetNewsScreen from './views/CategoryScreens/SiyasetNewsScreen';
 import ScrollableScreen from './views/ScrollableScreen';
-
 import ForYou from './views/ForYou';
+import EntertainmentNewsScreen from './views/CategoryScreens/EntertainmentNewsScreen';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="ForYou">
-        <Stack.Screen 
-          name="ForYou" 
-          component={ForYou} 
-          options={{ headerShown: false }}  // Hide header for MainPage
-        />
-        <Stack.Screen name="Messages" options={{ headerShown: false }} component={MessagesScreen} />
-        <Stack.Screen name="Profile" options={{ headerShown: false }} component={ProfileScreen} />
-
-        <Stack.Screen name="Arts" options={{ headerShown: false }} component={ArtsNewsScreen} />
-        <Stack.Screen name="Tech" options={{ headerShown: false }} component={TechNewsScreen} />
-        <Stack.Screen name="Friends" options={{ headerShown: false }} component={FriendsNewsScreen} />
-
-        <Stack.Screen name="Scrollable" options={{ headerShown: false }} component={ScrollableScreen} />
-
+      <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="ForYou" component={ForYou} />
+        {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
+        <Stack.Screen name="Messages" component={MessagesScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Siyaset" component={SiyasetNewsScreen} />
+        <Stack.Screen name="Scrollable" component={ScrollableScreen} />
+        <Stack.Screen name="Entertainment" component={EntertainmentNewsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
