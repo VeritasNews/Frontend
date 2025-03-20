@@ -1,5 +1,21 @@
 import React from "react";
-import { View, TouchableOpacity, Image, Text, StyleSheet } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Platform,
+} from "react-native";
+
+const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web"; // Detect Web
+
+// ✅ Modern Responsive Scaling for Web & Mobile
+const ICON_SIZE = isWeb ? 28 : width > 768 ? 32 : 24; 
+const TEXT_SIZE = isWeb ? 16 : width > 768 ? 14 : 12; 
+const PADDING = isWeb ? 18 : width > 768 ? 14 : 10; 
 
 const navigationItems = [
   {
@@ -21,7 +37,7 @@ const navigationItems = [
 
 const BottomNav = ({ navigation }) => {
   return (
-    <View style={styles.navigationBar}>
+    <View style={[styles.navigationBar, isWeb && styles.webNav]}>
       {navigationItems.map((item, index) => (
         <TouchableOpacity
           key={index}
@@ -41,20 +57,52 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     backgroundColor: "#fff",
-    paddingVertical: 10,
-    borderTopWidth: 1,
+    paddingVertical: 0,
+    borderTopWidth: 0,
     borderTopColor: "#ddd",
+    width: "100%",
   },
+
+  // ✅ Modern Web Navbar Design
+  webNav: {
+    position: "fixed",
+    bottom: 5, 
+    left: "50%",
+    transform: [{ translateX: -width * 0.25 }], // Center the navbar
+    width: "50%",
+    maxWidth: 600, // Prevents too wide navbar
+    backgroundColor: "rgba(255, 255, 255, 1)", // Semi-transparent background
+    borderRadius: 20,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: "rgba(0, 0, 0, 0.1)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+
   navItem: {
     alignItems: "center",
+    flex: 1,
+    paddingHorizontal: 15,
+    transition: "all 0.3s ease-in-out", // ✅ Smooth hover effect
   },
   navIcon: {
-    width: 24,
-    height: 24,
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    resizeMode: "contain",
   },
   navText: {
-    fontSize: 12,
+    fontSize: TEXT_SIZE,
     color: "#333",
+    marginTop: 4,
+  },
+
+  // ✅ Web Hover Effect
+  navItemHovered: {
+    transform: [{ scale: 1.05 }],
+    opacity: 0.9,
   },
 });
 

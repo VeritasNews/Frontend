@@ -14,8 +14,9 @@ import { CategoryButton } from "../../components/CategoryButton";
 import { GLOBAL_STYLES } from "../../theme/globalStyles";
 import COLORS from "../../theme/colors";
 import FONTS from "../../theme/fonts";
-
-const VeritasLogo = require("../../assets/set2_no_bg.png");
+import Header from "../../components/Header";
+import CategoryBar from "../../components/CategoryBar";
+import BottomNav from "../../components/BottomNav";
 
 const categories = [
   { label: "For You Page", route: "ForYou", isActive: true },
@@ -23,27 +24,6 @@ const categories = [
   { label: "Tech", route: "Tech", isActive: false },
   { label: "Arts", route: "Arts", isActive: false },
   { label: "Scrollable", route: "Scrollable", isActive: false },
-];
-
-const navigationItems = [
-  {
-    icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/648978f6b0e909dd6f933a5356e32b2aecaba47be9a8082153a35a6daad08dcb?placeholderIfAbsent=true",
-    label: "Home",
-    isActive: true,
-    route: "News",
-  },
-  {
-    icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/f12d22b2f14f09da32d8a825157ca26cbcac720777a45bbbfad3f9403a670a1c?placeholderIfAbsent=true",
-    label: "Messages",
-    isActive: false,
-    route: "Messages",
-  },
-  {
-    icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/21e0e1b10fbd9864cedd10e4f6c4c1fa2d8a5602524a7c577066b2def8dc4d46?placeholderIfAbsent=true",
-    label: "Profile",
-    isActive: false,
-    route: "Profile",
-  },
 ];
 
 const MainPage = ({ navigation }) => {
@@ -56,96 +36,72 @@ const MainPage = ({ navigation }) => {
 
   const fetchArticles = async () => {
     try {
+      setLoading(true); // ✅ Show loading indicator while fetching
       const data = await getArticles();
-      setArticles(data);
+  
+      if (!data || !Array.isArray(data)) {
+        console.error("❌ Error: Fetched data is not an array", data);
+        setArticles([]); // ✅ Prevent empty UI breaking
+      } else {
+        setArticles(data);
+      }
     } catch (error) {
-      console.error("Error fetching articles:", error);
+      console.error("❌ Error fetching articles:", error);
+      setArticles([]); // ✅ Prevent breaking the UI
     } finally {
       setLoading(false);
     }
   };
+  
 
   const renderArticle = (article, index) => {
-    const isImageOnSide = article.title === "Workers Demand Better Conditions"; // Example condition for side image
-
+    const isImageOnSide = index % 4 === 0; // ✅ Position side image dynamically
+  
     return (
-      <View key={index} style={styles.article}>
-        <Text
-          style={[
-            styles.articleTitle,
-            article.title === "Growing Support for Strikers" && styles.largeTitle,
-          ]}
-        >
+      <View key={article.id || index} style={styles.article}>
+        <Text style={[styles.articleTitle, index % 5 === 0 && styles.largeTitle]}>
           {article.title}
         </Text>
-        <View
-          style={[
-            styles.contentContainer,
-            isImageOnSide && styles.contentContainerRow,
-          ]}
-        >
-          {article.image && (
+        <View style={[styles.contentContainer, isImageOnSide && styles.contentContainerRow]}>
+          {article.image ? (
             <Image
-              source={article.image}
-              style={
-                isImageOnSide ? styles.articleImageSide : styles.articleImage
-              }
+              source={{ uri: article.image }} // ✅ Ensure images are loaded correctly
+              style={isImageOnSide ? styles.articleImageSide : styles.articleImage}
+              resizeMode="cover" // ✅ Prevents stretching issues
             />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.placeholderText}>No Image</Text>
+            </View>
           )}
           <View style={styles.horizontalLine} />
-          <Text style={styles.articleText}>{article.content}</Text>
+          <Text style={styles.articleText}>{article.summary || "No summary available"}</Text>
         </View>
       </View>
     );
   };
+  
+// ✅ Divide articles into 2 columns for even distribution
+const columns = [[], []];
+articles.forEach((article, index) => {
+  columns[index % 2].push(renderArticle(article, index));
+});
 
-  // Divide articles into 2 columns
-  const columns = [[], []];
-  articles.forEach((article, index) => {
-    columns[index % 2].push(renderArticle(article, index));
-  });
+return (
+  <View style={{ flex: 1 }}>
+    {loading ? (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading articles...</Text>
+      </View>
+    ) : (
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* Header */}
+        <Header />
+        <CategoryBar categories={categories} />
 
-  return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Line above the header */}
-        <View style={styles.headerLine} />
-
-        {/* Header with Logo and Title */}
-        <View style={styles.header}>
-          <Image source={VeritasLogo} style={styles.logo} />
-          <Text style={styles.title}>Veritas</Text> {/* Title next to logo */}
-          <Text style={styles.date}>December 20, 2024</Text> {/* Date under logo */}
-        </View>
-
-        {/* Line below the header */}
-        <View style={styles.headerLine} />
-
-        {/* Categories Bar */}
-        <View style={styles.categoryContainer}>
-          {categories.map((category, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.categoryButton,
-                category.isActive && styles.activeCategoryButton,
-              ]}
-              onPress={() => navigation.navigate(category.route)} // Navigate to the respective screen
-            >
-              <Text
-                style={[
-                  styles.categoryButtonText,
-                  category.isActive && styles.activeCategoryButtonText,
-                ]}
-              >
-                {category.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Content Section */}
-        <View style={styles.centerContainer}>
+       {/* Content Section */}
+       <View style={styles.centerContainer}>
           {columns.map((column, columnIndex) => (
             <View key={columnIndex} style={styles.column}>
               {column}
@@ -153,59 +109,38 @@ const MainPage = ({ navigation }) => {
           ))}
         </View>
 
-        {/* Navigation Bar */}
-        <View style={styles.navigationBar}>
-          {navigationItems.map((item, index) => (
-            <NavigationItem
-              key={index}
-              icon={item.icon}
-              label={item.label}
-              isActive={item.isActive}
-              onPress={() => navigation.navigate(item.route)}
-            />
-          ))}
-        </View>
+        {/* Bottom Navigation */}
+        <BottomNav />
       </ScrollView>
-    </View>
-  );
+    )}
+  </View>
+);
 };
 
 const styles = StyleSheet.create({
+  limitedNewsContainer: {
+    width: "90%",  // ✅ Limit height to 70% of viewport
+    overflow: "hidden",  // ✅ Prevent content overflow
+  },
+  centerContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    width: "70%",  // ✅ Limit height to 70% of viewport
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 0,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
   container: {
+    width: "100%",  // ✅ Limit height to 70% of viewport
     paddingTop: 50,
     alignItems: "center",
     padding: 3,
     backgroundColor: "#f4f4f4",
-  },
-  headerLine: {
-    height: 1,
-    backgroundColor: "#141413",
-    width: "100%",
-  },
-  header: {
-    flexDirection: "row",  // Align logo and title horizontally
-    alignItems: "center",  // Vertically center the logo and title
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  logo: {
-    width: 60,
-    height: 60,
-    resizeMode: "contain",
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: "OldStandard-Bold",
-    color: "#a91101",
-    marginLeft: 10,  // Space between logo and title
-  },
-  date: {
-    fontSize: 14,
-    fontFamily: "OldStandard",
-    color: "#888",
-    marginTop: 4,
-    marginLeft: 10,  // Space between title and date
   },
   centerContainer: {
     flexDirection: "row",
@@ -226,7 +161,7 @@ const styles = StyleSheet.create({
   },
   article: {
     backgroundColor: "#fff",
-    borderRadius: 6,
+    borderRadius: 3,
     padding: 8,
     marginBottom: 8,
     elevation: 4,
@@ -279,38 +214,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccc",
     marginVertical: 8,
   }, 
-  categoryContainer: {
-    flexDirection: "row",
-    marginTop: 8,
-    paddingHorizontal: 14,
-    marginBottom: 12,
+  imagePlaceholder: {
+    width: "100%",
+    height: 150,
+    backgroundColor: "#ddd",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 4,
   },
-  categoryButton: {
-    backgroundColor: "#f0f0f0",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    marginRight: 2,
-    marginLeft: 2,
-    marginBottom: 10,
-  },
-  activeCategoryButton: {
-    backgroundColor: COLORS.primary,
-  },
-  categoryButtonText: {
+  placeholderText: {
+    color: "#555",
     fontSize: 14,
-    color: "#333",
-  },
-  activeCategoryButtonText: {
-    color: COLORS.white,
-  },
-  navigationBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
   },
 });
 

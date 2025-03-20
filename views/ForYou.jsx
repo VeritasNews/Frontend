@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator, useWindowDimensions} from "react-native";
 import { getArticles } from "../utils/api";  // ✅ Import API helper
 import Header from "../components/Header";
 import CategoryBar from "../components/CategoryBar";
@@ -51,37 +51,48 @@ const SplitScreenArticles = ({ navigation }) => {
   
   const assignNewsSizes = (data) => {
     const totalArticles = data.length;
-    
-    const largeCount = Math.ceil(totalArticles * 0.2);  // 20% of articles are large
-    const mediumCount = Math.ceil(totalArticles * 0.3); // Next 30% are medium
-    const smallCount = totalArticles - (largeCount + mediumCount); // Remaining are small
-  
+
+    const xlCount = Math.ceil(totalArticles * 0.1);  // 10% Extra-large
+    const largeCount = Math.ceil(totalArticles * 0.15); // 15% Large
+    const mediumCount = Math.ceil(totalArticles * 0.25); // 25% Medium
+    const smallCount = Math.ceil(totalArticles * 0.30); // 30% Small
+    const xsCount = totalArticles - (xlCount + largeCount + mediumCount + smallCount); // Remaining Extra-small
+
     return data.map((article, index) => {
-      if (index < largeCount) {
-        return { ...article, size: "large" };
-      } else if (index < largeCount + mediumCount) {
-        return { ...article, size: "medium" };
-      } else {
-        return { ...article, size: "small" };
-      }
+        if (index < xlCount) {
+            return { ...article, size: "xl" };
+        } else if (index < xlCount + largeCount) {
+            return { ...article, size: "large" };
+        } else if (index < xlCount + largeCount + mediumCount) {
+            return { ...article, size: "medium" };
+        } else if (index < xlCount + largeCount + mediumCount + smallCount) {
+            return { ...article, size: "small" };
+        } else {
+            return { ...article, size: "xs" };
+        }
     });
-  };
-  
-  
-  // ✅ Apply sorting first, then assign sizes
-  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
-  
-  const getFontSize = (size) => {
+};
+
+// ✅ Apply sorting first, then assign sizes
+const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
+
+// ✅ Dynamic font sizes based on the new five-size system
+const getFontSize = (size) => {
     switch (size) {
-      case "large":
-        return { title: 20, summary: 14 };
-      case "medium":
-        return { title: 18, summary: 12.5 };
-      case "small":
-      default:
-        return { title: 16, summary: 12 };
+        case "xl":
+            return { title: 20, summary: 13 };
+        case "large":
+            return { title: 19, summary: 12.7 };
+        case "medium":
+            return { title: 18, summary: 12.3 };
+        case "small":
+            return { title: 16, summary: 12 };
+        case "xs":
+        default:
+            return { title: 14, summary: 10 };
     }
-  };
+};
+
   
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);

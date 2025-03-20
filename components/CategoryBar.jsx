@@ -1,8 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 
 const categories = [
-  { label: "For You Page", route: "ForYou", isActive: true },
+  {
+    label: "For You Page",
+    route: Platform.OS === "web" ? "MainPage" : "ForYou", // ✅ Dynamically set route
+    isActive: true,
+  },
   { label: "Friends", route: "Friends", isActive: false },
   { label: "Tech", route: "Tech", isActive: false },
   { label: "Arts", route: "Arts", isActive: false },
