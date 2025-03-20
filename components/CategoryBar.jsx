@@ -1,62 +1,63 @@
 import React from "react";
-import { ScrollView, TouchableOpacity, Text, View, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-const CategoryBar = ({ categories, navigation }) => {
+const categories = [
+  { label: "For You Page", route: "ForYou", isActive: true },
+  { label: "Friends", route: "Friends", isActive: false },
+  { label: "Tech", route: "Tech", isActive: false },
+  { label: "Arts", route: "Arts", isActive: false },
+  { label: "Scrollable", route: "Scrollable", isActive: false },
+];
+
+const CategoryBar = ({ navigation }) => {
   return (
     <View style={styles.categoryContainer}>
-      <ScrollView
-        horizontal
-        contentContainerStyle={styles.categoryScrollView} // Ensure row layout
-        showsHorizontalScrollIndicator={false} // Optional, to hide scroll bar
-      >
-        {categories.map((category, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.categoryButton, category.isActive && styles.activeCategoryButton]}
-            onPress={() => navigation.navigate(category.route)}
+      {categories.map((category, index) => (
+        <TouchableOpacity
+          key={index}
+          style={[
+            styles.categoryButton,
+            category.isActive && styles.activeCategoryButton,
+          ]}
+          onPress={() => navigation.navigate(category.route)}
+        >
+          <Text
+            style={[
+              styles.categoryButtonText,
+              category.isActive && styles.activeCategoryButtonText,
+            ]}
           >
-            <Text
-              style={[styles.categoryButtonText, category.isActive && styles.activeCategoryButtonText]}
-            >
-              {category.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+            {category.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   categoryContainer: {
-    marginTop: 16, // Add some space above the category bar
-    marginBottom: 16, // Add some space below the category bar
-    paddingHorizontal: 10, // Padding to prevent content from touching the edges
-  },
-  categoryScrollView: {
-    flexDirection: "row", // Align the items in a row
-    flexWrap: "nowrap", // Ensure items do not wrap to the next line
+    flexDirection: "row",
+    marginTop: 8,
+    paddingHorizontal: 14,
+    marginBottom: 12,
   },
   categoryButton: {
-    backgroundColor: "#f0f0f0", // Light background for the button
-    paddingVertical: 8, // Vertical padding for button
-    paddingHorizontal: 16, // Horizontal padding for button
-    borderRadius: 20, // Rounded corners
-    marginRight: 10, // Add space between the buttons
-    marginBottom: 8, // Add space below for mobile responsiveness
-    alignItems: "center", // Center the text within the button
-    justifyContent: "center", // Vertically center text
+    backgroundColor: "#f0f0f0",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    marginHorizontal: 4,
   },
   activeCategoryButton: {
-    backgroundColor: "#007BFF", // Active category button color (blue)
+    backgroundColor: "#a91101",
   },
   categoryButtonText: {
-    fontSize: 14, // Set the font size for category text
-    color: "#333", // Default text color (dark gray)
-    textAlign: "center", // Ensure the text is centered within the button
+    fontSize: 14,
+    color: "#333",
   },
   activeCategoryButtonText: {
-    color: "#fff", // White color for active category button text
+    color: "#fff",
   },
 });
 

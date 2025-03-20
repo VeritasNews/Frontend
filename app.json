@@ -4,6 +4,7 @@
     "slug": "VeritasFrontend",
     "version": "1.0.0",
     "assetBundlePatterns": ["assets/**/*"],
-    "plugins": ["expo-font"]
+    "plugins": ["expo-font"],
+    "newArchEnabled": true
   }
 }

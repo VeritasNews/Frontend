@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#ccc",
     marginVertical: 8,
-  },
+  }, 
   categoryContainer: {
     flexDirection: "row",
     marginTop: 8,
