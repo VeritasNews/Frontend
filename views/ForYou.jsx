@@ -11,7 +11,7 @@ const isPortrait = () => {
   return height >= width;
 };
 
-const SplitScreenArticles = ({ navigation }) => {
+const ForYou = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);  // ✅ Store fetched news
   const [loading, setLoading] = useState(true);  // ✅ Loading state
   const [portrait, setPortrait] = useState(isPortrait());
@@ -310,4 +310,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SplitScreenArticles;
+export default ForYou;
