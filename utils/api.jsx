@@ -21,7 +21,10 @@ export const getArticles = async () => {
  */
 export const getArticlesByCategory = async (category) => {
     try {
-        const response = await axios.get(`${BASE_URL}articles/`, { params: { category } });
+        const response = await axios.get(`${BASE_URL}get_articles/`, {
+            params: { category },
+        });
+
         console.log("API Response:", response.data); // ✅ Log API response
         return response.data;
     } catch (error) {
@@ -29,7 +32,6 @@ export const getArticlesByCategory = async (category) => {
         return [];
     }
 };
-
 /**
  * Login a user
  * @param {string} email - User's email
