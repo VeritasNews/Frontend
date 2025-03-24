@@ -101,7 +101,11 @@ const getFontSize = (size) => {
       <View style={[styles.newsCard, styles[item.size]]}>
         <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
         <View style={styles.horizontalLine} />
-        {item.summary && <Text style={{ fontSize: fontSize.summary }}>{item.summary}</Text>}
+        {item.summary && (
+          <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+            {item.summary}
+          </Text>
+        )}
         {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
       </View>
     );
@@ -284,6 +288,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
     elevation: 3,
+    fontFamily: "OldStandard-Bold",
     alignItems: "center",
   },
   newsTitle: {
@@ -308,6 +313,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginTop: 8,
   },
+  summaryText: {
+    color: "#555",
+    lineHeight: 18,
+    marginTop: 4,
+  },  
 });
 
 export default ForYou;
