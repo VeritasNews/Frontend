@@ -101,7 +101,11 @@ const getFontSize = (size) => {
             <View style={[styles.newsCard, styles[item.size]]}>
                 <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
                 <View style={styles.horizontalLine} />
-                {item.summary && <Text style={{ fontSize: fontSize.summary }}>{item.summary}</Text>}
+                {item.summary && (
+                        <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+                            {item.summary}
+                        </Text>
+                )}
                 {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
             </View>
         );
@@ -243,70 +247,76 @@ const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Co
 // ✅ Styles
 const styles = StyleSheet.create({
     container: {
-        flexGrow: 1,
-        backgroundColor: "#f4f4f4",
-        paddingHorizontal: 4,
-        paddingTop: 10,
+      flexGrow: 1,
+      backgroundColor: "#f4f4f4",
+      paddingHorizontal: 4,
+      paddingTop: 10,
     },
     loadingContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
     },
     categoryContainer: {
-        alignItems: "center",
-        marginVertical: 1,  // Adds spacing above and below
+      alignItems: "center",
+      marginVertical: 1,  // Adds spacing above and below
     },  
     section: {
-        marginBottom: 0,
+      marginBottom: 0,
     },
     rowContainer: {
-        flexDirection: "row",
-        justifyContent: "space-evenly",
+      flexDirection: "row",
+      justifyContent: "space-between",
     },
     column: {
-        flex: 1,
-        alignItems: "center",
+      flex: 1,
+      alignItems: "center",
     },
     row: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%",
-        flexWrap: "wrap",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+      flexWrap: "wrap",
     },
     newsItem: {
-        marginBottom: 5,
-        paddingHorizontal: 3,
+      marginBottom: 5,
+      paddingHorizontal: 3,
     },
     newsCard: {
-        backgroundColor: "#fff",
-        padding: 10,
-        borderRadius: 4,
-        elevation: 3,
-        alignItems: "center",
+      backgroundColor: "#fff",
+      padding: 10,
+      borderRadius: 4,
+      elevation: 3,
+      fontFamily: "OldStandard-Bold",
+      alignItems: "center",
     },
     newsTitle: {
-        fontWeight: "bold",
-        fontSize: 18,
-        marginBottom: 3,
-        textAlign: "center",
-        fontFamily: "OldStandard-Bold",
+      fontWeight: "bold",
+      fontSize: 18,
+      marginBottom: 3,
+      textAlign: "center",
+      fontFamily: "OldStandard-Bold",
     },
     horizontalLine: {
-        height: 0.5,
-        backgroundColor: "#ccc",
-        width: "100%",  // ✅ Matches the width of the news card
-        marginVertical: 8,
+      height: 0.5,
+      backgroundColor: "#ccc",
+      width: "100%",  // ✅ Matches the width of the news card
+      marginVertical: 8,
     },  
     imagePlaceholder: {
-        width: "100%",
-        height: 100,
-        backgroundColor: "#ddd",
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 4,
-        marginTop: 8,
+      width: "100%",
+      height: 100,
+      backgroundColor: "#ddd",
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: 4,
+      marginTop: 8,
     },
-});
+    summaryText: {
+      color: "#555",
+      lineHeight: 18,
+      marginTop: 4,
+    },  
+  });
 
 export default SiyasetNewsScreen;

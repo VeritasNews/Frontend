@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator, useWindowDimensions} from "react-native";
+import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator, useWindowDimensions, TouchableOpacity} from "react-native";
 import { getArticles } from "../utils/api";  // ✅ Import API helper
 import Header from "../components/Header";
 import CategoryBar from "../components/CategoryBar";
@@ -93,23 +93,37 @@ const getFontSize = (size) => {
     }
 };
 
-  
-  const renderNewsCard = (item) => {
-    const fontSize = getFontSize(item.size);
-    
-    return (
+const renderNewsCard = (item) => {
+  const fontSize = getFontSize(item.size);
+
+  return (
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("NewsDetail", {
+          articleId: item.id,  // 👈 Make sure `item.id` exists
+        })
+      }
+    >
       <View style={[styles.newsCard, styles[item.size]]}>
-        <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
+        <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+          {item.title}
+        </Text>
         <View style={styles.horizontalLine} />
         {item.summary && (
           <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
             {item.summary}
           </Text>
         )}
-        {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
+        {item.image && (
+          <View style={styles.imagePlaceholder}>
+            <Text>Image</Text>
+          </View>
+        )}
       </View>
-    );
-  };
+    </TouchableOpacity>
+  );
+};
+
   
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3); // ✅ Never exceed 3 columns

@@ -16,6 +16,8 @@ import Login  from './views/AuthScreens/Login';
 import Register from './views/AuthScreens/Register';
 import ChooseCategoryScreen from './views/CategoryScreens/ChooseCategoryScreen';
 
+import NewsDetailScreen from "./views/NewsDetailScreen";
+
 export default function App() {
   return (
     <NavigationContainer>
@@ -31,6 +33,7 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="ChooseCategoryScreen" component={ChooseCategoryScreen} />
         <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

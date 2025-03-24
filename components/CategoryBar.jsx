@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   categoryButton: {
-    backgroundColor: "#D3D3D3", // Light gray for better visibility
+    backgroundColor: "#D9D9D9", // Light gray for better visibility
     paddingVertical: 7, // Increase vertical padding
     paddingHorizontal: 10, // Increase horizontal padding
     borderRadius: 20, // Make it more rounded

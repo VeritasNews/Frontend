@@ -185,4 +185,14 @@ api.interceptors.response.use(
     }
 );
 
+export const getArticleById = async (id) => {
+    try {
+      const response = await axios.get(`${BASE_URL}articles/${id}/`);
+      return response.data; // ✅ Return the full article data
+    } catch (error) {
+      console.error(`Error fetching article with ID ${id}:`, error);
+      return null;
+    }
+  };
+
 export default api;
