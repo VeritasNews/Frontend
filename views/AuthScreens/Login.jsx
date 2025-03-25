@@ -15,7 +15,7 @@ const Login = ({ navigation }) => {
             await saveRefreshToken(response.refresh);
 
             // Navigate to the main app screen
-            navigation.navigate('Home');
+            navigation.navigate('ForYou');
         } catch (error) {
             Alert.alert('Login Failed', error.message);
         }

@@ -12,7 +12,7 @@ import {
   Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getArticleById } from "../utils/api"; // 🧠 You need to implement this if not done
+import { getArticleById, getAuthToken, likeArticle, unlikeArticle } from "../utils/api"; // 🧠 You need to implement this if not done
 import { COLORS } from '../theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -54,11 +54,30 @@ const NewsDetailScreen = ({ route, navigation }) => {
     });
   };  
 
-  const handleLike = () => {
-    setLiked(!liked);
-    // 🔜 Hook up to backend later
+  const handleLike = async () => {
+    const updatedLiked = !liked;
+    setLiked(updatedLiked);
+  
+    try {
+      const token = await getAuthToken(); // ✅ FIX: await it properly
+  
+      if (!token) {
+        console.warn("⚠️ No token found. User might not be logged in.");
+        return;
+      }
+  
+      if (updatedLiked) {
+        await likeArticle(article.articleId, token);
+      } else {
+        await unlikeArticle(article.articleId, token);
+      }
+    } catch (err) {
+      console.error("Like/unlike failed:", err);
+      setLiked(!updatedLiked); // rollback
+    }
   };
   
+
   const handleShare = async () => {
     try {
       await Share.share({
@@ -79,7 +98,6 @@ const NewsDetailScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.wrapper}>
-    <Pressable style={styles.container} onPress={() => navigation.goBack()}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -125,7 +143,6 @@ const NewsDetailScreen = ({ route, navigation }) => {
 
         </View>
       </ScrollView>
-  </Pressable>
       <View style={styles.floatingButtons}>
         <TouchableOpacity onPress={handleLike} style={styles.fab}>
           <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />

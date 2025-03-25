@@ -55,7 +55,7 @@ export const savePreferredCategories = async (categories) => {
     if (!token) throw new Error('No authentication token found.');
 
     const response = await axios.post(
-        `${BASE_URL}save-preferences/`, // Use BASE_URL instead of API_URL
+        `${BASE_URL}save_preferences/`, // Use BASE_URL instead of API_URL
         { categories },
         { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -194,5 +194,41 @@ export const getArticleById = async (id) => {
       return null;
     }
   };
+
+export const likeArticle = async (articleId, token) => {
+    const res = await axios.post(`${BASE_URL}articles/${articleId}/like/`, {}, {
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
+    });
+    return res.data;
+};
+
+export const unlikeArticle = async (articleId, token) => {
+    const res = await axios.delete(`${BASE_URL}articles/${articleId}/unlike/`, {
+        headers: {
+        Authorization: `Bearer ${token}`
+        }
+    });
+    return res.data;
+};
+
+export const getLikedArticles = async () => {
+    const token = await getAuthToken(); // 🔐 Ensure user is authenticated
+  
+    try {
+      const response = await axios.get(`${BASE_URL}users/me/liked_articles/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      return response.data; // ✅ This should be a list of liked articles
+    } catch (error) {
+      console.error("Error fetching liked articles:", error);
+      return [];
+    }
+  };
+  
 
 export default api;
