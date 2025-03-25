@@ -212,7 +212,9 @@ const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Co
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={[styles.container, { flexGrow: 1, paddingBottom: 80 }]}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.container, { flexGrow: 1, paddingBottom: 80 }]}
         showsVerticalScrollIndicator={true}>
         <Header />
         {/* Centered Category Bar */}
