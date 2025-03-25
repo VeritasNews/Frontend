@@ -8,9 +8,12 @@ import {
   TouchableOpacity,
   Platform,
   ActivityIndicator,
+  Share,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getArticleById } from "../utils/api"; // 🧠 You need to implement this if not done
+import { COLORS } from '../theme/colors';
 
 const NewsDetailScreen = ({ route, navigation }) => {
   const { articleId } = route.params;
@@ -54,7 +57,17 @@ const NewsDetailScreen = ({ route, navigation }) => {
     setLiked(!liked);
     // 🔜 Hook up to backend later
   };
-
+  
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `${article.title}\n\n${article.summary || ""}`,
+      });
+    } catch (error) {
+      console.error("Error sharing article:", error);
+    }
+  };
+  
   if (loading || !article) {
     return (
       <View style={styles.loadingContainer}>
@@ -64,34 +77,60 @@ const NewsDetailScreen = ({ route, navigation }) => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={28} color="#333" />
-      </TouchableOpacity>
-
-      {article.image ? (
-        <Image source={{ uri: article.image }} style={styles.image} resizeMode="cover" />
-      ) : (
-        <View style={[styles.image, styles.imagePlaceholder]}>
-          <Ionicons name="image" size={48} color="#aaa" />
+    <View style={styles.wrapper}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        scrollEnabled={true}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={28} color="#333" />
+        </TouchableOpacity>
+  
+        {article.image ? (
+          <Image source={{ uri: article.image }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <View style={[styles.image, styles.imagePlaceholder]}>
+            <Ionicons name="image" size={48} color="#aaa" />
+          </View>
+        )}
+  
+        <View style={styles.infoCard}>
+          <Text style={styles.title}>{article.title}</Text>
+          <Text style={styles.metaText}>
+            {article.createdAt
+              ? new Date(article.createdAt).toDateString()
+              : "Tarih Bilinmiyor"}
+          </Text>
         </View>
-      )}
-
-      <View style={styles.infoCard}>
-        <Text style={styles.title}>{article.title}</Text>
-        <Text style={styles.metaText}>
-          {new Date(article.createdAt).toDateString()}
-        </Text>
-        <Text style={styles.metaText}>Category: {article.category}</Text>
-        <Text style={styles.metaText}>Source: {article.source}</Text>
-      </View>
-
-      <Text style={styles.summary}>{renderWithBoldText(article.longerSummary)}</Text>
-      <TouchableOpacity style={styles.likeButton} onPress={handleLike}>
-        <Ionicons name={liked ? "heart" : "heart-outline"} size={28} color="white" />
-      </TouchableOpacity>
+  
+        <View style={styles.contentCard}>
+          <Text style={styles.summary}>
+            {renderWithBoldText(article.longerSummary)}
+          </Text>
+  
+          <View style={styles.metaBottom}>
+            <Text style={styles.metaBottomText}>
+              📂 Category: {article.category || "N/A"}
+            </Text>
+            <Text style={styles.metaBottomText}>
+              🌐 Source: {article.source || "N/A"}
+            </Text>
+          </View>
+        </View>
       </ScrollView>
+  
+      <View style={styles.floatingButtons}>
+        <TouchableOpacity onPress={handleLike} style={styles.fab}>
+          <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleShare} style={styles.fab}>
+          <Ionicons name="share-social-outline" size={22} color="white" />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
+  
 };
 
 const styles = StyleSheet.create({
@@ -111,7 +150,6 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   image: {
-    width: "100%",
     height: 220,
     backgroundColor: "#eee",
   },
@@ -119,25 +157,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  likeButton: {
-    position: "absolute",
-    right: 20,
-    top: 200,
-    backgroundColor: "#a91101",
-    borderRadius: 30,
-    padding: 12,
-    elevation: 5,
-    zIndex: 2,
-  },
   infoCard: {
-    backgroundColor: "#f8f8f8",
-    marginHorizontal: 16,
+    backgroundColor: "#f5f5f5",
+    marginHorizontal: 40,
     padding: 16,
     borderRadius: 10,
     marginTop: -40,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 3,
     zIndex: 1,
@@ -156,10 +184,58 @@ const styles = StyleSheet.create({
   summary: {
     fontSize: 15,
     color: "#333",
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingHorizontal: 0,
+    paddingTop: 10,
     lineHeight: 22,
   },
+  metaBottom: {
+    marginTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+  },
+  metaBottomText: {
+    fontSize: 13,
+    color: "#666",
+    marginTop: 4,
+  },  
+  contentCard: {
+    backgroundColor: "#ffffff",
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 5,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  floatingButtons: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    flexDirection: "column",
+    gap: 12,
+  },
+  fab: {
+    backgroundColor: "#a91101",
+    borderRadius: 30,
+    padding: 14,
+    elevation: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  scrollContent: {
+    paddingBottom: 30,
+    flexGrow: 1,
+    minHeight: "100%",
+    backgroundColor: "#fff",
+  },
+  
 });
 
 export default NewsDetailScreen;
