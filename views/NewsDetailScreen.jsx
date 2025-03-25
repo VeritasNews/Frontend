@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { getArticleById } from "../utils/api"; // 🧠 You need to implement this if not done
 import { COLORS } from '../theme/colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const NewsDetailScreen = ({ route, navigation }) => {
   const { articleId } = route.params;
@@ -78,6 +79,7 @@ const NewsDetailScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.wrapper}>
+    <Pressable style={styles.container} onPress={() => navigation.goBack()}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -109,17 +111,21 @@ const NewsDetailScreen = ({ route, navigation }) => {
             {renderWithBoldText(article.longerSummary)}
           </Text>
   
-          <View style={styles.metaBottom}>
-            <Text style={styles.metaBottomText}>
-              📂 Category: {article.category || "N/A"}
+          <View style={styles.metaBottomRow}>
+            <MaterialCommunityIcons name="folder-outline" size={18} color="#666" />
+            <Text style={styles.metaRowText}><Text style={styles.metaLabel}>Kategori:</Text> {article.category}</Text>
+            </View>
+            <View style={styles.metaBottomRow}>
+            <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#666" />
+            <Text style={styles.metaRowText}>
+                <Text style={styles.metaLabel}>Kaynak:</Text>{" "}
+                {article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")}
             </Text>
-            <Text style={styles.metaBottomText}>
-              🌐 Source: {article.source || "N/A"}
-            </Text>
-          </View>
+        </View>
+
         </View>
       </ScrollView>
-  
+  </Pressable>
       <View style={styles.floatingButtons}>
         <TouchableOpacity onPress={handleLike} style={styles.fab}>
           <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
@@ -188,16 +194,16 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     lineHeight: 22,
   },
-  metaBottom: {
-    marginTop: 20,
-    paddingHorizontal: 16,
-    paddingBottom: 30,
+  metaBottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 6,
   },
-  metaBottomText: {
+  metaRowText: {
     fontSize: 13,
     color: "#666",
-    marginTop: 4,
-  },  
+  },
   contentCard: {
     backgroundColor: "#ffffff",
     marginHorizontal: 16,
