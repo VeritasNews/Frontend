@@ -1,27 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import COLORS from '../theme/colors';
 import FONTS from '../theme/fonts';
 
-export const CategoryButton = ({ label, isActive }) => {
+export const CategoryButton = ({ label, isActive, onPress }) => {
   return (
-    <View
-      style={[
-        styles.categoryButton,
-        isActive ? styles.activeCategory : null,
-      ]}
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isActive }}
+      accessibilityHint={`Tap to view ${label} content`}
     >
-      <Text
-        accessible
-        accessibilityLabel={`Category: ${label}`}
+      <View
         style={[
-          styles.categoryText,
-          isActive ? styles.activeCategoryText : null,
+          styles.categoryButton,
+          isActive ? styles.activeCategory : null,
         ]}
       >
-        {label}
-      </Text>
-    </View>
+        <Text
+          accessible
+          accessibilityLabel={`Category: ${label}`}
+          style={[
+            styles.categoryText,
+            isActive ? styles.activeCategoryText : null,
+          ]}
+        >
+          {label}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -34,6 +42,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     paddingHorizontal: 16,
     paddingVertical: 8,
+    marginHorizontal: 4,
     gap: 8,
   },
   activeCategory: {

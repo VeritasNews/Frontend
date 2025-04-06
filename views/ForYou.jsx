@@ -15,7 +15,6 @@ const ForYou = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);  // ✅ Store fetched news
   const [loading, setLoading] = useState(true);  // ✅ Loading state
   const [portrait, setPortrait] = useState(isPortrait());
-  const [currentRoute, setCurrentRoute] = useState('ForYou');
 
   useEffect(() => {
     fetchNews();  // ✅ Fetch news when component mounts
@@ -23,18 +22,10 @@ const ForYou = ({ navigation }) => {
     const updateOrientation = () => setPortrait(isPortrait());
     const subscription = Dimensions.addEventListener("change", updateOrientation);
     
-    const unsubscribe = navigation.addListener('state', (e) => {
-      const route = navigation.getCurrentRoute();
-      if (route) {
-        setCurrentRoute(route.name);
-      }
-    });
-    
     return () => {
       subscription?.remove();
-      unsubscribe();
     };
-  }, [navigation]);
+  }, []);
 
   // ✅ Fetch news using API helper
   const fetchNews = async () => {
@@ -241,7 +232,6 @@ const ForYou = ({ navigation }) => {
         <View style={styles.categoryContainer}>
           <CategoryBar 
             navigation={navigation}
-            currentRoute={currentRoute}
           />
         </View>
         
