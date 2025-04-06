@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { CategoryButton } from "./CategoryButton";
-import { useRoute } from '@react-navigation/native';
 
 const categories = [
   { label: "For You", route: "ForYou"},
@@ -36,10 +35,10 @@ const categories = [
 ];
 
 const CategoryBar = ({ navigation }) => {
-  const route = useRoute();
-  const currentRouteName = route.name;
+  const [activeCategory, setActiveCategory] = useState("For You");
 
   const handleCategoryPress = (category) => {
+    setActiveCategory(category.label);
     navigation.navigate(category.route);
   };
 
@@ -48,26 +47,16 @@ const CategoryBar = ({ navigation }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer} // Remove minWidth constraint
+        contentContainerStyle={styles.scrollContainer}
       >
         {categories.map((category, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.categoryButton,
-              currentRouteName === category.route && styles.activeCategoryButton,
-            ]}
-            onPress={() => handleCategoryPress(category)}
-          >
-            <Text
-              style={[
-                styles.categoryButtonText,
-                currentRouteName === category.route && styles.activeCategoryButtonText,
-              ]}
-            >
-              {category.label}
-            </Text>
-          </TouchableOpacity>
+          <View key={index} style={styles.buttonContainer}>
+            <CategoryButton
+              label={category.label}
+              isActive={activeCategory === category.label}
+              onPress={() => handleCategoryPress(category)}
+            />
+          </View>
         ))}
       </ScrollView>
     </View>
@@ -76,11 +65,6 @@ const CategoryBar = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-  },
-  scrollContainer: {
-    flexDirection: "row",
-    paddingLeft: 5,
     width: "100%", // Ensure it spans the full width of the screen
   },
   scrollContainer: {
