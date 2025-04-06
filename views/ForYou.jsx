@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator, useWindowDimensions, TouchableOpacity} from "react-native";
-import { getArticles } from "../utils/api";  // ✅ Import API helper
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  useWindowDimensions,
+  TouchableOpacity,
+} from "react-native";
+import { getArticles } from "../utils/api"; // ✅ Import API helper
 import Header from "../components/Header";
 import CategoryBar from "../components/CategoryBar";
 import BottomNav from "../components/BottomNav";
@@ -12,16 +21,19 @@ const isPortrait = () => {
 };
 
 const ForYou = ({ navigation }) => {
-  const [newsData, setNewsData] = useState([]);  // ✅ Store fetched news
-  const [loading, setLoading] = useState(true);  // ✅ Loading state
+  const [newsData, setNewsData] = useState([]); // ✅ Store fetched news
+  const [loading, setLoading] = useState(true); // ✅ Loading state
   const [portrait, setPortrait] = useState(isPortrait());
 
   useEffect(() => {
-    fetchNews();  // ✅ Fetch news when component mounts
+    fetchNews(); // ✅ Fetch news when component mounts
 
     const updateOrientation = () => setPortrait(isPortrait());
-    const subscription = Dimensions.addEventListener("change", updateOrientation);
-    
+    const subscription = Dimensions.addEventListener(
+      "change",
+      updateOrientation
+    );
+
     return () => {
       subscription?.remove();
     };
@@ -37,42 +49,43 @@ const ForYou = ({ navigation }) => {
 
   const sortNewsByPriorityAndSize = (data) => {
     const priorityOrder = { high: 1, medium: 2, low: 3 };
-  
+
     return [...data].sort((a, b) => {
       // ✅ First, sort by priority (high -> medium -> low)
       if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       }
-  
+
       // ✅ Then, sort by size within each priority group (shorter summaries first)
       const summaryLengthA = a.summary ? a.summary.length : 0;
       const summaryLengthB = b.summary ? b.summary.length : 0;
-  
+
       return summaryLengthA - summaryLengthB; // Shorter summaries come first
     });
   };
-  
+
   const assignNewsSizes = (data) => {
     const totalArticles = data.length;
 
-    const xlCount = Math.ceil(totalArticles * 0.1);  // 10% Extra-large
+    const xlCount = Math.ceil(totalArticles * 0.1); // 10% Extra-large
     const largeCount = Math.ceil(totalArticles * 0.15); // 15% Large
     const mediumCount = Math.ceil(totalArticles * 0.25); // 25% Medium
-    const smallCount = Math.ceil(totalArticles * 0.30); // 30% Small
-    const xsCount = totalArticles - (xlCount + largeCount + mediumCount + smallCount); // Remaining Extra-small
+    const smallCount = Math.ceil(totalArticles * 0.3); // 30% Small
+    const xsCount =
+      totalArticles - (xlCount + largeCount + mediumCount + smallCount); // Remaining Extra-small
 
     return data.map((article, index) => {
-        if (index < xlCount) {
-            return { ...article, size: "xl" };
-        } else if (index < xlCount + largeCount) {
-            return { ...article, size: "large" };
-        } else if (index < xlCount + largeCount + mediumCount) {
-            return { ...article, size: "medium" };
-        } else if (index < xlCount + largeCount + mediumCount + smallCount) {
-            return { ...article, size: "small" };
-        } else {
-            return { ...article, size: "xs" };
-        }
+      if (index < xlCount) {
+        return { ...article, size: "xl" };
+      } else if (index < xlCount + largeCount) {
+        return { ...article, size: "large" };
+      } else if (index < xlCount + largeCount + mediumCount) {
+        return { ...article, size: "medium" };
+      } else if (index < xlCount + largeCount + mediumCount + smallCount) {
+        return { ...article, size: "small" };
+      } else {
+        return { ...article, size: "xs" };
+      }
     });
   };
 
@@ -81,19 +94,19 @@ const ForYou = ({ navigation }) => {
 
   // ✅ Dynamic font sizes based on the new five-size system
   const getFontSize = (size) => {
-      switch (size) {
-          case "xl":
-              return { title: 20, summary: 13 };
-          case "large":
-              return { title: 19, summary: 12.7 };
-          case "medium":
-              return { title: 18, summary: 12.3 };
-          case "small":
-              return { title: 16, summary: 12 };
-          case "xs":
-          default:
-              return { title: 14, summary: 10 };
-      }
+    switch (size) {
+      case "xl":
+        return { title: 20, summary: 13 };
+      case "large":
+        return { title: 19, summary: 12.7 };
+      case "medium":
+        return { title: 18, summary: 12.3 };
+      case "small":
+        return { title: 16, summary: 12 };
+      case "xs":
+      default:
+        return { title: 14, summary: 10 };
+    }
   };
 
   const renderNewsCard = (item) => {
@@ -103,7 +116,7 @@ const ForYou = ({ navigation }) => {
       <TouchableOpacity
         onPress={() =>
           navigation.navigate("NewsDetail", {
-            articleId: item.id,  // 👈 Make sure `item.id` exists
+            articleId: item.id, // 👈 Make sure `item.id` exists
           })
         }
       >
@@ -126,14 +139,14 @@ const ForYou = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
-    
+
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3); // ✅ Never exceed 3 columns
     const columns = Array.from({ length: maxColumns }, () => []);
-  
+
     data.forEach((item, index) => {
       const columnIndex = index % maxColumns;
-      
+
       // ✅ Prevent 4 in a row by checking column length
       if (columns[columnIndex].length < 3) {
         columns[columnIndex].push(item);
@@ -141,9 +154,9 @@ const ForYou = ({ navigation }) => {
         columns[(columnIndex + 1) % maxColumns].push(item);
       }
     });
-  
+
     return columns;
-  };  
+  };
 
   const createDynamicRows = (data, maxItemsPerRow = 3) => {
     const rows = [];
@@ -172,8 +185,14 @@ const ForYou = ({ navigation }) => {
 
   // ✅ Adjust section sizes dynamically based on available articles
   const totalArticles = sortedNewsData.length;
-  let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-  let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
+  let section1Count = Math.min(
+    Math.ceil(totalArticles * 0.3),
+    Math.floor(totalArticles / 3)
+  );
+  let section3Count = Math.min(
+    Math.ceil(totalArticles * 0.3),
+    Math.floor(totalArticles / 3)
+  );
   let section2Count = totalArticles - (section1Count + section3Count);
 
   // ✅ If there are not enough articles, reduce section sizes proportionally
@@ -184,15 +203,23 @@ const ForYou = ({ navigation }) => {
     section3Count = totalArticles - (section1Count + section2Count);
   }
 
-  const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
-  const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
-  const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
+  const columnData1 = createDynamicColumns(
+    sortedNewsData.slice(0, section1Count),
+    columnCount
+  );
+  const columnData3 = createDynamicColumns(
+    sortedNewsData.slice(section1Count + section2Count),
+    columnCount
+  );
+  const rowData = createDynamicRows(
+    sortedNewsData.slice(section1Count, section1Count + section2Count)
+  );
 
   // ✅ Render a row dynamically filling empty space
   const renderNewsRow = (row) => {
     const numItems = row.length;
     const itemWidth = 100 / numItems; // Base width
-    const lastItemWidth = 100 - (itemWidth * (numItems - 1)); // Fills remaining space
+    const lastItemWidth = 100 - itemWidth * (numItems - 1); // Fills remaining space
 
     return (
       <View key={Math.random()} style={styles.row}>
@@ -201,7 +228,9 @@ const ForYou = ({ navigation }) => {
             key={newsItem.id}
             style={[
               styles.newsItem,
-              { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` }
+              {
+                width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%`,
+              },
             ]}
           >
             {renderNewsCard(newsItem)}
@@ -224,17 +253,20 @@ const ForYou = ({ navigation }) => {
     <View style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={{
+          backgroundColor: "#f4f4f4",
+          paddingHorizontal: 4,
+          paddingTop: 10,
+          paddingBottom: 100,
+        }}
         showsVerticalScrollIndicator={true}
         scrollEnabled={true}
       >
         <Header />
         <View style={styles.categoryContainer}>
-          <CategoryBar 
-            navigation={navigation}
-          />
+          <CategoryBar navigation={navigation} />
         </View>
-        
+
         {/* First Section - Dynamic Column Layout */}
         <View style={styles.section}>
           <View style={styles.rowContainer}>
@@ -249,12 +281,12 @@ const ForYou = ({ navigation }) => {
             ))}
           </View>
         </View>
-  
+
         {/* Second Section - Dynamic Row Layout */}
         <View style={styles.section}>
           {rowData.map((row) => renderNewsRow(row))}
         </View>
-  
+
         {/* Third Section - Dynamic Column Layout */}
         <View style={styles.section}>
           <View style={styles.rowContainer}>
@@ -297,18 +329,18 @@ const styles = StyleSheet.create({
   },
   emptyStateContainer: {
     padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   categoryContainer: {
     alignItems: "center",
-    marginVertical: 1,  // Adds spacing above and below
-  },  
+    marginVertical: 1, // Adds spacing above and below
+  },
   section: {
     marginBottom: 0,
   },
@@ -348,9 +380,9 @@ const styles = StyleSheet.create({
   horizontalLine: {
     height: 0.5,
     backgroundColor: "#ccc",
-    width: "100%",  // ✅ Matches the width of the news card
+    width: "100%", // ✅ Matches the width of the news card
     marginVertical: 8,
-  },  
+  },
   imagePlaceholder: {
     width: "100%",
     height: 100,
@@ -367,23 +399,23 @@ const styles = StyleSheet.create({
   },
   // Size-specific styles
   xl: {
-    width: '100%',
+    width: "100%",
     marginBottom: 8,
   },
   large: {
-    width: '95%',
+    width: "95%",
     marginBottom: 8,
   },
   medium: {
-    width: '90%',
+    width: "90%",
     marginBottom: 6,
   },
   small: {
-    width: '85%',
+    width: "85%",
     marginBottom: 5,
   },
   xs: {
-    width: '80%',
+    width: "80%",
     marginBottom: 4,
   },
 });

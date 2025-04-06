@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { CategoryButton } from "./CategoryButton";
+import { useRoute } from '@react-navigation/native';
 
 const categories = [
   { label: "For You", route: "ForYou"},
@@ -35,10 +36,10 @@ const categories = [
 ];
 
 const CategoryBar = ({ navigation }) => {
-  const [activeCategory, setActiveCategory] = useState("For You");
+  const route = useRoute();
+  const currentRouteName = route.name;
 
   const handleCategoryPress = (category) => {
-    setActiveCategory(category.label);
     navigation.navigate(category.route);
   };
 
@@ -47,16 +48,26 @@ const CategoryBar = ({ navigation }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContainer} // Remove minWidth constraint
       >
         {categories.map((category, index) => (
-          <View key={index} style={styles.buttonContainer}>
-            <CategoryButton
-              label={category.label}
-              isActive={activeCategory === category.label}
-              onPress={() => handleCategoryPress(category)}
-            />
-          </View>
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.categoryButton,
+              currentRouteName === category.route && styles.activeCategoryButton,
+            ]}
+            onPress={() => handleCategoryPress(category)}
+          >
+            <Text
+              style={[
+                styles.categoryButtonText,
+                currentRouteName === category.route && styles.activeCategoryButtonText,
+              ]}
+            >
+              {category.label}
+            </Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
@@ -66,12 +77,11 @@ const CategoryBar = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 60,
   },
   scrollContainer: {
     flexDirection: "row",
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingLeft: 5,
+    paddingVertical: 7,
     alignItems: "center",
   },
   buttonContainer: {
