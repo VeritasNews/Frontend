@@ -65,18 +65,42 @@ const CategoryBar = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    height: 60,
+    width: "100%", // Ensure it spans the full width of the screen
   },
   scrollContainer: {
     flexDirection: "row",
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingLeft: 5, // Small padding to ensure left alignment
+    paddingVertical: 7,
     alignItems: "center",
   },
-  buttonContainer: {
-    marginRight: 8,
-  }
+  categoryButton: {
+    backgroundColor: "#D3D3D3", // Light gray for better visibility
+    paddingVertical: 7, // Increase vertical padding
+    paddingHorizontal: 10, // Increase horizontal padding
+    borderRadius: 20, // Make it more rounded
+    marginHorizontal: 2, // Increase spacing for clarity
+    borderWidth: 1, // Add border for better separation
+    borderColor: "#d4d4d4", // Light border for subtle distinction
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15, // Add slight shadow for 3D effect
+    shadowRadius: 3,
+    elevation: 3, // Shadow for Android
+  },
+  activeCategoryButton: {
+    backgroundColor: "#a91101", // Red background for active category
+    borderColor: "#8b0d01", // Darker red border for contrast
+    shadowOpacity: 0.3, // Increase shadow visibility
+    elevation: 5, // More noticeable shadow for Android
+  },
+  categoryButtonText: {
+    fontSize: 15, // Slightly larger text
+    color: "#333",
+    fontWeight: "600", // Make text bolder for better visibility
+  },
+  activeCategoryButtonText: {
+    color: "#fff", // White text for active category
+  },
 });
 
 export default CategoryBar;
