@@ -214,13 +214,15 @@ const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Co
     <View style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={[styles.container, { flexGrow: 1, paddingBottom: 80 }]}
-        showsVerticalScrollIndicator={true}>
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={true}
+        scrollEnabled={true}
+      >
         <Header />
-        {/* Centered Category Bar */}
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
         </View>
+        
         {/* First Section - Dynamic Column Layout */}
         <View style={styles.section}>
           <View style={styles.rowContainer}>
@@ -235,12 +237,12 @@ const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Co
             ))}
           </View>
         </View>
-
+  
         {/* Second Section - Dynamic Row Layout */}
         <View style={styles.section}>
           {rowData.map((row) => renderNewsRow(row))}
         </View>
-
+  
         {/* Third Section - Dynamic Column Layout */}
         <View style={styles.section}>
           <View style={styles.rowContainer}>
@@ -268,6 +270,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f4f4",
     paddingHorizontal: 4,
     paddingTop: 10,
+    paddingBottom: 100,
   },
   loadingContainer: {
     flex: 1,
