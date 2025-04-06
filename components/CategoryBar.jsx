@@ -35,14 +35,18 @@ const categories = [
 
 const screenWidth = Dimensions.get("window").width;
 
-const CategoryBar = ({ navigation }) => {
+const CategoryBar = ({ navigation, currentRoute }) => {
   const [activeCategory, setActiveCategory] = useState("For You");
+  useEffect(() => {
+    const matchingCategory = categories.find(cat => cat.route === currentRoute);
+    if (matchingCategory) {
+      setActiveCategory(matchingCategory.label);
+    }
+  }, [currentRoute]);
 
   const handleCategoryPress = (category) => {
-    if (activeCategory !== category.label) {
-      setActiveCategory(category.label);
-      navigation.navigate(category.route);
-    }
+    setActiveCategory(category.label);
+    navigation.navigate(category.route);
   };
 
   return (
@@ -50,7 +54,7 @@ const CategoryBar = ({ navigation }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContainer, { minWidth: screenWidth }]} // Ensure it starts from left
+        contentContainerStyle={[styles.scrollContainer, { minWidth: screenWidth }]}
       >
         {categories.map((category, index) => (
           <TouchableOpacity
@@ -60,6 +64,7 @@ const CategoryBar = ({ navigation }) => {
               activeCategory === category.label && styles.activeCategoryButton,
             ]}
             onPress={() => handleCategoryPress(category)}
+            activeOpacity={0.7}
           >
             <Text
               style={[

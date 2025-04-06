@@ -15,14 +15,26 @@ const ForYou = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);  // ✅ Store fetched news
   const [loading, setLoading] = useState(true);  // ✅ Loading state
   const [portrait, setPortrait] = useState(isPortrait());
+  const [currentRoute, setCurrentRoute] = useState('ForYou');
 
   useEffect(() => {
     fetchNews();  // ✅ Fetch news when component mounts
 
     const updateOrientation = () => setPortrait(isPortrait());
     const subscription = Dimensions.addEventListener("change", updateOrientation);
-    return () => subscription?.remove();
-  }, []);
+    
+    const unsubscribe = navigation.addListener('state', (e) => {
+      const route = navigation.getCurrentRoute();
+      if (route) {
+        setCurrentRoute(route.name);
+      }
+    });
+    
+    return () => {
+      subscription?.remove();
+      unsubscribe();
+    };
+  }, [navigation]);
 
   // ✅ Fetch news using API helper
   const fetchNews = async () => {
@@ -71,60 +83,59 @@ const ForYou = ({ navigation }) => {
             return { ...article, size: "xs" };
         }
     });
-};
+  };
 
-// ✅ Apply sorting first, then assign sizes
-const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
+  // ✅ Apply sorting first, then assign sizes
+  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
 
-// ✅ Dynamic font sizes based on the new five-size system
-const getFontSize = (size) => {
-    switch (size) {
-        case "xl":
-            return { title: 20, summary: 13 };
-        case "large":
-            return { title: 19, summary: 12.7 };
-        case "medium":
-            return { title: 18, summary: 12.3 };
-        case "small":
-            return { title: 16, summary: 12 };
-        case "xs":
-        default:
-            return { title: 14, summary: 10 };
-    }
-};
-
-const renderNewsCard = (item) => {
-  const fontSize = getFontSize(item.size);
-
-  return (
-    <TouchableOpacity
-      onPress={() =>
-        navigation.navigate("NewsDetail", {
-          articleId: item.id,  // 👈 Make sure `item.id` exists
-        })
+  // ✅ Dynamic font sizes based on the new five-size system
+  const getFontSize = (size) => {
+      switch (size) {
+          case "xl":
+              return { title: 20, summary: 13 };
+          case "large":
+              return { title: 19, summary: 12.7 };
+          case "medium":
+              return { title: 18, summary: 12.3 };
+          case "small":
+              return { title: 16, summary: 12 };
+          case "xs":
+          default:
+              return { title: 14, summary: 10 };
       }
-    >
-      <View style={[styles.newsCard, styles[item.size]]}>
-        <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
-          {item.title}
-        </Text>
-        <View style={styles.horizontalLine} />
-        {item.summary && (
-          <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
-            {item.summary}
-          </Text>
-        )}
-        {item.image && (
-          <View style={styles.imagePlaceholder}>
-            <Text>Image</Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-};
+  };
 
-  
+  const renderNewsCard = (item) => {
+    const fontSize = getFontSize(item.size);
+
+    return (
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("NewsDetail", {
+            articleId: item.id,  // 👈 Make sure `item.id` exists
+          })
+        }
+      >
+        <View style={[styles.newsCard, styles[item.size]]}>
+          <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+            {item.title}
+          </Text>
+          <View style={styles.horizontalLine} />
+          {item.summary && (
+            <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+              {item.summary}
+            </Text>
+          )}
+          {item.image && (
+            <View style={styles.imagePlaceholder}>
+              <Text>Image</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+    
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3); // ✅ Never exceed 3 columns
     const columns = Array.from({ length: maxColumns }, () => []);
@@ -143,49 +154,48 @@ const renderNewsCard = (item) => {
     return columns;
   };  
 
-const createDynamicRows = (data, maxItemsPerRow = 3) => {
-  const rows = [];
-  let currentRow = [];
+  const createDynamicRows = (data, maxItemsPerRow = 3) => {
+    const rows = [];
+    let currentRow = [];
 
-  data.forEach((item) => {
-    currentRow.push(item);
+    data.forEach((item) => {
+      currentRow.push(item);
 
-    // ✅ If row has reached max 3 items, push to rows array and reset
-    if (currentRow.length === maxItemsPerRow) {
+      // ✅ If row has reached max 3 items, push to rows array and reset
+      if (currentRow.length === maxItemsPerRow) {
+        rows.push(currentRow);
+        currentRow = [];
+      }
+    });
+
+    // ✅ Push any remaining items (if they are < 3)
+    if (currentRow.length > 0) {
       rows.push(currentRow);
-      currentRow = [];
     }
-  });
 
-  // ✅ Push any remaining items (if they are < 3)
-  if (currentRow.length > 0) {
-    rows.push(currentRow);
+    return rows;
+  };
+
+  // ✅ Define dynamic column count based on screen size
+  const columnCount = portrait ? 2 : 3;
+
+  // ✅ Adjust section sizes dynamically based on available articles
+  const totalArticles = sortedNewsData.length;
+  let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
+  let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
+  let section2Count = totalArticles - (section1Count + section3Count);
+
+  // ✅ If there are not enough articles, reduce section sizes proportionally
+  if (totalArticles < 6) {
+    const equalSize = Math.ceil(totalArticles / 3);
+    section1Count = equalSize;
+    section2Count = equalSize;
+    section3Count = totalArticles - (section1Count + section2Count);
   }
 
-  return rows;
-};
-
-// ✅ Define dynamic column count based on screen size
-const columnCount = portrait ? 2 : 3;
-
-// ✅ Adjust section sizes dynamically based on available articles
-const totalArticles = sortedNewsData.length;
-let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-let section2Count = totalArticles - (section1Count + section3Count);
-
-// ✅ If there are not enough articles, reduce section sizes proportionally
-if (totalArticles < 6) {
-  const equalSize = Math.ceil(totalArticles / 3);
-  section1Count = equalSize;
-  section2Count = equalSize;
-  section3Count = totalArticles - (section1Count + section2Count);
-}
-
-const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
-const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
-const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
-
+  const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
+  const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
+  const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
 
   // ✅ Render a row dynamically filling empty space
   const renderNewsRow = (row) => {
@@ -210,6 +220,15 @@ const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Co
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Loading articles...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
@@ -220,7 +239,10 @@ const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Co
       >
         <Header />
         <View style={styles.categoryContainer}>
-          <CategoryBar navigation={navigation} />
+          <CategoryBar 
+            navigation={navigation}
+            currentRoute={currentRoute}
+          />
         </View>
         
         {/* First Section - Dynamic Column Layout */}
@@ -257,6 +279,11 @@ const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Co
             ))}
           </View>
         </View>
+        {totalArticles === 0 && (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>No articles found</Text>
+          </View>
+        )}
       </ScrollView>
       <BottomNav navigation={navigation} />
     </View>
@@ -276,6 +303,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f4f4f4",
+  },
+  emptyStateContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
   categoryContainer: {
     alignItems: "center",
@@ -336,7 +374,28 @@ const styles = StyleSheet.create({
     color: "#555",
     lineHeight: 18,
     marginTop: 4,
-  },  
+  },
+  // Size-specific styles
+  xl: {
+    width: '100%',
+    marginBottom: 8,
+  },
+  large: {
+    width: '95%',
+    marginBottom: 8,
+  },
+  medium: {
+    width: '90%',
+    marginBottom: 6,
+  },
+  small: {
+    width: '85%',
+    marginBottom: 5,
+  },
+  xs: {
+    width: '80%',
+    marginBottom: 4,
+  },
 });
 
 export default ForYou;
