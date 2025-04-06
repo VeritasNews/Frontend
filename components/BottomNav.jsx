@@ -21,7 +21,7 @@ const navigationItems = [
   {
     icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/648978f6b0e909dd6f933a5356e32b2aecaba47be9a8082153a35a6daad08dcb",
     label: "Home",
-    route: "News",
+    route: "ForYou",
   },
   {
     icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/f12d22b2f14f09da32d8a825157ca26cbcac720777a45bbbfad3f9403a670a1c",

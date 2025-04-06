@@ -11,6 +11,7 @@ import {
 import { getLikedArticles } from "../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import BottomNav from "../components/BottomNav";
 
 const LikedArticlesScreen = () => {
   const [likedArticles, setLikedArticles] = useState([]);
@@ -71,6 +72,8 @@ const LikedArticlesScreen = () => {
         contentContainerStyle={{ padding: 10 }}
         ListEmptyComponent={<Text style={styles.emptyText}>Henüz beğendiğiniz bir haber yok.</Text>}
       />
+    <BottomNav />
+
     </View>
   );
 };
