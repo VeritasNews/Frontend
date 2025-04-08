@@ -66,7 +66,7 @@ const Login = ({ navigation }) => {
             </Text>
             
             <Text style={styles.taglineText}>
-              AI-Powered Truth, Delivered Daily
+                Where Facts Find Their Voice.
             </Text>
             
             <View style={styles.formContainer}>
@@ -164,7 +164,8 @@ const styles = StyleSheet.create({
   },
   createAccountButton: {
     width: '100%',
-    backgroundColor: '#B00020',
+    backgroundColor: "#a91101", // Red background for active category
+    borderColor: "#8b0d01", // Darker red border for contrast
     borderRadius: 6,
     paddingVertical: 14,
     marginBottom: 16,
@@ -177,14 +178,14 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     width: '100%',
-    borderColor: '#B00020',
+    borderColor: "#8b0d01", // Darker red border for contrast
     borderWidth: 1,
     borderRadius: 6,
     paddingVertical: 14,
     alignItems: 'center',
   },
   loginButtonText: {
-    color: '#B00020',
+    color: '#8b0d01',
     fontSize: 16,
     fontWeight: '600',
   },
