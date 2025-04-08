@@ -1,18 +1,17 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
-import { CategoryButton } from "./CategoryButton";
+import { View, Text, TouchableOpacity, StyleSheet, Platform, ScrollView, Dimensions } from "react-native";
 
 const categories = [
-  { label: "For You", route: "ForYou"},
+  { label: "For You", route: "ForYou"},// Platform.OS === "web" ? "MainPage" : "ForYou" },
   { label: "Arkadaşlar", route: "Friends" },
   { label: "Siyaset", route: "Siyaset" },
   { label: "Eğlence", route: "Entertainment" },
   { label: "Scrollable", route: "Scrollable" },
   { label: "Spor", route: "Spor" },
   { label: "Teknoloji", route: "Teknoloji"},
-  { label: "Sağlık", route: "Saglik" },
-  { label: "Çevre", route: "Cevre" },
-  { label: "Bilim", route: "Bilim" },
+  { label: "Sağlık", route: "Saglik",  },
+  { label: "Çevre", route: "Cevre"  },
+  { label: "Bilim", route: "Bilim"  },
   { label: "Eğitim", route: "Egitim" },
   { label: "Ekonomi", route: "Ekonomi" },
   { label: "Seyahat", route: "Seyahat" },
@@ -34,12 +33,16 @@ const categories = [
   { label: "Magazin", route: "Magazin" },
 ];
 
+const screenWidth = Dimensions.get("window").width;
+
 const CategoryBar = ({ navigation }) => {
   const [activeCategory, setActiveCategory] = useState("For You");
 
   const handleCategoryPress = (category) => {
-    setActiveCategory(category.label);
-    navigation.navigate(category.route);
+    if (activeCategory !== category.label) {
+      setActiveCategory(category.label);
+      navigation.navigate(category.route);
+    }
   };
 
   return (
@@ -47,16 +50,26 @@ const CategoryBar = ({ navigation }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={[styles.scrollContainer, { minWidth: screenWidth }]} // Ensure it starts from left
       >
         {categories.map((category, index) => (
-          <View key={index} style={styles.buttonContainer}>
-            <CategoryButton
-              label={category.label}
-              isActive={activeCategory === category.label}
-              onPress={() => handleCategoryPress(category)}
-            />
-          </View>
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.categoryButton,
+              activeCategory === category.label && styles.activeCategoryButton,
+            ]}
+            onPress={() => handleCategoryPress(category)}
+          >
+            <Text
+              style={[
+                styles.categoryButtonText,
+                activeCategory === category.label && styles.activeCategoryButtonText,
+              ]}
+            >
+              {category.label}
+            </Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
@@ -74,7 +87,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   categoryButton: {
-    backgroundColor: "#D3D3D3", // Light gray for better visibility
+    backgroundColor: "#D9D9D9", // Light gray for better visibility
     paddingVertical: 7, // Increase vertical padding
     paddingHorizontal: 10, // Increase horizontal padding
     borderRadius: 20, // Make it more rounded

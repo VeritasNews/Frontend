@@ -319,28 +319,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f4f4",
     paddingHorizontal: 4,
     paddingTop: 10,
-    paddingBottom: 100,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f4f4f4",
-  },
-  emptyStateContainer: {
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
   },
   categoryContainer: {
     alignItems: "center",
-    marginVertical: 1, // Adds spacing above and below
-  },
+    marginVertical: 1,  // Adds spacing above and below
+  },  
   section: {
     marginBottom: 0,
   },
@@ -380,9 +368,9 @@ const styles = StyleSheet.create({
   horizontalLine: {
     height: 0.5,
     backgroundColor: "#ccc",
-    width: "100%", // ✅ Matches the width of the news card
+    width: "100%",  // ✅ Matches the width of the news card
     marginVertical: 8,
-  },
+  },  
   imagePlaceholder: {
     width: "100%",
     height: 100,
@@ -396,28 +384,7 @@ const styles = StyleSheet.create({
     color: "#555",
     lineHeight: 18,
     marginTop: 4,
-  },
-  // Size-specific styles
-  xl: {
-    width: "100%",
-    marginBottom: 8,
-  },
-  large: {
-    width: "95%",
-    marginBottom: 8,
-  },
-  medium: {
-    width: "90%",
-    marginBottom: 6,
-  },
-  small: {
-    width: "85%",
-    marginBottom: 5,
-  },
-  xs: {
-    width: "80%",
-    marginBottom: 4,
-  },
+  },  
 });
 
 export default ForYou;
