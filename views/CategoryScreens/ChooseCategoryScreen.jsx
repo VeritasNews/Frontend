@@ -72,6 +72,11 @@ const ChooseCategoryScreen = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      {selectedTopics.length < 5 && (
+        <Text style={styles.warningText}>
+          Please select at least 5 categories to continue.
+        </Text>
+      )}
       <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>
@@ -93,6 +98,13 @@ const styles = StyleSheet.create({
   activeTopicText: { color: COLORS.white, fontWeight: "bold" },
   continueButton: { backgroundColor: COLORS.primary, padding: 10, borderRadius: 8, marginTop: 20 },
   continueText: { color: COLORS.white, fontSize: 16, fontWeight: "bold" },
+  warningText: {
+    color: "red",
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: "center",
+  },
+  
 });
 
 export default ChooseCategoryScreen;

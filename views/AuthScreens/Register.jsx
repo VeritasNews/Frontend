@@ -5,28 +5,27 @@ import { registerUser, saveAuthToken } from "../../utils/api"; // Import API fun
 const Register = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [username, setUsername] = useState(""); // 👈 Add username field
   const [password, setPassword] = useState("");
 
   const handleRegister = async () => {
     try {
-        const response = await registerUser(email, name, password);
-        console.log("Registration successful:", response);
+      const response = await registerUser(email, name, username, password); // 👈 Pass username
+      console.log("Registration successful:", response);
 
-        // Save authentication token
-        await saveAuthToken(response.access);
+      await saveAuthToken(response.access);
 
-        // Navigate to ChooseCategoryScreen
-        navigation.navigate("ChooseCategoryScreen");
+      navigation.navigate("ChooseCategoryScreen");
     } catch (error) {
-        console.error("Registration error:", error.response?.data || error.message);
-        Alert.alert("Registration Failed", error.message);
+      console.error("Registration error:", error.response?.data || error.message);
+      Alert.alert("Registration Failed", error.message);
     }
-};
-
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -35,6 +34,7 @@ const Register = ({ navigation }) => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Name"
@@ -42,6 +42,15 @@ const Register = ({ navigation }) => {
         onChangeText={setName}
         autoCapitalize="words"
       />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+      />
+
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -49,6 +58,7 @@ const Register = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
+
       <Button title="Register" onPress={handleRegister} />
     </View>
   );

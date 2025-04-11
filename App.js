@@ -27,7 +27,7 @@ export default function App() {
         <Stack.Screen name="ForYou" component={ForYou} />
         {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
         <Stack.Screen name="Messages" component={MessagesScreen} />
-        <Stack.Screen name="Profile" component={LikedArticlesScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Siyaset" component={SiyasetNewsScreen} />
         <Stack.Screen name="Scrollable" component={ScrollableScreen} />
         <Stack.Screen name="Entertainment" component={EntertainmentNewsScreen} />

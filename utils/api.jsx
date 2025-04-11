@@ -35,20 +35,22 @@ export const getArticlesByCategory = async (category) => {
 /**
  * Login a user
  * @param {string} email - User's email
+ * @param {string} username - User's username
  * @param {string} password - User's password
  */
-export const loginUser = async (email, password) => {
-    try {
-        const response = await axios.post(`${BASE_URL}login/`, {
-            email,
-            password,
-        });
-        return response.data;  // Return the response data (e.g., tokens)
-    } catch (error) {
-        console.error("Error logging in:", error.response?.data || error.message);
-        throw error;  // Re-throw the error for handling in the component
-    }
+export const loginUser = async (identifier, password) => {
+  try {
+    const response = await axios.post(`${BASE_URL}login/`, {
+      identifier,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error logging in:", error.response?.data || error.message);
+    throw error;
+  }
 };
+
 
 export const savePreferredCategories = async (categories) => {
     const token = await getAuthToken(); // Retrieve stored token
@@ -82,20 +84,40 @@ export const savePreferredCategories = async (categories) => {
     }
   };
   
-  export const registerUser = async (email, name, password) => {
+  export const registerUser = async (email, name, username, password) => {
     try {
-        const response = await axios.post(`${BASE_URL}register/`, {
-            email,
-            name,
-            password,
-        });
-        return response.data;
+      const response = await axios.post(`${BASE_URL}register/`, {
+        email,
+        name,
+        userName: username,  // ✅ Key must be 'userName'
+        password,
+      });
+      return response.data;
     } catch (error) {
-        console.error("Registration API Error:", error.response?.data || error.message);
-        throw new Error(error.response?.data?.error || "Registration failed. Please try again.");
+      console.error("Registration API Error:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.error || "Registration failed. Please try again.");
     }
-};
+  };
+  
 
+export const getUserProfile = async () => {
+    const token = await getAuthToken();
+    if (!token) throw new Error("No token found");
+  
+    try {
+      const response = await axios.get(`${BASE_URL}users/me/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      throw error;
+    }
+  };
+  
 
 // ✅ Save refresh token
 export const saveRefreshToken = async (token) => {
