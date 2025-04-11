@@ -12,12 +12,15 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from "../components/BottomNav";
-import { getUserProfile, getAuthToken } from '../utils/api'; // Use the helper function
+import { getUserProfile, getAuthToken, fetchFriends } from '../utils/api';
+import fallbackAvatar from '../assets/default_profile.jpg';
 
 const ProfileScreen = () => {
   const [activeTab, setActiveTab] = useState('posts');
   const [userData, setUserData] = useState(null);
+  const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -28,9 +31,12 @@ const ProfileScreen = () => {
           navigation.navigate('Login');
           return;
         }
-
+  
         const data = await getUserProfile();
+        const friendList = await fetchFriends(); // ✅ Fetch actual friends
+        
         setUserData(data);
+        setFriends(friendList); // ✅ Store in state
       } catch (error) {
         console.error("Error fetching user profile:", error);
         Alert.alert("Error", "Could not load profile. Please log in again.");
@@ -39,23 +45,20 @@ const ProfileScreen = () => {
         setLoading(false);
       }
     };
-
+  
     fetchUser();
   }, []);
-
-  const mockPosts = [
-    { id: '1', views: '2.4M' },
-    { id: '2', views: '16.8M' },
-    { id: '3', views: '14.2M' },
-    { id: '4', views: '3.8M' },
-    { id: '5', views: '2.8M' },
-    { id: '6', views: '582.9K' },
-  ];
-
-  const renderItem = ({ item }) => (
+  
+  const renderPost = ({ item }) => (
     <View style={styles.postItem}>
       <View style={styles.placeholderPost} />
       <Text style={styles.viewText}>▶ {item.views}</Text>
+    </View>
+  );
+
+  const renderLikedArticle = ({ item }) => (
+    <View style={styles.likedItem}>
+      <Text style={styles.likedTitle}>❤️ {item.title}</Text>
     </View>
   );
 
@@ -70,23 +73,19 @@ const ProfileScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.profileHeader}>
-        <Image
-          source={{ uri: userData.avatar_url || 'https://via.placeholder.com/80' }}
-          style={styles.avatar}
-        />
+      <Image
+        source={userData.avatar_url ? { uri: userData.avatar_url } : fallbackAvatar}
+        style={styles.avatar}
+      />
         <Text style={styles.name}>{userData.name || 'Unknown User'}</Text>
-        <Text style={styles.username}>@{userData.username || 'unknown'}</Text>
+        <Text style={styles.username}>@{userData.userName || 'unknown'}</Text>
       </View>
 
       <View style={styles.statsContainer}>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>{userData.following ?? 0}</Text>
-          <Text style={styles.statLabel}>Following</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>{userData.followers ?? 0}</Text>
-          <Text style={styles.statLabel}>Followers</Text>
-        </View>
+      <TouchableOpacity onPress={() => navigation.navigate('FriendsList')}>
+        <Text style={styles.statNumber}>{friends.length}</Text>
+        <Text style={styles.statLabel}>Friends</Text>
+      </TouchableOpacity>
         <View style={styles.stat}>
           <Text style={styles.statNumber}>{userData.likes ?? 0}</Text>
           <Text style={styles.statLabel}>Likes</Text>
@@ -95,7 +94,12 @@ const ProfileScreen = () => {
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.button}><Text>Edit Profile</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.button}><Text>Add Friends</Text></TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("FriendRequests")}
+        >
+          <Text>Friend Requests</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.bio}>{userData.bio || "No bio provided."}</Text>
@@ -109,13 +113,25 @@ const ProfileScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={mockPosts}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        numColumns={3}
-        contentContainerStyle={styles.postGrid}
-      />
+      {activeTab === 'posts' ? (
+        <FlatList
+          data={userData.posts || []}
+          renderItem={renderPost}
+          keyExtractor={item => item.id.toString()}
+          numColumns={3}
+          contentContainerStyle={styles.postGrid}
+          ListEmptyComponent={<Text style={styles.emptyText}>No posts yet.</Text>}
+        />
+      ) : (
+        <FlatList
+          data={userData.liked_articles || []}
+          renderItem={renderLikedArticle}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.likedList}
+          ListEmptyComponent={<Text style={styles.emptyText}>No liked articles yet.</Text>}
+        />
+      )}
+
       <BottomNav navigation={navigation} />
     </ScrollView>
   );
@@ -123,13 +139,9 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   profileHeader: { alignItems: 'center', marginTop: 20 },
-  avatar: { width: 80, height: 80, borderRadius: 40, marginBottom: 10 },
+  avatar: { width: 100, height: 100, borderRadius: 40, marginBottom: 7 },
   name: { fontSize: 20, fontWeight: 'bold' },
   username: { color: '#666' },
   statsContainer: {
@@ -194,6 +206,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#444',
     marginTop: 4,
+  },
+  likedList: {
+    paddingHorizontal: 16,
+    paddingBottom: 50,
+  },
+  likedItem: {
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+    marginVertical: 6,
+    borderRadius: 8,
+    borderColor: '#ddd',
+    borderWidth: 1,
+  },
+  likedTitle: {
+    fontSize: 14,
+    color: '#333',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#999',
+    fontStyle: 'italic',
   },
 });
 

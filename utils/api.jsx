@@ -32,6 +32,7 @@ export const getArticlesByCategory = async (category) => {
         return [];
     }
 };
+
 /**
  * Login a user
  * @param {string} email - User's email
@@ -252,5 +253,52 @@ export const getLikedArticles = async () => {
     }
   };
   
+// friend api calls
+export const sendFriendRequest = async (userId) => {
+  const token = await getAuthToken();
+  return axios.post(`${BASE_URL}friends/send/${userId}/`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export const acceptFriendRequest = async (userId) => {
+  const token = await getAuthToken();
+  return axios.post(`${BASE_URL}friends/accept/${userId}/`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export const rejectFriendRequest = async (userId) => {
+  const token = await getAuthToken();
+  return axios.post(`${BASE_URL}friends/reject/${userId}/`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export const fetchFriends = async () => {
+  const token = await getAuthToken();
+  const response = await axios.get(`${BASE_URL}friends/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const searchUsers = async (query) => {
+  const token = await getAuthToken();
+  const response = await axios.get(`${BASE_URL}users/search/`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { q: query }
+  });
+  return response.data;
+};
+
+// Add this in your utils/api.jsx
+export const fetchFriendRequests = async () => {
+  const token = await getAuthToken();
+  const response = await axios.get(`${BASE_URL}friends/requests/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
 
 export default api;
