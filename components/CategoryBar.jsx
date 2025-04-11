@@ -12,7 +12,7 @@ import { useRoute } from "@react-navigation/native"; // ✅ Added
 
 const categories = [
   { label: "For You", route: "ForYou" },
-  { label: "Arkadaşlar", route: "Friends" },
+  { label: "Arkadaşlar", route: "FriendsNews" },
   { label: "Siyaset", route: "Siyaset" },
   { label: "Eğlence", route: "Entertainment" },
   { label: "Scrollable", route: "Scrollable" },

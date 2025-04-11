@@ -23,6 +23,7 @@ import LikedArticlesScreen from "./views/LikedArticlesScreen";
 import UserProfileScreen from './views/FriendScreens/UserProfileScreen';
 import FriendRequestsScreen from './views/FriendScreens/FriendRequestsScreen';
 import FriendsListScreen from "./views/FriendScreens/FriendsListScreen";
+import FriendsNewsScreen from "./views/FriendScreens/FriendsNewsScreen";
 
 // category screens
 // import BilimNewsScreen from './views/CategoryScreens/BilimNewsScreen';
@@ -99,6 +100,7 @@ export default function App() {
         <Stack.Screen name="UserProfile" component={UserProfileScreen} />
         <Stack.Screen name="FriendRequests" component={FriendRequestsScreen} />
         <Stack.Screen name="FriendsList" component={FriendsListScreen} />
+        <Stack.Screen name="FriendsNews" component={FriendsNewsScreen} />
 
         {/* Add other screens here */}
       </Stack.Navigator>
