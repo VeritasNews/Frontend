@@ -10,7 +10,7 @@ import SiyasetNewsScreen from './views/CategoryScreens/SiyasetNewsScreen';
 import ScrollableScreen from './views/ScrollableScreen';
 import ForYou from './views/ForYou';
 import EntertainmentNewsScreen from './views/CategoryScreens/EntertainmentNewsScreen';
-
+import SucNewsScreen from "./views/CategoryScreens/SucNewsScreen";
 const Stack = createStackNavigator();
 import Login  from './views/AuthScreens/Login';
 import Register from './views/AuthScreens/Register';
@@ -36,6 +36,10 @@ export default function App() {
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
         <Stack.Screen name="LikedArticles" component={LikedArticlesScreen} />
+
+        <Stack.Screen name="Suc" component={SucNewsScreen} />
+
+        {/* Add other screens here */}
       </Stack.Navigator>
     </NavigationContainer>
   );
