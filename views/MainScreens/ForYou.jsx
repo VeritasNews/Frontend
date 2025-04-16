@@ -8,10 +8,10 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { getArticles } from "../utils/articleAPI";
-import Header from "../components/Header";
-import CategoryBar from "../components/CategoryBar";
-import BottomNav from "../components/BottomNav";
+import { getArticles } from "../../utils/articleAPI";
+import Header from "../../components/Header";
+import CategoryBar from "../../components/CategoryBar";
+import BottomNav from "../../components/BottomNav";
 
 const isPortrait = () => {
   const { width, height } = Dimensions.get("window");
@@ -235,7 +235,6 @@ const ForYou = ({ navigation }) => {
     </View>
   );
 };
-
 
 // ✅ Styles
 const styles = StyleSheet.create({

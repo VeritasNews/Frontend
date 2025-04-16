@@ -72,3 +72,16 @@ export const registerUser = async (email, name, username, password) => {
     throw new Error(error.response?.data?.error || "Registration failed. Please try again.");
   }
 };
+
+export const getUserProfile = async () => {
+  const token = await getAuthToken();
+  if (!token) throw new Error("No token found");
+
+  const response = await axios.get(`${BASE_URL}users/me/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};

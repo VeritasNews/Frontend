@@ -42,7 +42,7 @@ const FriendsNewsScreen = ({ navigation }) => {
 
   const renderNewsCard = (item) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate("NewsDetail", { articleId: item.id })}
+      onPress={() => navigation.navigate("FriendsArticleDetail", { articleId: item.id })}
     >
       <View style={styles.newsCard}>
         <Text style={styles.newsTitle}>{item.title}</Text>

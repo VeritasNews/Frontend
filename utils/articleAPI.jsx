@@ -71,3 +71,21 @@ export const getLikedArticles = async () => {
     return [];
   }
 };
+
+export const getArticlesForUser = async () => {
+  try {
+    const token = await getAuthToken(); // 🔐 get stored token
+    if (!token) throw new Error("No auth token");
+
+    const response = await axios.get(`${BASE_URL}articles/for_you/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching personalized articles:", error.response?.data || error.message);
+    return [];
+  }
+};

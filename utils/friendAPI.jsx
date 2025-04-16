@@ -39,3 +39,19 @@ export const fetchFriendRequests = async () => {
   });
   return response.data;
 };
+export const getFriendsLikedArticles = async () => {
+  const token = await getAuthToken();
+  const response = await axios.get(`${BASE_URL}articles/friends_liked/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+export const getFriendsWhoLikedArticle = async (articleId) => {
+  const token = await getAuthToken();
+  const response = await axios.get(`${BASE_URL}articles/${articleId}/friends_liked/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};

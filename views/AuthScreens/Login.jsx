@@ -32,7 +32,7 @@ const Login = ({ navigation }) => {
       await saveAuthToken(response.access);
       await saveRefreshToken(response.refresh);
   
-      navigation.navigate('ForYou'); // ✅ this should work if 'ForYou' screen is registered
+      navigation.navigate('ForYouPersonalized'); // ✅ this should work if 'ForYou' screen is registered
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     } finally {

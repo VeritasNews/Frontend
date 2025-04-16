@@ -8,7 +8,10 @@ import ProfileScreen from "./views/ProfileScreen";
 import MainPage from "./views/CategoryScreens/MainPage";
 import SiyasetNewsScreen from './views/CategoryScreens/SiyasetNewsScreen';
 import ScrollableScreen from './views/ScrollableScreen';
-import ForYou from './views/ForYou';
+
+//Main Screens
+import ForYou from './views/MainScreens/ForYou';
+import ForYouPersonalized from "./views/MainScreens/ForYouPersonalized";
 
 const Stack = createStackNavigator();
 import Login  from './views/AuthScreens/Login';
@@ -24,6 +27,7 @@ import UserProfileScreen from './views/FriendScreens/UserProfileScreen';
 import FriendRequestsScreen from './views/FriendScreens/FriendRequestsScreen';
 import FriendsListScreen from "./views/FriendScreens/FriendsListScreen";
 import FriendsNewsScreen from "./views/FriendScreens/FriendsNewsScreen";
+import FriendsArticleDetailScreen from "./views/FriendScreens/FriendsArticleDetailScreen";
 
 // category screens
 // import BilimNewsScreen from './views/CategoryScreens/BilimNewsScreen';
@@ -56,6 +60,7 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
       {/* <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}> */}
+        <Stack.Screen name="ForYouPersonalized" component={ForYouPersonalized} />
         <Stack.Screen name="ForYou" component={ForYou} />
         {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
         <Stack.Screen name="Messages" component={MessagesScreen} />
@@ -101,6 +106,7 @@ export default function App() {
         <Stack.Screen name="FriendRequests" component={FriendRequestsScreen} />
         <Stack.Screen name="FriendsList" component={FriendsListScreen} />
         <Stack.Screen name="FriendsNews" component={FriendsNewsScreen} />
+        <Stack.Screen name="FriendsArticleDetail" component={FriendsArticleDetailScreen} />
 
         {/* Add other screens here */}
       </Stack.Navigator>
