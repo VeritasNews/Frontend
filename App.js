@@ -54,8 +54,8 @@ import SucNewsScreen from "./views/CategoryScreens/SucNewsScreen";
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-      {/* <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}> */}
+      {/* <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}> */}
+      <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="ForYou" component={ForYou} />
         {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
         <Stack.Screen name="Messages" component={MessagesScreen} />
