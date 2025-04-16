@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, FlatList, TouchableOpacity,
   StyleSheet, ActivityIndicator
 } from 'react-native';
-import { searchUsers } from "../../utils/api";
+import { searchUsers } from "../../utils/userAPI"; // Assuming you have a function to search users
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from "../../components/BottomNav";
 

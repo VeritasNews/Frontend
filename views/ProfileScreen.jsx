@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from "../components/BottomNav";
-import { getUserProfile, getAuthToken, fetchFriends } from '../utils/api';
+import { getUserProfile } from '../utils/userAPI';
+import { getAuthToken } from '../utils/authAPI';
+import { fetchFriends } from '../utils/friendAPI';
 import fallbackAvatar from '../assets/default_profile.jpg';
 
 const ProfileScreen = () => {

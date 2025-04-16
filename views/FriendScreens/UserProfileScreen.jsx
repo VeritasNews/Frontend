@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from '../../components/BottomNav';
-import { sendFriendRequest } from '../../utils/api';
+import { sendFriendRequest } from '../../utils/friendAPI';
 import { Ionicons } from '@expo/vector-icons';
 
 const UserProfileScreen = ({ route }) => {

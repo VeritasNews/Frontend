@@ -13,7 +13,7 @@ import ForYou from './views/ForYou';
 const Stack = createStackNavigator();
 import Login  from './views/AuthScreens/Login';
 import Register from './views/AuthScreens/Register';
-import ChooseCategoryScreen from './views/CategoryScreens/ChooseCategoryScreen';
+import ChooseCategoryScreen from './views/UtilScreens/ChooseCategoryScreen';
 import SearchScreen from './views/UtilScreens/SearchScreens';
 
 import NewsDetailScreen from "./views/NewsDetailScreen";
@@ -54,8 +54,8 @@ import SucNewsScreen from "./views/CategoryScreens/SucNewsScreen";
 export default function App() {
   return (
     <NavigationContainer>
-      {/* <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}> */}
-      <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+      {/* <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}> */}
         <Stack.Screen name="ForYou" component={ForYou} />
         {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
         <Stack.Screen name="Messages" component={MessagesScreen} />

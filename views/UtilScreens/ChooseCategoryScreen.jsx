@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import COLORS from "../../theme/colors"; 
-import { savePreferredCategories, getAuthToken } from "../../utils/api";
+import { savePreferredCategories } from "../../utils/userAPI";
+import { getAuthToken } from "../../utils/authAPI"; // 🧠 You need to implement this if not done
 
 const categories = [
   "Siyaset", "Eğlence", "Spor", "Teknoloji", "Sağlık", "Çevre", "Bilim", "Eğitim",

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
-import { registerUser, saveAuthToken } from "../../utils/api"; // Import API functions
+import { registerUser, saveAuthToken } from "../../utils/authAPI"; // Import API functions
 
 const Register = ({ navigation }) => {
   const [email, setEmail] = useState("");

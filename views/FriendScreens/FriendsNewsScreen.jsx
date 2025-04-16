@@ -11,7 +11,7 @@ import {
 import Header from "../../components/Header";
 import BottomNav from "../../components/BottomNav";
 import CategoryBar from "../../components/CategoryBar";
-import { getFriendsLikedArticles } from "../../utils/api"; // ✅ new API call
+import { getFriendsLikedArticles } from "../../utils/friendAPI"; // ✅ new API call
 
 const FriendsNewsScreen = ({ navigation }) => {
   const [articles, setArticles] = useState([]);

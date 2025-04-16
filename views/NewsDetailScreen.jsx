@@ -13,7 +13,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from '@react-navigation/native';
-import { getArticleById, getAuthToken, likeArticle, unlikeArticle, getLikedArticles } from "../utils/api"; // 🧠 You need to implement this if not done
+import { getArticleById, likeArticle, unlikeArticle, getLikedArticles } from "../utils/articleAPI"; // 🧠 You need to implement this if not done
+import { getAuthToken } from "../utils/authAPI"; // 🧠 You need to implement this if not done
 import { COLORS } from '../theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 

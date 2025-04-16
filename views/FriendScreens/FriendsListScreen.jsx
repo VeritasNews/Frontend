@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { fetchFriends } from '../../utils/api';
+import { fetchFriends } from '../../utils/friendAPI';
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from '../../components/BottomNav';
 import { Ionicons } from '@expo/vector-icons';
