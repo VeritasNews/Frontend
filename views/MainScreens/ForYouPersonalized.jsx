@@ -7,8 +7,9 @@ import {
   Dimensions,
   ActivityIndicator,
   TouchableOpacity,
+  Image
 } from "react-native";
-import { getArticlesForUser } from "../../utils/articleAPI";
+import { getArticlesForUser, logInteraction } from "../../utils/articleAPI";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";
@@ -65,26 +66,45 @@ const ForYouPersonalized = ({ navigation }) => {
   };
   
   const sortNewsByPreferenceAndPriority = (articles, preferredCategories = []) => {
-    const priorityOrder = { high: 1, medium: 2, low: 3 };
+    const priorityGroups = {
+      high: [],
+      medium: [],
+      low: [],
+      other: [],
+    };
   
-    return [...articles].sort((a, b) => {
-      const aPref = preferredCategories.includes(a.category);
-      const bPref = preferredCategories.includes(b.category);
-  
-      // 1. Preferred category first
-      if (aPref !== bPref) return aPref ? -1 : 1;
-  
-      // 2. Priority next
-      const aPriority = priorityOrder[a.priority] || 4;
-      const bPriority = priorityOrder[b.priority] || 4;
-      if (aPriority !== bPriority) return aPriority - bPriority;
-  
-      // 3. Fallback: summary length
-      const aLen = a.summary?.length || 0;
-      const bLen = b.summary?.length || 0;
-      return aLen - bLen;
+    articles.forEach((article) => {
+      const priority = article.priority?.toLowerCase();
+      if (priority === "high") {
+        priorityGroups.high.push(article);
+      } else if (priority === "medium") {
+        priorityGroups.medium.push(article);
+      } else if (priority === "low") {
+        priorityGroups.low.push(article);
+      } else {
+        priorityGroups.other.push(article);
+      }
     });
+  
+    const sortGroupBySummaryLength = (group) =>
+      group.sort((a, b) => (a.summary?.length || 0) - (b.summary?.length || 0));
+  
+    const preferredFirst = (group) => {
+      return [...group].sort((a, b) => {
+        const aPref = preferredCategories.includes(a.category);
+        const bPref = preferredCategories.includes(b.category);
+        return aPref === bPref ? 0 : aPref ? -1 : 1;
+      });
+    };
+  
+    return [
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.high)),
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.medium)),
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.low)),
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.other)),
+    ];
   };
+  
   
 
   const assignNewsSizes = (data) => {
@@ -121,20 +141,30 @@ const ForYouPersonalized = ({ navigation }) => {
 
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
+    const imageSource = item.image
+      ? { uri: item.image }
+      : require("../../assets/protest.jpg");
+  
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: item.id })}>
+      <TouchableOpacity
+        onPress={async () => {
+          await logInteraction(item.id, "click");
+          navigation.navigate("NewsDetail", { articleId: item.id });
+        }}
+      >
         <View style={[styles.newsCard, styles[item.size]]}>
           <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
           <View style={styles.horizontalLine} />
           {item.summary && (
             <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
           )}
-          {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
+          <Image source={imageSource} style={styles.imagePlaceholder} resizeMode="cover" />
+
         </View>
       </TouchableOpacity>
     );
   };
-
+  
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3);
     const columns = Array.from({ length: maxColumns }, () => []);
@@ -284,7 +314,7 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     alignItems: "center",
-    marginVertical: 1,  // Adds spacing above and below
+    marginVertical: 0.2,  // Adds spacing above and below
   },  
   section: {
     marginBottom: 0,
@@ -304,23 +334,18 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   newsItem: {
-    marginBottom: 5,
-    paddingHorizontal: 3,
+    marginBottom: 0,
+    paddingHorizontal: 2,
   },
   newsCard: {
-    backgroundColor: "#fff",
-    padding: 10,
+    backgroundColor: "transparent",
+    padding: 5,
     borderRadius: 4,
     elevation: 3,
+    // borderColor: "#ccc",
+    // borderWidth: 0.5,
     fontFamily: "OldStandard-Bold",
     alignItems: "center",
-  },
-  newsTitle: {
-    fontWeight: "bold",
-    fontSize: 18,
-    marginBottom: 3,
-    textAlign: "center",
-    fontFamily: "OldStandard-Bold",
   },
   horizontalLine: {
     height: 0.5,
@@ -336,6 +361,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 4,
     marginTop: 8,
+  },
+  newsTitle: {
+    fontWeight: "bold",
+    fontSize: 18,
+    marginBottom: 3,
+    textAlign: "center",
+    fontFamily: "OldStandard-Bold",
   },
   summaryText: {
     color: "#555",

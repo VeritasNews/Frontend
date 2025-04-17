@@ -8,7 +8,7 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import { getAuthToken } from "../utils/api";
+import { getAuthToken } from "../utils/authAPI";
 import { useRoute } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
@@ -16,33 +16,6 @@ const isWeb = Platform.OS === "web";
 
 const ICON_SIZE = isWeb ? 24 : width > 768 ? 28 : 24;
 const TEXT_SIZE = isWeb ? 14 : width > 768 ? 13 : 11;
-
-const navigationItems = [
-  {
-    icon: "https://cdn-icons-png.flaticon.com/512/1946/1946488.png", // Home icon
-    label: "Home",
-    route: "ForYou",
-    protected: false,
-  },
-  {
-    icon: "https://cdn-icons-png.flaticon.com/512/5948/5948565.png", // Messages icon
-    label: "Messages",
-    route: "Messages",
-    protected: true,
-  },
-  {
-    icon: "https://cdn-icons-png.flaticon.com/512/1077/1077063.png", // Profile icon
-    label: "Profile",
-    route: "Profile",
-    protected: true,
-  },
-  {
-    icon: "https://cdn-icons-png.flaticon.com/512/54/54481.png", // Search icon (✅ fixed)
-    label: "Search",
-    route: "Search",
-    protected: false,
-  },
-];
 
 const BottomNav = ({ navigation }) => {
   const [authenticated, setAuthenticated] = useState(null);
@@ -55,6 +28,33 @@ const BottomNav = ({ navigation }) => {
     })();
   }, []);
 
+  const navigationItems = [
+    {
+      icon: "https://cdn-icons-png.flaticon.com/512/1946/1946488.png", // Home
+      label: "Home",
+      route: authenticated ? "ForYouPersonalized" : "ForYou",
+      protected: false,
+    },
+    {
+      icon: "https://cdn-icons-png.flaticon.com/512/5948/5948565.png", // Messages
+      label: "Messages",
+      route: "Messages",
+      protected: true,
+    },
+    {
+      icon: "https://cdn-icons-png.flaticon.com/512/1077/1077063.png", // Profile
+      label: "Profile",
+      route: "Profile",
+      protected: true,
+    },
+    {
+      icon: "https://cdn-icons-png.flaticon.com/512/54/54481.png", // Search
+      label: "Search",
+      route: "Search",
+      protected: false,
+    },
+  ];
+
   const handleNavigation = (routeName, isProtected) => {
     if (isProtected && !authenticated) {
       navigation.navigate("Login");
@@ -65,31 +65,29 @@ const BottomNav = ({ navigation }) => {
 
   return (
     <View style={[styles.navigationBar, isWeb && styles.webNav]}>
-      {navigationItems.map((item, index) => {
-        const isActive = route.name === item.route;
-        return (
-          <TouchableOpacity
-            key={index}
-            onPress={() => {
-              if (authenticated === null) return;
-              handleNavigation(item.route, item.protected);
-            }}
-            style={styles.navItem}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={{ uri: item.icon }}
-              style={[
-                styles.navIcon,
-                isActive && { tintColor: "#a91101" },
-              ]}
-            />
-            <Text style={[styles.navText, isActive && styles.activeText]}>
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+      {authenticated !== null &&
+        navigationItems.map((item, index) => {
+          const isActive = route.name === item.route;
+          return (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleNavigation(item.route, item.protected)}
+              style={styles.navItem}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={{ uri: item.icon }}
+                style={[
+                  styles.navIcon,
+                  isActive && { tintColor: "#a91101" },
+                ]}
+              />
+              <Text style={[styles.navText, isActive && styles.activeText]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
     </View>
   );
 };

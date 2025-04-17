@@ -89,3 +89,32 @@ export const getArticlesForUser = async () => {
     return [];
   }
 };
+
+export const logInteraction = async (articleId, action, time_spent = null) => {
+  try {
+    const token = await getAuthToken();
+
+    if (!token) {
+      console.warn("🚫 No token found. Skipping interaction logging.");
+      return;
+    }
+
+    const res = await axios.post(
+      `${BASE_URL}log-interaction/`,
+      {
+        articleId,
+        action,
+        time_spent,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to log interaction:", err.response?.data || err.message);
+  }
+};

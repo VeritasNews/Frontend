@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from '@react-navigation/native';
-import { getArticleById, likeArticle, unlikeArticle, getLikedArticles } from "../utils/articleAPI"; // 🧠 You need to implement this if not done
+import { getArticleById, likeArticle, unlikeArticle, getLikedArticles, logInteraction } from "../utils/articleAPI"; // 🧠 You need to implement this if not done
 import { getAuthToken } from "../utils/authAPI"; // 🧠 You need to implement this if not done
 import { COLORS } from '../theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -44,8 +44,11 @@ const NewsDetailScreen = ({ route, navigation }) => {
       const isLiked = likedList.some(
         (item) => item.articleId?.toString() === articleId?.toString()
       );
-
       setLiked(isLiked);
+      
+      // Log "view" interaction
+      logInteraction(articleId, 'view');
+      
     } catch (error) {
       console.error("Error fetching article or likes:", error);
     } finally {
@@ -93,9 +96,8 @@ const NewsDetailScreen = ({ route, navigation }) => {
 
   const handleShare = async () => {
     try {
-      await Share.share({
-        message: `${article.title}\n\n${article.summary || ""}`,
-      });
+      await Share.share({ message: `${article.title}\n\n${article.summary || ""}` });
+      logInteraction(article.articleId, 'share');
     } catch (error) {
       console.error("Error sharing article:", error);
     }
