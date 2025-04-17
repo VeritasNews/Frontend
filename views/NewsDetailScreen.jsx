@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,8 @@ import {
   Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getArticleById, getAuthToken, likeArticle, unlikeArticle } from "../utils/api"; // 🧠 You need to implement this if not done
+import { useFocusEffect } from '@react-navigation/native';
+import { getArticleById, getAuthToken, likeArticle, unlikeArticle, getLikedArticles } from "../utils/api"; // 🧠 You need to implement this if not done
 import { COLORS } from '../theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -23,22 +24,33 @@ const NewsDetailScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
 
-  useEffect(() => {
-    fetchArticle();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchArticle();
+    }, [articleId])
+  );
 
   const fetchArticle = async () => {
     setLoading(true);
     try {
-      const data = await getArticleById(articleId);
+      const [data, likedList] = await Promise.all([
+        getArticleById(articleId),
+        getLikedArticles(),
+      ]);
+
       setArticle(data);
+
+      const isLiked = likedList.some(
+        (item) => item.articleId?.toString() === articleId?.toString()
+      );
+
+      setLiked(isLiked);
     } catch (error) {
-      console.error("Error fetching article:", error);
+      console.error("Error fetching article or likes:", error);
     } finally {
       setLoading(false);
     }
   };
-
   const renderWithBoldText = (text) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g); // Split by **bold**
   
