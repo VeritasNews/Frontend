@@ -56,6 +56,34 @@ const KulturNewsScreen = ({ navigation }) => {
     });
   };
 
+  // ✅ Eğer veri boşsa "Yükleniyor..." göster
+  if (loading || !newsData || newsData.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Yükleniyor...</Text>
+      </View>
+    );
+  }
+
+  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
+  const columnCount = portrait ? 2 : 3;
+
+  const totalArticles = sortedNewsData.length;
+  let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
+  let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
+  let section2Count = totalArticles - (section1Count + section3Count);
+
+  if (totalArticles < 6) {
+    const equalSize = Math.ceil(totalArticles / 3);
+    section1Count = equalSize;
+    section2Count = equalSize;
+    section3Count = totalArticles - (section1Count + section2Count);
+  }
+
+  const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
+  const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
+  const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
+
   const getFontSize = (size) => {
     switch (size) {
       case "xl": return { title: 20, summary: 13 };
@@ -69,16 +97,33 @@ const KulturNewsScreen = ({ navigation }) => {
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
     return (
-      <View style={[styles.newsCard, styles[item.size]]}>
-        <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
-        <View style={styles.horizontalLine} />
-        {item.summary && (
-          <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
-        )}
-        {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
-      </View>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("NewsDetail", {
+            articleId: item.id,
+          })
+        }
+      >
+        <View style={[styles.newsCard, styles[item.size]]}>
+          <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+            {item.title}
+          </Text>
+          <View style={styles.horizontalLine} />
+          {item.summary && (
+            <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+              {item.summary}
+            </Text>
+          )}
+          {item.image && (
+            <View style={styles.imagePlaceholder}>
+              <Text>Image</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   };
+  
 
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3);
@@ -107,24 +152,6 @@ const KulturNewsScreen = ({ navigation }) => {
     if (currentRow.length > 0) rows.push(currentRow);
     return rows;
   };
-
-  const columnCount = portrait ? 2 : 3;
-  const totalArticles = sortedNewsData.length;
-  let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-  let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-  let section2Count = totalArticles - (section1Count + section3Count);
-
-  if (totalArticles < 6) {
-    const equalSize = Math.ceil(totalArticles / 3);
-    section1Count = equalSize;
-    section2Count = equalSize;
-    section3Count = totalArticles - (section1Count + section2Count);
-  }
-
-  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
-  const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
-  const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
-  const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
 
   const renderNewsRow = (row) => {
     const numItems = row.length;

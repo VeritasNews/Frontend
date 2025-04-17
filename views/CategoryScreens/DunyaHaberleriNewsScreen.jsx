@@ -72,18 +72,33 @@ const DunyaHaberleriNewsScreen = ({ navigation }) => {
     const renderNewsCard = (item) => {
         const fontSize = getFontSize(item.size);
         return (
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("NewsDetail", {
+                articleId: item.id,
+              })
+            }
+          >
             <View style={[styles.newsCard, styles[item.size]]}>
-                <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
-                <View style={styles.horizontalLine} />
-                {item.summary && (
-                    <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
-                        {item.summary}
-                    </Text>
-                )}
-                {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
+              <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+                {item.title}
+              </Text>
+              <View style={styles.horizontalLine} />
+              {item.summary && (
+                <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+                  {item.summary}
+                </Text>
+              )}
+              {item.image && (
+                <View style={styles.imagePlaceholder}>
+                  <Text>Image</Text>
+                </View>
+              )}
             </View>
+          </TouchableOpacity>
         );
-    };
+      };
+      
 
     const createDynamicColumns = (data, count) => {
         const cols = Array.from({ length: Math.min(count, 3) }, () => []);
