@@ -1,4 +1,5 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'http://localhost:8000/api/';  // Update the base URL
 
@@ -12,6 +13,25 @@ export const getArticles = async () => {
     } catch (error) {
         console.error("Error fetching articles:", error);
         return [];
+    }
+};
+
+/**
+ * Register a user via social authentication
+ * @param {Object} data - Social authentication data
+ * @param {string} data.provider - The social provider (google, facebook, apple, twitter)
+ * @param {string} data.token - The authentication token from the provider
+ * @param {string} [data.email] - User email
+ * @param {string} [data.name] - User name
+ * @returns {Promise<Object>} - Response from the server with tokens
+ */
+export const registerSocialUser = async (data) => {
+    try {
+        const response = await axios.post(`${BASE_URL}auth/social/`, data);
+        return response.data;
+    } catch (error) {
+        console.error('Social registration error:', error);
+        throw new Error(error.response?.data?.message || 'Failed to register with social account');
     }
 };
 
@@ -65,27 +85,25 @@ export const savePreferredCategories = async (categories) => {
     return response.data;
 };
 
-  import AsyncStorage from '@react-native-async-storage/async-storage';
-
-  export const saveAuthToken = async (token) => {
-      try {
-          await AsyncStorage.setItem("authToken", token);
-      } catch (error) {
-          console.error("Error saving auth token:", error);
-      }
-  };
-  
-  // ✅ Get authentication token
-  export const getAuthToken = async () => {
+export const saveAuthToken = async (token) => {
     try {
-      return await AsyncStorage.getItem("authToken");
+        await AsyncStorage.setItem("authToken", token);
     } catch (error) {
-      console.error("Error getting auth token:", error);
-      return null;
+        console.error("Error saving auth token:", error);
     }
-  };
+};
   
-  export const registerUser = async (email, name, username, password) => {
+// ✅ Get authentication token
+export const getAuthToken = async () => {
+    try {
+        return await AsyncStorage.getItem("authToken");
+    } catch (error) {
+        console.error("Error getting auth token:", error);
+        return null;
+    }
+};
+
+export const registerUser = async (email, name, username, password) => {
     try {
       const response = await axios.post(`${BASE_URL}register/`, {
         email,
@@ -98,8 +116,7 @@ export const savePreferredCategories = async (categories) => {
       console.error("Registration API Error:", error.response?.data || error.message);
       throw new Error(error.response?.data?.error || "Registration failed. Please try again.");
     }
-  };
-  
+};
 
 export const getUserProfile = async () => {
     const token = await getAuthToken();
@@ -117,8 +134,7 @@ export const getUserProfile = async () => {
       console.error("Error fetching profile:", error);
       throw error;
     }
-  };
-  
+};
 
 // ✅ Save refresh token
 export const saveRefreshToken = async (token) => {
@@ -210,19 +226,19 @@ api.interceptors.response.use(
 
 export const getArticleById = async (id) => {
     try {
-      const response = await axios.get(`${BASE_URL}articles/${id}/`);
-      return response.data; // ✅ Return the full article data
+        const response = await axios.get(`${BASE_URL}articles/${id}/`);
+        return response.data; // ✅ Return the full article data
     } catch (error) {
-      console.error(`Error fetching article with ID ${id}:`, error);
-      return null;
+        console.error(`Error fetching article with ID ${id}:`, error);
+        return null;
     }
-  };
+};
 
 export const likeArticle = async (articleId, token) => {
     const res = await axios.post(`${BASE_URL}articles/${articleId}/like/`, {}, {
-    headers: {
-        Authorization: `Bearer ${token}`
-    }
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
     });
     return res.data;
 };
@@ -230,7 +246,7 @@ export const likeArticle = async (articleId, token) => {
 export const unlikeArticle = async (articleId, token) => {
     const res = await axios.delete(`${BASE_URL}articles/${articleId}/unlike/`, {
         headers: {
-        Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`
         }
     });
     return res.data;
@@ -240,19 +256,19 @@ export const getLikedArticles = async () => {
     const token = await getAuthToken(); // 🔐 Ensure user is authenticated
   
     try {
-      const response = await axios.get(`${BASE_URL}users/me/liked_articles/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const response = await axios.get(`${BASE_URL}users/me/liked_articles/`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
   
-      return response.data; // ✅ This should be a list of liked articles
+        return response.data; // ✅ This should be a list of liked articles
     } catch (error) {
-      console.error("Error fetching liked articles:", error);
-      return [];
+        console.error("Error fetching liked articles:", error);
+        return [];
     }
-  };
-  
+};
+
 // friend api calls
 export const sendFriendRequest = async (userId) => {
   const token = await getAuthToken();
