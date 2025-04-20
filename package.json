@@ -13,6 +13,7 @@
     "@expo/metro-runtime": "~4.0.0",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/cli": "latest",
+    "@react-native-google-signin/google-signin": "^13.2.0",
     "@react-navigation/native": "^7.0.17",
     "@react-navigation/stack": "^7.0.18",
     "@unimodules/core": "^7.1.2",
