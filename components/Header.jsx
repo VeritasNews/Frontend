@@ -1,15 +1,21 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, SafeAreaView } from "react-native";
-
+import { useFonts, VT323_400Regular } from '@expo-google-fonts/vt323';
+import AppLoading from 'expo-app-loading'; // To show splash while loading font
 const VeritasLogo = require("../assets/set2_no_bg.png"); // Adjust path if needed
 
 const Header = () => {
+  const [fontsLoaded] = useFonts({
+    VT323_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Top Border Line */}
       <View style={styles.headerLine} />
-
-      {/* Header Content */}
       <View style={styles.header}>
         <Image source={VeritasLogo} style={styles.logo} />
         <View style={styles.textContainer}>
@@ -17,12 +23,11 @@ const Header = () => {
           <Text style={styles.date}>{new Date().toDateString()}</Text>
         </View>
       </View>
-
-      {/* Bottom Border Line */}
       <View style={styles.headerLine} />
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -51,10 +56,10 @@ const styles = StyleSheet.create({
     alignItems: "center", // Centers the title and date
   },
   title: {
-    fontSize: 27,
-    fontWeight: "bold",
+    fontSize: 40,
+    fontWeight: "400",
     color: "#a91101",
-    fontFamily: "OldStandard-Bold",
+    fontFamily: "VT323_400Regular"
   },
   date: {
     fontSize: 14,

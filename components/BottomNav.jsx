@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -8,46 +8,88 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
+import { getAuthToken } from "../utils/api";
+import { useRoute } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web"; // Detect Web
+const isWeb = Platform.OS === "web";
 
-// ✅ Modern Responsive Scaling for Web & Mobile
-const ICON_SIZE = isWeb ? 28 : width > 768 ? 32 : 24; 
-const TEXT_SIZE = isWeb ? 16 : width > 768 ? 14 : 12; 
-const PADDING = isWeb ? 18 : width > 768 ? 14 : 10; 
+const ICON_SIZE = isWeb ? 24 : width > 768 ? 28 : 24;
+const TEXT_SIZE = isWeb ? 14 : width > 768 ? 13 : 11;
 
 const navigationItems = [
   {
-    icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/648978f6b0e909dd6f933a5356e32b2aecaba47be9a8082153a35a6daad08dcb",
+    icon: "https://cdn-icons-png.flaticon.com/512/1946/1946488.png", // Home icon
     label: "Home",
     route: "ForYou",
+    protected: false,
   },
   {
-    icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/f12d22b2f14f09da32d8a825157ca26cbcac720777a45bbbfad3f9403a670a1c",
+    icon: "https://cdn-icons-png.flaticon.com/512/5948/5948565.png", // Messages icon
     label: "Messages",
     route: "Messages",
+    protected: true,
   },
   {
-    icon: "https://cdn.builder.io/api/v1/image/assets/TEMP/21e0e1b10fbd9864cedd10e4f6c4c1fa2d8a5602524a7c577066b2def8dc4d46",
+    icon: "https://cdn-icons-png.flaticon.com/512/1077/1077063.png", // Profile icon
     label: "Profile",
     route: "Profile",
+    protected: true,
+  },
+  {
+    icon: "https://cdn-icons-png.flaticon.com/512/54/54481.png", // Search icon (✅ fixed)
+    label: "Search",
+    route: "Search",
+    protected: false,
   },
 ];
 
 const BottomNav = ({ navigation }) => {
+  const [authenticated, setAuthenticated] = useState(null);
+  const route = useRoute();
+
+  useEffect(() => {
+    (async () => {
+      const token = await getAuthToken();
+      setAuthenticated(!!token);
+    })();
+  }, []);
+
+  const handleNavigation = (routeName, isProtected) => {
+    if (isProtected && !authenticated) {
+      navigation.navigate("Login");
+    } else {
+      navigation.navigate(routeName);
+    }
+  };
+
   return (
     <View style={[styles.navigationBar, isWeb && styles.webNav]}>
-      {navigationItems.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          onPress={() => navigation.navigate(item.route)}
-          style={styles.navItem}
-        >
-          <Image source={{ uri: item.icon }} style={styles.navIcon} />
-          <Text style={styles.navText}>{item.label}</Text>
-        </TouchableOpacity>
-      ))}
+      {navigationItems.map((item, index) => {
+        const isActive = route.name === item.route;
+        return (
+          <TouchableOpacity
+            key={index}
+            onPress={() => {
+              if (authenticated === null) return;
+              handleNavigation(item.route, item.protected);
+            }}
+            style={styles.navItem}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={{ uri: item.icon }}
+              style={[
+                styles.navIcon,
+                isActive && { tintColor: "#a91101" },
+              ]}
+            />
+            <Text style={[styles.navText, isActive && styles.activeText]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
@@ -55,54 +97,48 @@ const BottomNav = ({ navigation }) => {
 const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
     backgroundColor: "#fff",
-    paddingVertical: 0,
-    borderTopWidth: 0,
-    borderTopColor: "#ddd",
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
     width: "100%",
   },
-
-  // ✅ Modern Web Navbar Design
   webNav: {
     position: "fixed",
-    bottom: 5, 
+    bottom: 5,
     left: "50%",
-    transform: [{ translateX: -width * 0.25 }], // Center the navbar
+    transform: [{ translateX: -width * 0.25 }],
     width: "50%",
-    maxWidth: 600, // Prevents too wide navbar
-    backgroundColor: "rgba(255, 255, 255, 1)", // Semi-transparent background
-    borderRadius: 20,
-    paddingVertical: 7,
+    maxWidth: 600,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingVertical: 6,
     borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.1)",
+    borderColor: "#ddd",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-
   navItem: {
     alignItems: "center",
     flex: 1,
-    paddingHorizontal: 15,
-    transition: "all 0.3s ease-in-out", // ✅ Smooth hover effect
   },
   navIcon: {
     width: ICON_SIZE,
     height: ICON_SIZE,
     resizeMode: "contain",
+    tintColor: "#666",
   },
   navText: {
     fontSize: TEXT_SIZE,
-    color: "#333",
-    marginTop: 4,
+    color: "#666",
+    marginTop: 3,
   },
-
-  // ✅ Web Hover Effect
-  navItemHovered: {
-    transform: [{ scale: 1.05 }],
-    opacity: 0.9,
+  activeText: {
+    color: "#a91101",
+    fontWeight: "bold",
   },
 });
 
