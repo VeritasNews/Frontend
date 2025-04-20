@@ -15,30 +15,31 @@ import {
 import { loginUser, saveAuthToken, saveRefreshToken } from '../../utils/api';
 
 const Login = ({ navigation }) => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+    if (!identifier || !password) {
+      Alert.alert('Error', 'Please enter both email/username and password');
       return;
     }
-
+  
     try {
       setLoading(true);
-      const response = await loginUser(email, password);
-
+      const response = await loginUser(identifier, password); // ✅ correct one and only call
+  
       await saveAuthToken(response.access);
       await saveRefreshToken(response.refresh);
-
-      navigation.navigate('ForYou');
+  
+      navigation.navigate('ForYou'); // ✅ this should work if 'ForYou' screen is registered
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleCreateAccount = () => {
     navigation.navigate('Register');
@@ -70,14 +71,13 @@ const Login = ({ navigation }) => {
             </Text>
             
             <View style={styles.formContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+            <TextInput
+              style={styles.input}
+              placeholder="Email or Username"
+              value={identifier}
+              onChangeText={setIdentifier}
+              autoCapitalize="none"
+            />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -86,6 +86,14 @@ const Login = ({ navigation }) => {
                 secureTextEntry
               />
               
+              <TouchableOpacity 
+                style={styles.loginButton}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                <Text style={styles.loginButtonText}>Login</Text>
+              </TouchableOpacity>
+
               {/* Create Account Button */}
               <TouchableOpacity 
                 style={styles.createAccountButton}
@@ -96,12 +104,14 @@ const Login = ({ navigation }) => {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.loginButton}
-                onPress={handleLogin}
+                style={styles.guestButton}
+                onPress={() => navigation.navigate('ForYou')}
                 disabled={loading}
-              >
-                <Text style={styles.loginButtonText}>Login</Text>
-              </TouchableOpacity>
+                >
+                <Text style={styles.guestButtonText}>Continue without registering</Text>
+            </TouchableOpacity>
+
+
             </View>
           </View>
         </ScrollView>
@@ -133,8 +143,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: '100%',
-    height: '100%',
+    width: '150%',
+    height: '150%',
   },
   welcomeText: {
     fontSize: 28,
@@ -162,7 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     fontSize: 16,
   },
-  createAccountButton: {
+  loginButton: {
     width: '100%',
     backgroundColor: "#a91101", // Red background for active category
     borderColor: "#8b0d01", // Darker red border for contrast
@@ -171,12 +181,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignItems: 'center',
   },
-  createAccountButtonText: {
+  loginButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
-  loginButton: {
+  createAccountButton: {
     width: '100%',
     borderColor: "#8b0d01", // Darker red border for contrast
     borderWidth: 1,
@@ -184,11 +194,34 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
-  loginButtonText: {
+  createAccountButtonText: {
     color: '#8b0d01',
     fontSize: 16,
     fontWeight: '600',
   },
+  guestButton: {
+    width: '100%',
+    backgroundColor: '#D9D9D9',
+    borderRadius: 6,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 16,
+    borderColor: "#d4d4d4", // Light border for subtle distinction
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15, // Add slight shadow for 3D effect
+    shadowRadius: 3,
+  },
+  guestButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+    errorText: {
+        color: 'red',
+        marginTop: 8,
+        textAlign: 'center',
+    },  
 });
 
 export default Login;

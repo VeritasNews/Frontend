@@ -72,8 +72,7 @@ const LikedArticlesScreen = () => {
         contentContainerStyle={{ padding: 10 }}
         ListEmptyComponent={<Text style={styles.emptyText}>Henüz beğendiğiniz bir haber yok.</Text>}
       />
-    <BottomNav />
-
+      <BottomNav navigation={navigation} />
     </View>
   );
 };

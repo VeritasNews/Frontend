@@ -30,9 +30,9 @@ const auth0 = new Auth0({
 });
 
 const Register = ({ navigation }) => {
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ const Register = ({ navigation }) => {
 
     try {
       setLoading(true);
-      const response = await registerUser(email, name, password, username);
+      const response = await registerUser(email, name, username, password);
       console.log("Registration successful:", response);
       // Save authentication token
       await saveAuthToken(response.access);
