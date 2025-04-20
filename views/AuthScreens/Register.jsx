@@ -16,8 +16,16 @@ import {
 import { registerUser, saveAuthToken, registerSocialUser } from "../../utils/api"; 
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
-import { appleAuth } from '@invertase/react-native-apple-authentication';
 import Auth0 from 'react-native-auth0';
+
+let appleAuth;
+if (Platform.OS === 'ios') {
+  try {
+    appleAuth = require('@invertase/react-native-apple-authentication');
+  } catch (error) {
+    console.log('Apple Authentication not available');
+  }
+}
 
 const GOOGLE_WEB_CLIENT_ID = '13432528572-pjavjgun26jai1738s8i6d5c3nodt39i.apps.googleusercontent.com';
 
@@ -37,10 +45,9 @@ const Register = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Initialize Google Sign-In
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: GOOGLE_WEB_CLIENT_ID, // Your Google Web Client ID
+      webClientId: GOOGLE_WEB_CLIENT_ID,
       offlineAccess: true,
     });
   }, []);
@@ -134,8 +141,7 @@ const Register = ({ navigation }) => {
 
   // Apple Sign-In (iOS only)
   const handleAppleSignIn = async () => {
-    // Check if Apple Authentication is supported on this device
-    if (!appleAuth.isSupported) {
+    if (Platform.OS !== 'ios' || !appleAuth) {
       Alert.alert('Error', 'Apple Sign In is not supported on this device');
       return;
     }
@@ -153,7 +159,6 @@ const Register = ({ navigation }) => {
         throw new Error('Apple Sign In failed - no identity token returned');
       }
       
-      // Handle name (may be null if user has signed in before)
       const fullNameString = fullName ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim() : '';
       
       // Send Apple token to your backend
@@ -182,7 +187,6 @@ const Register = ({ navigation }) => {
         scope: 'openid profile email',
       });
       
-      // Send Auth0 token to your backend
       const response = await registerSocialUser({
         provider: 'twitter',
         token: credentials.idToken,
@@ -210,7 +214,6 @@ const Register = ({ navigation }) => {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.contentContainer}>
-            {/* Back button */}
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => navigation.goBack()}
@@ -219,7 +222,6 @@ const Register = ({ navigation }) => {
               <Text style={styles.backButtonText}>←</Text>
             </TouchableOpacity>
 
-            {/* Social Sign-up Options */}
             <TouchableOpacity 
               style={styles.socialButton}
               onPress={handleGoogleSignIn}
@@ -248,19 +250,22 @@ const Register = ({ navigation }) => {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.socialButton}
-              onPress={handleAppleSignIn}
-              disabled={loading}
-            >
-              <View style={styles.socialButtonContent}>
-                <Image 
-                  source={require('../../assets/apple-icon.png')}
-                  style={styles.socialIcon}
-                />
-                <Text style={styles.socialButtonText}>Sign up with Apple</Text>
-              </View>
-            </TouchableOpacity>
+            {/*Only in IOS */}
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity 
+                style={styles.socialButton}
+                onPress={handleAppleSignIn}
+                disabled={loading}
+              >
+                <View style={styles.socialButtonContent}>
+                  <Image 
+                    source={require('../../assets/apple-icon.png')}
+                    style={styles.socialIcon}
+                  />
+                  <Text style={styles.socialButtonText}>Sign up with Apple</Text>
+                </View>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity 
               style={styles.socialButton}
@@ -276,14 +281,12 @@ const Register = ({ navigation }) => {
               </View>
             </TouchableOpacity>
 
-            {/* Divider */}
             <View style={styles.dividerContainer}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>OR</Text>
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Registration Form */}
             <View style={styles.formContainer}>
               <Text style={styles.inputLabel}>Username (Optional)</Text>
               <TextInput
@@ -335,14 +338,12 @@ const Register = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
 
-              {/* Terms agreement text */}
               <Text style={styles.termsText}>
                 By creating your account, you agree to the{' '}
                 <Text style={styles.linkText} onPress={() => navigation.navigate('TermsOfService')}>Terms of Service</Text> and{' '}
                 <Text style={styles.linkText} onPress={() => navigation.navigate('PrivacyPolicy')}>Privacy Policy</Text>
               </Text>
 
-              {/* Create Account Button */}
               <TouchableOpacity 
                 style={[styles.createAccountButton, loading && styles.disabledButton]}
                 onPress={handleRegister}
