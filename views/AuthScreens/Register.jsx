@@ -18,15 +18,6 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import Auth0 from 'react-native-auth0';
 
-let appleAuth;
-if (Platform.OS === 'ios') {
-  try {
-    appleAuth = require('@invertase/react-native-apple-authentication');
-  } catch (error) {
-    console.log('Apple Authentication not available');
-  }
-}
-
 const GOOGLE_WEB_CLIENT_ID = '13432528572-pjavjgun26jai1738s8i6d5c3nodt39i.apps.googleusercontent.com';
 
 const AUTH0_DOMAIN = 'dev-dh2ecmgppfypyjdc.us.auth0.com';
@@ -139,44 +130,6 @@ const Register = ({ navigation }) => {
     }
   };
 
-  // Apple Sign-In (iOS only)
-  const handleAppleSignIn = async () => {
-    if (Platform.OS !== 'ios' || !appleAuth) {
-      Alert.alert('Error', 'Apple Sign In is not supported on this device');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      const appleAuthRequestResponse = await appleAuth.performRequest({
-        requestedOperation: appleAuth.Operation.LOGIN,
-        requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
-      });
-      
-      const { identityToken, fullName } = appleAuthRequestResponse;
-      
-      if (!identityToken) {
-        throw new Error('Apple Sign In failed - no identity token returned');
-      }
-      
-      const fullNameString = fullName ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim() : '';
-      
-      // Send Apple token to your backend
-      const response = await registerSocialUser({
-        provider: 'apple',
-        token: identityToken,
-        name: fullNameString || null,
-      });
-      
-      await saveAuthToken(response.access);
-      navigation.navigate("ChooseCategoryScreen");
-    } catch (error) {
-      console.error('Apple sign in error:', error);
-      Alert.alert('Apple Sign In Error', 'An error occurred with Apple Sign In.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Twitter/X Sign-In (using Auth0)
   const handleTwitterSignIn = async () => {
@@ -249,24 +202,6 @@ const Register = ({ navigation }) => {
                 <Text style={styles.socialButtonText}>Sign up with Facebook</Text>
               </View>
             </TouchableOpacity>
-
-            {/*Only in IOS */}
-            {Platform.OS === 'ios' && (
-              <TouchableOpacity 
-                style={styles.socialButton}
-                onPress={handleAppleSignIn}
-                disabled={loading}
-              >
-                <View style={styles.socialButtonContent}>
-                  <Image 
-                    source={require('../../assets/apple-icon.png')}
-                    style={styles.socialIcon}
-                  />
-                  <Text style={styles.socialButtonText}>Sign up with Apple</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-
             <TouchableOpacity 
               style={styles.socialButton}
               onPress={handleTwitterSignIn}
