@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions } from "react-native";
+import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { getArticlesByCategory } from "../../utils/api";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
@@ -12,7 +12,6 @@ const isPortrait = () => {
 
 const KulturNewsScreen = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
 
   useEffect(() => {
@@ -23,10 +22,9 @@ const KulturNewsScreen = ({ navigation }) => {
   }, []);
 
   const fetchKulturNews = async () => {
-    setLoading(true);
     const kulturNews = await getArticlesByCategory("Kültür");
+    console.log("📦 Kültür verisi:", kulturNews); // Debug
     setNewsData(kulturNews);
-    setLoading(false);
   };
 
   const sortNewsByPriorityAndSize = (data) => {
@@ -55,34 +53,6 @@ const KulturNewsScreen = ({ navigation }) => {
       return { ...article, size: "xs" };
     });
   };
-
-  // ✅ Eğer veri boşsa "Yükleniyor..." göster
-  if (loading || !newsData || newsData.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>Yükleniyor...</Text>
-      </View>
-    );
-  }
-
-  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
-  const columnCount = portrait ? 2 : 3;
-
-  const totalArticles = sortedNewsData.length;
-  let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-  let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-  let section2Count = totalArticles - (section1Count + section3Count);
-
-  if (totalArticles < 6) {
-    const equalSize = Math.ceil(totalArticles / 3);
-    section1Count = equalSize;
-    section2Count = equalSize;
-    section3Count = totalArticles - (section1Count + section2Count);
-  }
-
-  const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
-  const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
-  const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
 
   const getFontSize = (size) => {
     switch (size) {
@@ -123,7 +93,6 @@ const KulturNewsScreen = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
-  
 
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3);
@@ -152,6 +121,25 @@ const KulturNewsScreen = ({ navigation }) => {
     if (currentRow.length > 0) rows.push(currentRow);
     return rows;
   };
+
+  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
+  const columnCount = portrait ? 2 : 3;
+  const totalArticles = sortedNewsData.length;
+
+  let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
+  let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
+  let section2Count = totalArticles - (section1Count + section3Count);
+
+  if (totalArticles < 6) {
+    const equalSize = Math.ceil(totalArticles / 3);
+    section1Count = equalSize;
+    section2Count = equalSize;
+    section3Count = totalArticles - (section1Count + section2Count);
+  }
+
+  const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
+  const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
+  const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
 
   const renderNewsRow = (row) => {
     const numItems = row.length;
@@ -217,11 +205,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f4f4",
     paddingHorizontal: 4,
     paddingTop: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   categoryContainer: {
     alignItems: "center",

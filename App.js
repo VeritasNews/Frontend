@@ -26,7 +26,7 @@ import FriendsListScreen from "./views/FriendScreens/FriendsListScreen";
 import FriendsNewsScreen from "./views/FriendScreens/FriendsNewsScreen";
 
 // category screens
-// import BilimNewsScreen from './views/CategoryScreens/BilimNewsScreen';
+import BilimNewsScreen from './views/CategoryScreens/BilimNewsScreen';
 import CevreNewsScreen from './views/CategoryScreens/CevreNewsScreen';
 import DinNewsScreen from './views/CategoryScreens/DinNewsScreen';
 import DunyaHaberleriNewsScreen from './views/CategoryScreens/DunyaHaberleriNewsScreen';
@@ -39,7 +39,7 @@ import ModaNewsScreen from './views/CategoryScreens/ModaNewsScreen';
 import OtomotivNewsScreen from './views/CategoryScreens/OtomotivNewsScreen';
 import OyunNewsScreen from './views/CategoryScreens/OyunNewsScreen';
 import RuhSagligiNewsScreen from './views/CategoryScreens/RuhSagligiNewsScreen';
-// import SaglikNewsScreen from './views/CategoryScreens/SaglikNewsScreen';
+import SaglikNewsScreen from './views/CategoryScreens/SaglikNewsScreen';
 import SanatNewsScreen from './views/CategoryScreens/SanatNewsScreen';
 import SeyahatNewsScreen from './views/CategoryScreens/SeyahatNewsScreen';
 import SporNewsScreen from './views/CategoryScreens/SporNewsScreen';
@@ -50,6 +50,7 @@ import YasamTarziNewsScreen from './views/CategoryScreens/YasamTarziNewsScreen';
 import YemekNewsScreen from './views/CategoryScreens/YemekNewsScreen';
 import EntertainmentNewsScreen from './views/CategoryScreens/EntertainmentNewsScreen';
 import SucNewsScreen from "./views/CategoryScreens/SucNewsScreen";
+import IsDunyasiNewsScreen from './views/CategoryScreens/IsDunyasiNewsScreen';
 
 export default function App() {
   return (
@@ -68,25 +69,26 @@ export default function App() {
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
         <Stack.Screen name="LikedArticles" component={LikedArticlesScreen} />
-
+      
         <Stack.Screen name="Search" component={SearchScreen} />
 
         {/* category screens */}
         <Stack.Screen name="Suc" component={SucNewsScreen} />
-        {/* <Stack.Screen name="Bilim" component={BilimNewsScreen} /> */}
+        <Stack.Screen name="Bilim" component={BilimNewsScreen} /> 
         <Stack.Screen name="Cevre" component={CevreNewsScreen} />
         <Stack.Screen name="Din" component={DinNewsScreen} />
         <Stack.Screen name="DunyaHaberleri" component={DunyaHaberleriNewsScreen} />
         <Stack.Screen name="Egitim" component={EgitimNewsScreen} />
         <Stack.Screen name="Ekonomi" component={EkonomiNewsScreen} />
         <Stack.Screen name="Iliskiler" component={IliskilerNewsScreen} />
+        <Stack.Screen name="IsDunyasi" component={IsDunyasiNewsScreen} />
         <Stack.Screen name="Kultur" component={KulturNewsScreen} />
         <Stack.Screen name="Magazin" component={MagazinNewsScreen} />
         <Stack.Screen name="Moda" component={ModaNewsScreen} />
         <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} />
         <Stack.Screen name="Oyun" component={OyunNewsScreen} />
         <Stack.Screen name="RuhSagligi" component={RuhSagligiNewsScreen} />
-        {/* <Stack.Screen name="Saglik" component={SaglikNewsScreen} /> */}
+        <Stack.Screen name="Saglik" component={SaglikNewsScreen} /> 
         <Stack.Screen name="Sanat" component={SanatNewsScreen} />
         <Stack.Screen name="Seyahat" component={SeyahatNewsScreen} />
         <Stack.Screen name="Spor" component={SporNewsScreen} />
@@ -95,6 +97,8 @@ export default function App() {
         <Stack.Screen name="Uzay" component={UzayNewsScreen} />
         <Stack.Screen name="YasamTarzi" component={YasamTarziNewsScreen} />
         <Stack.Screen name="Yemek" component={YemekNewsScreen} />
+        
+
 
         {/* Friend Screens */}
         <Stack.Screen name="UserProfile" component={UserProfileScreen} />
