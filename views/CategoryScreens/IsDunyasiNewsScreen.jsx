@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions } from "react-native";
+import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { getArticlesByCategory } from "../../utils/api";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
@@ -10,22 +10,22 @@ const isPortrait = () => {
     return height >= width;
 };
 
-const SaglikNewsScreen = ({ navigation }) => {
+const IsDunyasiNewsScreen = ({ navigation }) => {
     const [newsData, setNewsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [portrait, setPortrait] = useState(isPortrait());
 
     useEffect(() => {
-        fetchSaglikNews();
+        fetchIsDunyasiNews();
         const updateOrientation = () => setPortrait(isPortrait());
         const subscription = Dimensions.addEventListener("change", updateOrientation);
         return () => subscription?.remove();
     }, []);
 
-    const fetchSaglikNews = async () => {
+    const fetchIsDunyasiNews = async () => {
         setLoading(true);
-        const saglikNews = await getArticlesByCategory("Sağlık");
-        setNewsData(saglikNews);
+        const data = await getArticlesByCategory("İş Dünyası");
+        setNewsData(data);
         setLoading(false);
     };
 
@@ -47,7 +47,6 @@ const SaglikNewsScreen = ({ navigation }) => {
         const largeCount = Math.ceil(totalArticles * 0.15);
         const mediumCount = Math.ceil(totalArticles * 0.25);
         const smallCount = Math.ceil(totalArticles * 0.30);
-
         return data.map((article, index) => {
             if (index < xlCount) return { ...article, size: "xl" };
             if (index < xlCount + largeCount) return { ...article, size: "large" };
@@ -65,7 +64,6 @@ const SaglikNewsScreen = ({ navigation }) => {
             case "large": return { title: 19, summary: 12.7 };
             case "medium": return { title: 18, summary: 12.3 };
             case "small": return { title: 16, summary: 12 };
-            case "xs":
             default: return { title: 14, summary: 10 };
         }
     };
@@ -73,33 +71,32 @@ const SaglikNewsScreen = ({ navigation }) => {
     const renderNewsCard = (item) => {
         const fontSize = getFontSize(item.size);
         return (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("NewsDetail", {
-                articleId: item.id,
-              })
-            }
-          >
-            <View style={[styles.newsCard, styles[item.size]]}>
-              <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
-                {item.title}
-              </Text>
-              <View style={styles.horizontalLine} />
-              {item.summary && (
-                <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
-                  {item.summary}
-                </Text>
-              )}
-              {item.image && (
-                <View style={styles.imagePlaceholder}>
-                  <Text>Image</Text>
+            <TouchableOpacity
+                onPress={() =>
+                    navigation.navigate("NewsDetail", {
+                        articleId: item.id,
+                    })
+                }
+            >
+                <View style={[styles.newsCard, styles[item.size]]}>
+                    <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+                        {item.title}
+                    </Text>
+                    <View style={styles.horizontalLine} />
+                    {item.summary && (
+                        <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+                            {item.summary}
+                        </Text>
+                    )}
+                    {item.image && (
+                        <View style={styles.imagePlaceholder}>
+                            <Text>Image</Text>
+                        </View>
+                    )}
                 </View>
-              )}
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
         );
-      };
-      
+    };
 
     const createDynamicColumns = (data, columnCount) => {
         const maxColumns = Math.min(columnCount, 3);
@@ -125,9 +122,7 @@ const SaglikNewsScreen = ({ navigation }) => {
                 currentRow = [];
             }
         });
-        if (currentRow.length > 0) {
-            rows.push(currentRow);
-        }
+        if (currentRow.length > 0) rows.push(currentRow);
         return rows;
     };
 
@@ -176,7 +171,6 @@ const SaglikNewsScreen = ({ navigation }) => {
                 <View style={styles.categoryContainer}>
                     <CategoryBar navigation={navigation} />
                 </View>
-
                 <View style={styles.section}>
                     <View style={styles.rowContainer}>
                         {columnData1.map((column, columnIndex) => (
@@ -190,11 +184,9 @@ const SaglikNewsScreen = ({ navigation }) => {
                         ))}
                     </View>
                 </View>
-
                 <View style={styles.section}>
                     {rowData.map((row) => renderNewsRow(row))}
                 </View>
-
                 <View style={styles.section}>
                     <View style={styles.rowContainer}>
                         {columnData3.map((column, columnIndex) => (
@@ -288,4 +280,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SaglikNewsScreen;
+export default IsDunyasiNewsScreen;

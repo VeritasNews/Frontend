@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions } from "react-native";
+import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { getArticlesByCategory } from "../../utils/api";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
@@ -12,7 +12,6 @@ const isPortrait = () => {
 
 const KulturNewsScreen = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
 
   useEffect(() => {
@@ -23,10 +22,9 @@ const KulturNewsScreen = ({ navigation }) => {
   }, []);
 
   const fetchKulturNews = async () => {
-    setLoading(true);
     const kulturNews = await getArticlesByCategory("Kültür");
+    console.log("📦 Kültür verisi:", kulturNews); // Debug
     setNewsData(kulturNews);
-    setLoading(false);
   };
 
   const sortNewsByPriorityAndSize = (data) => {
@@ -69,14 +67,30 @@ const KulturNewsScreen = ({ navigation }) => {
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
     return (
-      <View style={[styles.newsCard, styles[item.size]]}>
-        <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
-        <View style={styles.horizontalLine} />
-        {item.summary && (
-          <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
-        )}
-        {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
-      </View>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("NewsDetail", {
+            articleId: item.id,
+          })
+        }
+      >
+        <View style={[styles.newsCard, styles[item.size]]}>
+          <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+            {item.title}
+          </Text>
+          <View style={styles.horizontalLine} />
+          {item.summary && (
+            <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+              {item.summary}
+            </Text>
+          )}
+          {item.image && (
+            <View style={styles.imagePlaceholder}>
+              <Text>Image</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -108,8 +122,10 @@ const KulturNewsScreen = ({ navigation }) => {
     return rows;
   };
 
+  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
   const columnCount = portrait ? 2 : 3;
   const totalArticles = sortedNewsData.length;
+
   let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
   let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
   let section2Count = totalArticles - (section1Count + section3Count);
@@ -121,7 +137,6 @@ const KulturNewsScreen = ({ navigation }) => {
     section3Count = totalArticles - (section1Count + section2Count);
   }
 
-  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
   const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
   const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
   const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
@@ -190,11 +205,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f4f4",
     paddingHorizontal: 4,
     paddingTop: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   categoryContainer: {
     alignItems: "center",

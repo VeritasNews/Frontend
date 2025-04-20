@@ -85,18 +85,33 @@ const TarihNewsScreen = ({ navigation }) => {
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
     return (
-      <View style={[styles.newsCard, styles[item.size]]}>
-        <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
-        <View style={styles.horizontalLine} />
-        {item.summary && (
-          <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
-            {item.summary}
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("NewsDetail", {
+            articleId: item.id,
+          })
+        }
+      >
+        <View style={[styles.newsCard, styles[item.size]]}>
+          <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+            {item.title}
           </Text>
-        )}
-        {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
-      </View>
+          <View style={styles.horizontalLine} />
+          {item.summary && (
+            <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+              {item.summary}
+            </Text>
+          )}
+          {item.image && (
+            <View style={styles.imagePlaceholder}>
+              <Text>Image</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   };
+  
 
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3);
