@@ -1,4 +1,5 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuthToken } from './authAPI';
 
 const BASE_URL = 'http://localhost:8000/api/';
@@ -34,41 +35,100 @@ export const getArticleById = async (id) => {
 };
 
 export const likeArticle = async (articleId, token) => {
-  const res = await axios.post(`${BASE_URL}articles/${articleId}/like/`, {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return res.data;
+  try {
+    const res = await axios.post(`${BASE_URL}articles/${articleId}/like/`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    await updateLocalLikedArticles(articleId, true);
+    
+    return res.data;
+  } catch (error) {
+    console.error(`Error liking article with ID ${articleId}:`, error);
+    throw error;
+  }
 };
 
 export const unlikeArticle = async (articleId, token) => {
-  const res = await axios.delete(`${BASE_URL}articles/${articleId}/unlike/`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return res.data;
+  try {
+    const res = await axios.delete(`${BASE_URL}articles/${articleId}/unlike/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    await updateLocalLikedArticles(articleId, false);
+    
+    return res.data;
+  } catch (error) {
+    console.error(`Error unliking article with ID ${articleId}:`, error);
+    throw error; 
+  }
 };
 
 export const getFriendsLikedArticles = async () => {
-  const token = await getAuthToken();
-  const response = await axios.get(`${BASE_URL}articles/friends_liked/`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
+  try {
+    const token = await getAuthToken();
+    if (!token) return [];
+    
+    const response = await axios.get(`${BASE_URL}articles/friends_liked/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching friends' liked articles:", error);
+    return [];
+  }
 };
 
 export const getLikedArticles = async () => {
-  const token = await getAuthToken(); // 🔐 Ensure user is authenticated
-
   try {
+    const token = await getAuthToken(); // 🔐 Ensure user is authenticated
+    if (!token) return [];
+
     const response = await axios.get(`${BASE_URL}users/me/liked_articles/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
+    try {
+      await AsyncStorage.setItem('likedArticles', JSON.stringify(response.data));
+    } catch (storageError) {
+      console.warn("Failed to cache liked articles:", storageError);
+    }
+
     return response.data; // ✅ This should be a list of liked articles
   } catch (error) {
     console.error("Error fetching liked articles:", error);
-    return [];
+    
+    // Try to get from local cache if API call fails
+    try {
+      const cachedLikes = await AsyncStorage.getItem('likedArticles');
+      return cachedLikes ? JSON.parse(cachedLikes) : [];
+    } catch (storageError) {
+      console.error("Error retrieving from cache:", storageError);
+      return [];
+    }
+  }
+};
+
+const updateLocalLikedArticles = async (articleId, isLiked) => {
+  try {
+    const cachedLikes = await AsyncStorage.getItem('likedArticles');
+    let likedArticles = cachedLikes ? JSON.parse(cachedLikes) : [];
+    
+    if (isLiked) {
+      if (!likedArticles.some(item => item.articleId?.toString() === articleId?.toString())) {
+        likedArticles.push({ articleId: articleId.toString() });
+      }
+    } else {
+      likedArticles = likedArticles.filter(
+        item => item.articleId?.toString() !== articleId?.toString()
+      );
+    }
+    
+    await AsyncStorage.setItem('likedArticles', JSON.stringify(likedArticles));
+  } catch (error) {
+    console.warn("Error updating local liked articles cache:", error);
   }
 };
 

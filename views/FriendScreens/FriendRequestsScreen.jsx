@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import {
   fetchFriendRequests,
@@ -25,6 +26,7 @@ const FriendRequestsScreen = () => {
     try {
       setLoading(true);
       const data = await fetchFriendRequests();
+      console.log('Friend requests data:', data);
       setRequests(data);
     } catch (error) {
       console.error('Failed to load friend requests:', error);
@@ -60,26 +62,57 @@ const FriendRequestsScreen = () => {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.username}>@{item.userName}</Text>
-      <View style={styles.buttons}>
-        <TouchableOpacity onPress={() => handleAccept(item.userId)} style={styles.accept}>
-          <Text style={styles.buttonText}>Accept</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleReject(item.userId)} style={styles.reject}>
-          <Text style={styles.buttonText}>Reject</Text>
-        </TouchableOpacity>
+  const renderItem = ({ item }) => {
+    const getInitialAvatar = (name) => {
+      const initial = name && name.length > 0 ? name.charAt(0).toUpperCase() : '?';
+      return (
+        <View style={[styles.profileImage, styles.initialAvatar]}>
+          <Text style={styles.initialText}>{initial}</Text>
+        </View>
+      );
+    };
+
+    const defaultImage = require('../../assets/default-profile.png');
+    
+    const hasProfilePicture = item.profilePicture && typeof item.profilePicture === 'string';
+    
+    return (
+      <View style={styles.requestItem}>
+        {hasProfilePicture ? (
+          <Image 
+            source={{ uri: item.profilePicture }}
+            style={styles.profileImage}
+            defaultSource={defaultImage}
+            onError={(e) => {
+              console.error('Image loading error:', e.nativeEvent.error);
+            }}
+          />
+        ) : (
+          getInitialAvatar(item.name)
+        )}
+        <View style={styles.requestInfo}>
+          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.requestText}>Wants to be your Friend</Text>
+          <View style={styles.actions}>
+            <TouchableOpacity onPress={() => handleAccept(item.userId)} style={styles.actionButton}>
+              <Text style={styles.acceptText}>Accept</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleReject(item.userId)} style={styles.declineButton}>
+              <Text style={styles.declineText}>Decline</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <Text style={styles.timeText}>5 min ago</Text>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Friend Requests</Text>
+      <Text style={styles.title}>FRIEND REQUESTS</Text>
+      <View style={styles.divider} />
       {loading ? (
-        <ActivityIndicator size="large" color="#a91101" />
+        <ActivityIndicator size="large" color="#888" />
       ) : requests.length === 0 ? (
         <Text style={styles.empty}>No pending requests.</Text>
       ) : (
@@ -88,6 +121,7 @@ const FriendRequestsScreen = () => {
           keyExtractor={(item) => item.userId}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
         />
       )}
       <BottomNav navigation={navigation} />
@@ -96,39 +130,98 @@ const FriendRequestsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
-  empty: { textAlign: 'center', color: '#999', fontStyle: 'italic', marginTop: 20 },
-  card: {
-    backgroundColor: '#f9f9f9',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
+  container: { 
+    flex: 1, 
+    backgroundColor: '#f5f5f5', 
+    padding: 16 
   },
-  name: { fontSize: 16, fontWeight: '600' },
-  username: { color: '#666', marginBottom: 8 },
-  buttons: {
+  title: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    color: '#333',
+    marginTop: 10,
+    marginBottom: 8
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginBottom: 16
+  },
+  empty: { 
+    textAlign: 'center', 
+    color: '#999', 
+    fontStyle: 'italic', 
+    marginTop: 20 
+  },
+  requestItem: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
+    marginBottom: 25,
+    position: 'relative',
+    alignItems: 'flex-start'
   },
-  accept: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+  profileImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 15
   },
-  reject: {
-    backgroundColor: '#E53935',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+  initialAvatar: {
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  buttonText: {
-    color: 'white',
+  initialText: {
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#666'
+  },
+  requestInfo: {
+    flex: 1,
+    justifyContent: 'center'
+  },
+  name: { 
+    fontSize: 16, 
+    fontWeight: '600',
+    marginBottom: 4
+  },
+  requestText: { 
+    color: '#888', 
+    fontSize: 14,
+    marginBottom: 8
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  actionButton: {
+    marginRight: 15,
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderColor: "rgba(169, 17, 1, 1)"
+  },
+  acceptText: {
+    color: "rgba(169, 17, 1, 1)",
+    fontWeight: '500'
+  },
+  declineButton: {
+    borderWidth: 1,
+    borderColor: "rgba(240, 241, 250, 1)",
+    borderRadius: 4,
+    backgroundColor: "rgba(169, 17, 1, 1)",
+    paddingVertical: 6,
+    paddingHorizontal: 16
+  },
+  declineText: {
+    color: "rgba(240, 241, 250, 1)",
+  },
+  timeText: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    fontSize: 12,
+    color: '#888'
   },
   list: {
     paddingBottom: 30,

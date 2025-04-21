@@ -10,12 +10,13 @@ import {
   ActivityIndicator,
   Share,
   Pressable,
+  ToastAndroid,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from '@react-navigation/native';
-import { getArticleById, likeArticle, unlikeArticle, getLikedArticles, logInteraction } from "../utils/articleAPI"; // 🧠 You need to implement this if not done
-import { getAuthToken } from "../utils/authAPI"; // 🧠 You need to implement this if not done
-import { COLORS } from '../theme/colors';
+import { getArticleById, likeArticle, unlikeArticle, getLikedArticles, logInteraction } from "../utils/articleAPI";
+import { getAuthToken } from "../utils/authAPI";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const NewsDetailScreen = ({ route, navigation }) => {
@@ -24,10 +25,22 @@ const NewsDetailScreen = ({ route, navigation }) => {
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  
+  useEffect(() => {
+    return () => {
+      setArticle(null);
+      setLiked(false);
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
+      console.log("Screen focused, fetching article...", articleId);
       fetchArticle();
+      
+      return () => {
+        console.log("Screen unfocused");
+      };
     }, [articleId])
   );
 
@@ -39,24 +52,49 @@ const NewsDetailScreen = ({ route, navigation }) => {
         getLikedArticles(),
       ]);
 
+      if (!data) {
+        console.error("No article data returned for ID:", articleId);
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Failed to load article', ToastAndroid.LONG);
+        } else {
+          Alert.alert('Error', 'Failed to load article');
+        }
+        return;
+      }
+
       setArticle(data);
 
-      const isLiked = likedList.some(
-        (item) => item.articleId?.toString() === articleId?.toString()
+
+      const apiArticleId = data.articleId || data.id;
+      
+      const isLiked = likedList && likedList.some(
+        (item) => {
+          const likedId = item.articleId || item.id;
+          return likedId?.toString() === apiArticleId?.toString() || 
+                 likedId?.toString() === articleId?.toString();
+        }
       );
+      
       setLiked(isLiked);
       
-      // Log "view" interaction
       logInteraction(articleId, 'view');
       
     } catch (error) {
       console.error("Error fetching article or likes:", error);
+      
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Failed to load article data', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Error', 'Failed to load article data');
+      }
     } finally {
       setLoading(false);
     }
   };
+
   const renderWithBoldText = (text) => {
-    const parts = text.split(/(\*\*[^*]+\*\*)/g); // Split by **bold**
+    if (!text) return null;
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
   
     return parts.map((part, index) => {
       if (part.startsWith("**") && part.endsWith("**")) {
@@ -75,25 +113,40 @@ const NewsDetailScreen = ({ route, navigation }) => {
     setLiked(updatedLiked);
   
     try {
-      const token = await getAuthToken(); // ✅ FIX: await it properly
+      const token = await getAuthToken();
   
       if (!token) {
         console.warn("⚠️ No token found. User might not be logged in.");
+        setLiked(!updatedLiked);
+        
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Please log in to like articles', ToastAndroid.SHORT);
+        } else {
+          Alert.alert('Login Required', 'Please log in to like articles');
+        }
         return;
       }
   
       if (updatedLiked) {
         await likeArticle(article.articleId, token);
+        logInteraction(article.articleId, 'like');
       } else {
         await unlikeArticle(article.articleId, token);
+        logInteraction(article.articleId, 'unlike');
       }
+      
     } catch (err) {
       console.error("Like/unlike failed:", err);
-      setLiked(!updatedLiked); // rollback
+      setLiked(!updatedLiked);
+      
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Failed to update like status', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Error', 'Failed to update like status');
+      }
     }
   };
   
-
   const handleShare = async () => {
     try {
       await Share.share({ message: `${article.title}\n\n${article.summary || ""}` });
@@ -147,19 +200,20 @@ const NewsDetailScreen = ({ route, navigation }) => {
           <View style={styles.metaBottomRow}>
             <MaterialCommunityIcons name="folder-outline" size={18} color="#666" />
             <Text style={styles.metaRowText}><Text style={styles.metaLabel}>Kategori:</Text> {article.category}</Text>
-            </View>
-            <View style={styles.metaBottomRow}>
+          </View>
+          <View style={styles.metaBottomRow}>
             <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#666" />
             <Text style={styles.metaRowText}>
                 <Text style={styles.metaLabel}>Kaynak:</Text>{" "}
-                {article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")}
+                {article.source && typeof article.source === 'string' 
+                  ? article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")
+                  : "Kaynak Bilinmiyor"}
             </Text>
-        </View>
-
+          </View>
         </View>
       </ScrollView>
       <View style={styles.floatingButtons}>
-        <TouchableOpacity onPress={handleLike} style={styles.fab}>
+        <TouchableOpacity onPress={handleLike} style={[styles.fab, liked ? styles.fabLiked : null]}>
           <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleShare} style={styles.fab}>
@@ -168,7 +222,6 @@ const NewsDetailScreen = ({ route, navigation }) => {
       </View>
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
@@ -236,6 +289,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#666",
   },
+  metaLabel: {
+    fontWeight: "bold",
+  },
   contentCard: {
     backgroundColor: "#ffffff",
     marginHorizontal: 16,
@@ -263,6 +319,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  fabLiked: {
+    backgroundColor: "#d32f2f",
+  },
   wrapper: {
     flex: 1,
     backgroundColor: "#fff",
@@ -273,7 +332,6 @@ const styles = StyleSheet.create({
     minHeight: "100%",
     backgroundColor: "#fff",
   },
-  
 });
 
 export default NewsDetailScreen;
