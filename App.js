@@ -41,7 +41,7 @@ import IliskilerNewsScreen from './views/CategoryScreens/IliskilerNewsScreen';
 import KulturNewsScreen from './views/CategoryScreens/KulturNewsScreen';
 import MagazinNewsScreen from './views/CategoryScreens/MagazinNewsScreen';
 import ModaNewsScreen from './views/CategoryScreens/ModaNewsScreen';
-import OtomotivNewsScreen from './views/CategoryScreens/OtomotivNewsScreen';
+// import OtomotivNewsScreen from './views/CategoryScreens/OtomotivNewsScreen';
 import OyunNewsScreen from './views/CategoryScreens/OyunNewsScreen';
 import RuhSagligiNewsScreen from './views/CategoryScreens/RuhSagligiNewsScreen';
 // import SaglikNewsScreen from './views/CategoryScreens/SaglikNewsScreen';
@@ -92,7 +92,7 @@ export default function App() {
         <Stack.Screen name="Kultur" component={KulturNewsScreen} />
         <Stack.Screen name="Magazin" component={MagazinNewsScreen} />
         <Stack.Screen name="Moda" component={ModaNewsScreen} />
-        <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} />
+        {/* <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} /> */}
         <Stack.Screen name="Oyun" component={OyunNewsScreen} />
         <Stack.Screen name="RuhSagligi" component={RuhSagligiNewsScreen} />
         {/* <Stack.Screen name="Saglik" component={SaglikNewsScreen} /> */}
