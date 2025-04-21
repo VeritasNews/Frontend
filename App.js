@@ -60,13 +60,12 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-      {/* <Stack.Navigator initialRouteName="Deneme" screenOptions={{ headerShown: false }}> */}
-
-      {/* <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}> */}
+        {/* <Stack.Navigator initialRouteName="Deneme" screenOptions={{ headerShown: false }}> */}
+        {/* <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}> */}
         <Stack.Screen name="Deneme" component={Deneme} />
-
         <Stack.Screen name="ForYouPersonalized" component={ForYouPersonalized} />
         <Stack.Screen name="ForYou" component={ForYou} />
+
         {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
         <Stack.Screen name="Messages" component={MessagesScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
