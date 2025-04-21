@@ -194,21 +194,27 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   actionButton: {
-    marginRight: 15
+    marginRight: 15,
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderColor: "rgba(169, 17, 1, 1)"
   },
   acceptText: {
-    color: '#555',
+    color: "rgba(169, 17, 1, 1)",
     fontWeight: '500'
   },
   declineButton: {
     borderWidth: 1,
-    borderColor: '#aaa',
+    borderColor: "rgba(240, 241, 250, 1)",
     borderRadius: 4,
+    backgroundColor: "rgba(169, 17, 1, 1)",
     paddingVertical: 6,
     paddingHorizontal: 16
   },
   declineText: {
-    color: '#555',
+    color: "rgba(240, 241, 250, 1)",
   },
   timeText: {
     position: 'absolute',
