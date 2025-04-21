@@ -14,6 +14,7 @@ import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";
 import { getUserProfile } from "../../utils/authAPI"; // ✅ ADD THIS LINE
+import { getFullImageUrl } from "../../utils/articleAPI";
 
 const isPortrait = () => {
   const { width, height } = Dimensions.get("window");
@@ -75,6 +76,20 @@ const ForYouPersonalized = ({ navigation }) => {
       setLoading(false);
     }
   };
+  
+  function shouldShowImage(article, rowLength, indexInRow) {
+    const priority = article.personalized_priority?.toLowerCase() || article.priority?.toLowerCase() || "";
+  
+    const isHighPriority = ["most", "high"].includes(priority);
+    const shortSummary = (article.summary?.length || 0) < 100;
+    const shortTitle = (article.title?.length || 0) < 50;
+  
+    if (rowLength < 3) return true; // Always show in 1-2 layouts
+    if (isHighPriority && shortSummary) return true; // priority + visual space
+    if (shortTitle && indexInRow === 1) return true; // middle one only
+  
+    return false;
+  }
   
   
   const sortNewsByPreferenceAndPriority = (articles, preferredCategories = []) => {
@@ -167,9 +182,10 @@ const ForYouPersonalized = ({ navigation }) => {
           )}
           {article.image && (
             <Image
-            source={article.image ? { uri: article.image } : require("../../assets/protest.jpg")}
-            style={styles.heroImage}
-          />
+              source={{ uri: getFullImageUrl(article.image) }}
+              style={styles.heroImage}
+            />
+        
           
           )}
         </View>
@@ -188,7 +204,7 @@ const ForYouPersonalized = ({ navigation }) => {
     }
   };
 
-  const renderNewsCard = (item) => {
+  const renderNewsCard = (item, showImage = true, imageHeight = 100) => {
     const fontSize = getFontSize(item.size);
     return (
       <TouchableOpacity
@@ -203,11 +219,17 @@ const ForYouPersonalized = ({ navigation }) => {
           {item.summary && (
             <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
           )}
-          {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
+          {showImage && item.image && (
+            <Image
+              source={{ uri: getFullImageUrl(item.image) }}
+              style={[styles.imagePlaceholder, { height: imageHeight }]}
+            />
+          )}
         </View>
       </TouchableOpacity>
     );
   };
+  
 
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3);
@@ -241,24 +263,46 @@ const ForYouPersonalized = ({ navigation }) => {
     const numItems = row.length;
     const itemWidth = 100 / numItems;
     const lastItemWidth = 100 - itemWidth * (numItems - 1);
-    // Use a consistent key based on the row content
+  
+    // Base height for all
+    const baseImageHeight = numItems === 3 ? 60 : 100;
+    const bonusHeight = 40;
+  
+    // Find index of the shortest summary
+    let shortestSummaryIndex = 0;
+    let shortestLength = Infinity;
+  
+    row.forEach((item, idx) => {
+      const length = item.summary?.length || 0;
+      if (length < shortestLength) {
+        shortestLength = length;
+        shortestSummaryIndex = idx;
+      }
+    });
+  
     return (
       <View key={row.map(item => item.id).join('-')} style={styles.row}>
-        {row.map((newsItem, index) => (
-          <View
-            key={newsItem.id}
-            style={[
-              styles.newsItem,
-              { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` },
-            ]}
-          >
-            {renderNewsCard(newsItem)}
-          </View>
-        ))}
+        {row.map((newsItem, index) => {
+          const isShortest = index === shortestSummaryIndex;
+          const imageHeight = isShortest ? baseImageHeight + bonusHeight : baseImageHeight;
+  
+          return (
+            <View
+              key={newsItem.id}
+              style={[
+                styles.newsItem,
+                { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` },
+              ]}
+            >
+              {renderNewsCard(newsItem, true, imageHeight)}
+            </View>
+          );
+        })}
       </View>
     );
   };
-
+  
+  
   const columnCount = portrait ? 2 : 3;
 
   if (loading) {
@@ -426,7 +470,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent", // no background, clean like newspaper
     paddingVertical: 12,
     paddingHorizontal: 0,
-    marginBottom: 24,
     borderRadius: 0,
     shadowColor: "transparent", // removes any drop shadow
     elevation: 0,
@@ -436,7 +479,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 260,
     borderRadius: 0, // no rounding for a sharp, print look
-    marginBottom: 12,
     resizeMode: "cover",
   },  
   heroTitle: {
@@ -444,7 +486,7 @@ const styles = StyleSheet.create({
     fontWeight: "900", // Maximum system boldness
     fontFamily: "Georgia", // Elegant serif like newspapers
     color: "#000", // Deep black for print-style contrast
-    marginBottom: 12,
+    marginBottom: 6,
     textAlign: "center", // 'middle' is not valid — use 'center'
     lineHeight: 36,
   },  

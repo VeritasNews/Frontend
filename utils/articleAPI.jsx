@@ -178,3 +178,11 @@ export const logInteraction = async (articleId, action, time_spent = null) => {
     console.error("❌ Failed to log interaction:", err.response?.data || err.message);
   }
 };
+
+const MEDIA_BASE_URL = 'http://localhost:8000'; // or your production base URL
+
+export const getFullImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${MEDIA_BASE_URL}/${imagePath.replace(/^\/+/, '')}`;
+};
