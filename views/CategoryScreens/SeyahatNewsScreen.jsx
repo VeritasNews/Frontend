@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, Text, StyleSheet, Dimensions } from "react-native";
-import { getArticlesByCategory } from "../../utils/api";  // ✅ Import API helper
+import { getArticlesByCategory } from "../../utils/articleAPI";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";

@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Dimensions,
 } from "react-native";
-import { getArticles } from "../utils/api";
+import { getArticles } from "../utils/articleAPI";
 import Header from "../components/Header";
 import CategoryBar from "../components/CategoryBar";
 import BottomNav from "../components/BottomNav";

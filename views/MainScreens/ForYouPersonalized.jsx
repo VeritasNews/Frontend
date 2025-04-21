@@ -7,11 +7,13 @@ import {
   Dimensions,
   ActivityIndicator,
   TouchableOpacity,
+  Image
 } from "react-native";
-import { getArticles } from "../utils/api";
-import Header from "../components/Header";
-import CategoryBar from "../components/CategoryBar";
-import BottomNav from "../components/BottomNav";
+import { getArticlesForUser, logInteraction } from "../../utils/articleAPI";
+import Header from "../../components/Header";
+import CategoryBar from "../../components/CategoryBar";
+import BottomNav from "../../components/BottomNav";
+import { getUserProfile } from "../../utils/authAPI"; // ✅ ADD THIS LINE
 
 const isPortrait = () => {
   const { width, height } = Dimensions.get("window");
@@ -26,10 +28,11 @@ const chunkArray = (array, chunkSize = 4) => {
   return result;
 };
 
-const ForYou = ({ navigation }) => {
+const ForYouPersonalized = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
+  const [preferredCategories, setPreferredCategories] = useState([]);
 
   useEffect(() => {
     fetchNews();
@@ -40,22 +43,81 @@ const ForYou = ({ navigation }) => {
 
   const fetchNews = async () => {
     setLoading(true);
-    const articles = await getArticles();
-    setNewsData(articles);
-    setLoading(false);
+    try {
+      const [articles, user] = await Promise.all([
+        getArticlesForUser(),
+        getUserProfile(),
+      ]);
+  
+      const userPrefs = user?.preferredCategories || [];
+      console.log("✅ User preferred:", userPrefs);
+  
+      articles.forEach((a) =>
+        console.log(`📰 ${a.title} — priority: ${a.personalized_priority}`)
+      );
+      
+      setPreferredCategories(userPrefs);
+  
+      const most = articles.find(a => (a.priority?.toLowerCase() === "most" || a.personalized_priority?.toLowerCase() === "most"));
+      console.log("👑 Most priority article:", most);
+  
+      const rest = articles.filter(a => a.priority?.toLowerCase() !== "most");
+      const sorted = sortNewsByPreferenceAndPriority(rest, userPrefs);
+      const sized = assignNewsSizes(sorted);
+  
+      const finalList = most ? [ { ...most, size: "xl" }, ...sized ] : sized;
+      setNewsData(finalList);
+  
+    } catch (err) {
+      console.error("Error loading personalized feed:", err);
+      setNewsData([]);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const sortNewsByPriorityAndSize = (data) => {
-    const priorityOrder = { high: 1, medium: 2, low: 3 };
-    return [...data].sort((a, b) => {
-      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
+  
+  
+  const sortNewsByPreferenceAndPriority = (articles, preferredCategories = []) => {
+    const priorityGroups = {
+      high: [],
+      medium: [],
+      low: [],
+      other: [],
+    };
+  
+    articles.forEach((article) => {
+      const priority = article.personalized_priority?.toLowerCase();
+      if (priority === "high") {
+        priorityGroups.high.push(article);
+      } else if (priority === "medium") {
+        priorityGroups.medium.push(article);
+      } else if (priority === "low") {
+        priorityGroups.low.push(article);
+      } else {
+        priorityGroups.other.push(article);
       }
-      const summaryLengthA = a.summary?.length || 0;
-      const summaryLengthB = b.summary?.length || 0;
-      return summaryLengthA - summaryLengthB;
     });
+  
+    const sortGroupBySummaryLength = (group) =>
+      group.sort((a, b) => (a.summary?.length || 0) - (b.summary?.length || 0));
+  
+    const preferredFirst = (group) => {
+      return [...group].sort((a, b) => {
+        const aPref = preferredCategories.includes(a.category);
+        const bPref = preferredCategories.includes(b.category);
+        return aPref === bPref ? 0 : aPref ? -1 : 1;
+      });
+    };
+  
+    return [
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.high)),
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.medium)),
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.low)),
+      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.other)),
+    ];
   };
+  
+  
 
   const assignNewsSizes = (data) => {
     const total = data.length;
@@ -72,10 +134,49 @@ const ForYou = ({ navigation }) => {
     });
   };
 
-  const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
+  const mostImportant = newsData.length > 0 && 
+  newsData.find(a => a.priority === "most" || a.personalized_priority === "most");
+
+  // Filter out the most important article from the data that will be used in the grid
+  const otherArticles = mostImportant ? 
+    newsData.filter(article => article.id !== mostImportant.id) : 
+    newsData;
+
+  // Sort and size the filtered list
+  const sortedNewsData = assignNewsSizes(
+    sortNewsByPreferenceAndPriority(otherArticles, preferredCategories)
+  );
   const articleChunks = chunkArray(sortedNewsData, 4);
   const sectionGroups = chunkArray(articleChunks, 3); // each group = column, row, column
+  // Find the most important article
 
+
+  const renderHeroArticle = (article) => {
+    if (!article) return null;
+    return (
+      <TouchableOpacity
+        onPress={async () => {
+          await logInteraction(article.id, "click");
+          navigation.navigate("NewsDetail", { articleId: article.id });
+        }}
+      >
+        <View style={styles.heroCard}>
+          <Text style={styles.heroTitle}>{article.title}</Text>
+          {article.summary && (
+            <Text style={styles.heroSummary}>{article.summary}</Text>
+          )}
+          {article.image && (
+            <Image
+            source={article.image ? { uri: article.image } : require("../../assets/protest.jpg")}
+            style={styles.heroImage}
+          />
+          
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  
   const getFontSize = (size) => {
     switch (size) {
       case "xl": return { title: 20, summary: 13 };
@@ -90,7 +191,12 @@ const ForYou = ({ navigation }) => {
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: item.id })}>
+      <TouchableOpacity
+        onPress={async () => {
+          await logInteraction(item.id, "click");
+          navigation.navigate("NewsDetail", { articleId: item.id });
+        }}
+      >
         <View style={[styles.newsCard, styles[item.size]]}>
           <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
           <View style={styles.horizontalLine} />
@@ -135,8 +241,9 @@ const ForYou = ({ navigation }) => {
     const numItems = row.length;
     const itemWidth = 100 / numItems;
     const lastItemWidth = 100 - itemWidth * (numItems - 1);
+    // Use a consistent key based on the row content
     return (
-      <View key={Math.random()} style={styles.row}>
+      <View key={row.map(item => item.id).join('-')} style={styles.row}>
         {row.map((newsItem, index) => (
           <View
             key={newsItem.id}
@@ -179,6 +286,8 @@ const ForYou = ({ navigation }) => {
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
         </View>
+
+        {renderHeroArticle(mostImportant)}
 
         {sectionGroups.map((group, groupIndex) => (
           <View key={groupIndex}>
@@ -272,23 +381,16 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   newsItem: {
-    marginBottom: 5,
-    paddingHorizontal: 3,
+    marginBottom: 3,
+    paddingHorizontal: 1,
   },
   newsCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "transparent", // ← removes grey/white background
     padding: 10,
-    borderRadius: 4,
-    elevation: 3,
+    borderRadius: 0,                // ← optional: makes it flat
+    elevation: 0,                   // ← removes Android shadow
     fontFamily: "OldStandard-Bold",
     alignItems: "center",
-  },
-  newsTitle: {
-    fontWeight: "bold",
-    fontSize: 18,
-    marginBottom: 3,
-    textAlign: "center",
-    fontFamily: "OldStandard-Bold",
   },
   horizontalLine: {
     height: 0.5,
@@ -305,11 +407,54 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginTop: 8,
   },
+  newsTitle: {
+    fontFamily: "Georgia", // or "Playfair Display"
+    fontWeight: "bold",
+    fontSize: 18,
+    marginBottom: 3,
+    textAlign: "center",
+  },
   summaryText: {
-    color: "#555",
+    fontFamily: "Merriweather", // or "Libre Baskerville"
+    fontSize: 12,
+    color: "#444",
     lineHeight: 18,
     marginTop: 4,
+  },
+  heroCard: {
+    width: "100%",
+    backgroundColor: "transparent", // no background, clean like newspaper
+    paddingVertical: 12,
+    paddingHorizontal: 0,
+    marginBottom: 24,
+    borderRadius: 0,
+    shadowColor: "transparent", // removes any drop shadow
+    elevation: 0,
+    alignItems: "flex-start", // aligns content to the left like newsprint
   },  
+  heroImage: {
+    width: "100%",
+    height: 260,
+    borderRadius: 0, // no rounding for a sharp, print look
+    marginBottom: 12,
+    resizeMode: "cover",
+  },  
+  heroTitle: {
+    fontSize: 30, // Make it visually loud like a newspaper headline
+    fontWeight: "900", // Maximum system boldness
+    fontFamily: "Georgia", // Elegant serif like newspapers
+    color: "#000", // Deep black for print-style contrast
+    marginBottom: 12,
+    textAlign: "center", // 'middle' is not valid — use 'center'
+    lineHeight: 36,
+  },  
+  heroSummary: {
+    fontSize: 15,
+    fontFamily: "Georgia",
+    color: "#222",
+    textAlign: "justify",
+    lineHeight: 22,
+  },    
 });
 
-export default ForYou;
+export default ForYouPersonalized;

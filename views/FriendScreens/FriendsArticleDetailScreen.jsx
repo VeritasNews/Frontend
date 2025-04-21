@@ -13,17 +13,20 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from '@react-navigation/native';
-import { getArticleById, likeArticle, unlikeArticle, getLikedArticles, logInteraction } from "../utils/articleAPI"; // 🧠 You need to implement this if not done
-import { getAuthToken } from "../utils/authAPI"; // 🧠 You need to implement this if not done
-import { COLORS } from '../theme/colors';
+import { getArticleById, likeArticle, unlikeArticle, getLikedArticles } from "../../utils/articleAPI"; // 🧠 You need to implement this if not done
+import { getAuthToken } from "../../utils/authAPI"; // 🧠 You need to implement this if not done
+import { getFriendsWhoLikedArticle } from "../../utils/friendAPI";
+import { COLORS } from '../../theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const NewsDetailScreen = ({ route, navigation }) => {
+const FriendsArticleDetailScreen = ({ route, navigation }) => {
   const { articleId } = route.params;
 
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [friendsWhoLiked, setFriendsWhoLiked] = useState([]);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -34,27 +37,26 @@ const NewsDetailScreen = ({ route, navigation }) => {
   const fetchArticle = async () => {
     setLoading(true);
     try {
-      const [data, likedList] = await Promise.all([
+      const [data, likedList, friendsLiked] = await Promise.all([
         getArticleById(articleId),
         getLikedArticles(),
+        getFriendsWhoLikedArticle(articleId),
       ]);
-
+  
       setArticle(data);
-
+      setFriendsWhoLiked(friendsLiked);
+      
       const isLiked = likedList.some(
         (item) => item.articleId?.toString() === articleId?.toString()
       );
       setLiked(isLiked);
-      
-      // Log "view" interaction
-      logInteraction(articleId, 'view');
-      
     } catch (error) {
       console.error("Error fetching article or likes:", error);
     } finally {
       setLoading(false);
     }
   };
+  
   const renderWithBoldText = (text) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g); // Split by **bold**
   
@@ -96,8 +98,9 @@ const NewsDetailScreen = ({ route, navigation }) => {
 
   const handleShare = async () => {
     try {
-      await Share.share({ message: `${article.title}\n\n${article.summary || ""}` });
-      logInteraction(article.articleId, 'share');
+      await Share.share({
+        message: `${article.title}\n\n${article.summary || ""}`,
+      });
     } catch (error) {
       console.error("Error sharing article:", error);
     }
@@ -146,18 +149,33 @@ const NewsDetailScreen = ({ route, navigation }) => {
   
           <View style={styles.metaBottomRow}>
             <MaterialCommunityIcons name="folder-outline" size={18} color="#666" />
-            <Text style={styles.metaRowText}><Text style={styles.metaLabel}>Kategori:</Text> {article.category}</Text>
-            </View>
-            <View style={styles.metaBottomRow}>
+            <Text style={styles.metaRowText}>
+              <Text style={styles.metaLabel}>Kategori:</Text> {article.category}
+            </Text>
+          </View>
+  
+          <View style={styles.metaBottomRow}>
             <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#666" />
             <Text style={styles.metaRowText}>
-                <Text style={styles.metaLabel}>Kaynak:</Text>{" "}
-                {article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")}
+              <Text style={styles.metaLabel}>Kaynak:</Text>{" "}
+              {article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")}
             </Text>
-        </View>
-
+          </View>
+  
+          {friendsWhoLiked.length > 0 && (
+            <View style={styles.metaBottomRow}>
+              <Ionicons name="people" size={18} color="#666" />
+              <Text style={styles.metaRowText}>
+                <Text style={styles.metaLabel}>Liked by friends: </Text>
+                {friendsWhoLiked.map((f, i) =>
+                  `${f.name || f.userName}${i < friendsWhoLiked.length - 1 ? ', ' : ''}`
+                )}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
+  
       <View style={styles.floatingButtons}>
         <TouchableOpacity onPress={handleLike} style={styles.fab}>
           <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
@@ -168,7 +186,6 @@ const NewsDetailScreen = ({ route, navigation }) => {
       </View>
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
@@ -273,7 +290,20 @@ const styles = StyleSheet.create({
     minHeight: "100%",
     backgroundColor: "#fff",
   },
-  
+  metaBottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 6,
+  },
+  metaRowText: {
+    fontSize: 13,
+    color: "#666",
+  },
+  metaLabel: {
+    fontWeight: "600",
+    color: "#444",
+  },  
 });
 
-export default NewsDetailScreen;
+export default FriendsArticleDetailScreen;

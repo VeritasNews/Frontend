@@ -12,7 +12,7 @@ import {
   fetchFriendRequests,
   acceptFriendRequest,
   rejectFriendRequest,
-} from '../../utils/api';
+} from '../../utils/friendAPI';
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from "../../components/BottomNav";
 

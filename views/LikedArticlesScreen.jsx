@@ -8,7 +8,7 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import { getLikedArticles } from "../utils/api";
+import { getLikedArticles } from "../utils/articleAPI";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import BottomNav from "../components/BottomNav";

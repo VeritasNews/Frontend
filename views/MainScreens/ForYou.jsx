@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions } from "react-native";
-import { getArticlesByCategory } from "../../utils/articleAPI";
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { getArticles } from "../../utils/articleAPI";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";
@@ -10,58 +18,63 @@ const isPortrait = () => {
   return height >= width;
 };
 
-const CevreNewsScreen = ({ navigation }) => {
+const chunkArray = (array, chunkSize = 4) => {
+  const result = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    result.push(array.slice(i, i + chunkSize));
+  }
+  return result;
+};
+
+const ForYou = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
 
   useEffect(() => {
-    fetchCevreNews();
-
+    fetchNews();
     const updateOrientation = () => setPortrait(isPortrait());
     const subscription = Dimensions.addEventListener("change", updateOrientation);
     return () => subscription?.remove();
   }, []);
 
-  const fetchCevreNews = async () => {
+  const fetchNews = async () => {
     setLoading(true);
-    const cevreNews = await getArticlesByCategory("Çevre");
-    setNewsData(cevreNews);
+    const articles = await getArticles();
+    setNewsData(articles);
     setLoading(false);
   };
 
   const sortNewsByPriorityAndSize = (data) => {
     const priorityOrder = { high: 1, medium: 2, low: 3 };
-
     return [...data].sort((a, b) => {
       if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       }
-
-      const summaryLengthA = a.summary ? a.summary.length : 0;
-      const summaryLengthB = b.summary ? b.summary.length : 0;
-
+      const summaryLengthA = a.summary?.length || 0;
+      const summaryLengthB = b.summary?.length || 0;
       return summaryLengthA - summaryLengthB;
     });
   };
 
   const assignNewsSizes = (data) => {
-    const totalArticles = data.length;
-    const xlCount = Math.ceil(totalArticles * 0.1);
-    const largeCount = Math.ceil(totalArticles * 0.15);
-    const mediumCount = Math.ceil(totalArticles * 0.25);
-    const smallCount = Math.ceil(totalArticles * 0.3);
-
-    return data.map((article, index) => {
-      if (index < xlCount) return { ...article, size: "xl" };
-      if (index < xlCount + largeCount) return { ...article, size: "large" };
-      if (index < xlCount + largeCount + mediumCount) return { ...article, size: "medium" };
-      if (index < xlCount + largeCount + mediumCount + smallCount) return { ...article, size: "small" };
-      return { ...article, size: "xs" };
+    const total = data.length;
+    const xl = Math.ceil(total * 0.1);
+    const lg = Math.ceil(total * 0.15);
+    const md = Math.ceil(total * 0.25);
+    const sm = Math.ceil(total * 0.3);
+    return data.map((a, i) => {
+      if (i < xl) return { ...a, size: "xl" };
+      if (i < xl + lg) return { ...a, size: "large" };
+      if (i < xl + lg + md) return { ...a, size: "medium" };
+      if (i < xl + lg + md + sm) return { ...a, size: "small" };
+      return { ...a, size: "xs" };
     });
   };
 
   const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
+  const articleChunks = chunkArray(sortedNewsData, 4);
+  const sectionGroups = chunkArray(articleChunks, 3); // each group = column, row, column
 
   const getFontSize = (size) => {
     switch (size) {
@@ -77,19 +90,22 @@ const CevreNewsScreen = ({ navigation }) => {
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
     return (
-      <View style={[styles.newsCard, styles[item.size]]}>
-        <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
-        <View style={styles.horizontalLine} />
-        {item.summary && <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>}
-        {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
-      </View>
+      <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: item.id })}>
+        <View style={[styles.newsCard, styles[item.size]]}>
+          <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
+          <View style={styles.horizontalLine} />
+          {item.summary && (
+            <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
+          )}
+          {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
+        </View>
+      </TouchableOpacity>
     );
   };
 
   const createDynamicColumns = (data, columnCount) => {
     const maxColumns = Math.min(columnCount, 3);
     const columns = Array.from({ length: maxColumns }, () => []);
-
     data.forEach((item, index) => {
       const columnIndex = index % maxColumns;
       if (columns[columnIndex].length < 3) {
@@ -98,14 +114,12 @@ const CevreNewsScreen = ({ navigation }) => {
         columns[(columnIndex + 1) % maxColumns].push(item);
       }
     });
-
     return columns;
   };
 
   const createDynamicRows = (data, maxItemsPerRow = 3) => {
     const rows = [];
     let currentRow = [];
-
     data.forEach((item) => {
       currentRow.push(item);
       if (currentRow.length === maxItemsPerRow) {
@@ -113,40 +127,23 @@ const CevreNewsScreen = ({ navigation }) => {
         currentRow = [];
       }
     });
-
     if (currentRow.length > 0) rows.push(currentRow);
     return rows;
   };
 
-  const columnCount = portrait ? 2 : 3;
-  const totalArticles = sortedNewsData.length;
-
-  let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-  let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-  let section2Count = totalArticles - (section1Count + section3Count);
-
-  if (totalArticles < 6) {
-    const equalSize = Math.ceil(totalArticles / 3);
-    section1Count = equalSize;
-    section2Count = equalSize;
-    section3Count = totalArticles - (section1Count + section2Count);
-  }
-
-  const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
-  const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
-  const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
-
   const renderNewsRow = (row) => {
     const numItems = row.length;
     const itemWidth = 100 / numItems;
-    const lastItemWidth = 100 - (itemWidth * (numItems - 1));
-
+    const lastItemWidth = 100 - itemWidth * (numItems - 1);
     return (
       <View key={Math.random()} style={styles.row}>
         {row.map((newsItem, index) => (
           <View
             key={newsItem.id}
-            style={[styles.newsItem, { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` }]}
+            style={[
+              styles.newsItem,
+              { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` },
+            ]}
           >
             {renderNewsCard(newsItem)}
           </View>
@@ -155,51 +152,91 @@ const CevreNewsScreen = ({ navigation }) => {
     );
   };
 
+  const columnCount = portrait ? 2 : 3;
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Loading articles...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          backgroundColor: "#f4f4f4",
+          paddingHorizontal: 4,
+          paddingTop: 10,
+          paddingBottom: 100,
+        }}
+        showsVerticalScrollIndicator
+      >
         <Header />
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.rowContainer}>
-            {columnData1.map((column, columnIndex) => (
-              <View key={columnIndex} style={styles.column}>
-                {column.map((newsItem) => (
-                  <View key={newsItem.id} style={styles.newsItem}>
-                    {renderNewsCard(newsItem)}
-                  </View>
-                ))}
+        {sectionGroups.map((group, groupIndex) => (
+          <View key={groupIndex}>
+            {/* Column layout */}
+            {group[0] && (
+              <View style={styles.section}>
+                <View style={styles.rowContainer}>
+                  {createDynamicColumns(group[0], columnCount).map((column, columnIndex) => (
+                    <View key={columnIndex} style={styles.column}>
+                      {column.map((item) => (
+                        <View key={item.id} style={styles.newsItem}>
+                          {renderNewsCard(item)}
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </View>
               </View>
-            ))}
-          </View>
-        </View>
+            )}
 
-        <View style={styles.section}>
-          {rowData.map((row) => renderNewsRow(row))}
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.rowContainer}>
-            {columnData3.map((column, columnIndex) => (
-              <View key={columnIndex} style={styles.column}>
-                {column.map((newsItem) => (
-                  <View key={newsItem.id} style={styles.newsItem}>
-                    {renderNewsCard(newsItem)}
-                  </View>
-                ))}
+            {/* Row layout */}
+            {group[1] && (
+              <View style={styles.section}>
+                {createDynamicRows(group[1]).map((row) => renderNewsRow(row))}
               </View>
-            ))}
+            )}
+
+            {/* Column layout again */}
+            {group[2] && (
+              <View style={styles.section}>
+                <View style={styles.rowContainer}>
+                  {createDynamicColumns(group[2], columnCount).map((column, columnIndex) => (
+                    <View key={columnIndex} style={styles.column}>
+                      {column.map((item) => (
+                        <View key={item.id} style={styles.newsItem}>
+                          {renderNewsCard(item)}
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
           </View>
-        </View>
+        ))}
+
+        {sortedNewsData.length === 0 && (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>No articles found</Text>
+          </View>
+        )}
       </ScrollView>
       <BottomNav navigation={navigation} />
     </View>
   );
 };
 
+// ✅ Styles
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -214,8 +251,8 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     alignItems: "center",
-    marginVertical: 1,
-  },
+    marginVertical: 1,  // Adds spacing above and below
+  },  
   section: {
     marginBottom: 0,
   },
@@ -255,9 +292,9 @@ const styles = StyleSheet.create({
   horizontalLine: {
     height: 0.5,
     backgroundColor: "#ccc",
-    width: "100%",
+    width: "100%",  // ✅ Matches the width of the news card
     marginVertical: 8,
-  },
+  },  
   imagePlaceholder: {
     width: "100%",
     height: 100,
@@ -271,7 +308,7 @@ const styles = StyleSheet.create({
     color: "#555",
     lineHeight: 18,
     marginTop: 4,
-  },
+  },  
 });
 
-export default CevreNewsScreen;
+export default ForYou;
