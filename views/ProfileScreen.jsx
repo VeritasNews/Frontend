@@ -88,7 +88,7 @@ const ProfileScreen = ({ navigation }) => {
   const renderArticleItem = ({ item }) => (
     <TouchableOpacity
       style={styles.articleCard}
-      onPress={() => navigation.navigate('NewsDetailScreen', { articleId: item.articleId })}
+      onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
     >
       {item.image ? (
         <Image source={{ uri: item.image }} style={styles.image} />
