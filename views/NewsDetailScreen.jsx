@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   fabLiked: {
-    backgroundColor: "#d32f2f",
+    backgroundColor: "#a91101",
   },
   wrapper: {
     flex: 1,
