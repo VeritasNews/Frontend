@@ -99,7 +99,7 @@ export const updateProfilePicture = async (imageAsset) => {
 
 export const getPrivacySettings = async () => {
   const token = await getAuthToken();
-  const res = await axios.get(`${BASE_URL}me/`, {
+  const res = await axios.get(`${BASE_URL}users/me/`, {
     headers: {
       Authorization: `Bearer ${token}`
     }
