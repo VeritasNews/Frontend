@@ -19,6 +19,7 @@ import Login  from './views/AuthScreens/Login';
 import Register from './views/AuthScreens/Register';
 import ChooseCategoryScreen from './views/UtilScreens/ChooseCategoryScreen';
 import SearchScreen from './views/UtilScreens/SearchScreens';
+import Settings from './views/UtilScreens/Settings';
 
 import NewsDetailScreen from "./views/NewsDetailScreen";
 import LikedArticlesScreen from "./views/LikedArticlesScreen";
@@ -79,6 +80,7 @@ export default function App() {
         <Stack.Screen name="LikedArticles" component={LikedArticlesScreen} />
 
         <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="Settings" component={Settings} />
 
         {/* category screens */}
         <Stack.Screen name="Suc" component={SucNewsScreen} />

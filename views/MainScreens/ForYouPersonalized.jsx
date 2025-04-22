@@ -93,6 +93,8 @@ const ForYouPersonalized = ({ navigation }) => {
   
   
   const sortNewsByPreferenceAndPriority = (articles, preferredCategories = []) => {
+    console.log("📦 Articles from backend:", articles.length); // Expecting 131
+
     const priorityGroups = {
       high: [],
       medium: [],
@@ -165,6 +167,7 @@ const ForYouPersonalized = ({ navigation }) => {
   const sectionGroups = chunkArray(articleChunks, 3); // each group = column, row, column
   // Find the most important article
 
+  const chunks = chunkArray(sortedNewsData, 4);
 
   const renderHeroArticle = (article) => {
     if (!article) return null;
@@ -456,7 +459,7 @@ const ForYouPersonalized = ({ navigation }) => {
                             const isFixed = lastTwoInThisColumn.includes(item.id);
                             return (
                               <View key={item.id} style={styles.newsItem}>
-                                {item.title ? renderNewsCard(item, true, 100, isFixed ? 280 : null) : <View style={styles.emptyCard} />}
+                                {item.title ? renderNewsCard(item, true, 100, isFixed ? 250 : null) : <View style={styles.emptyCard} />}
                               </View>
                             );
                           } catch (e) {
