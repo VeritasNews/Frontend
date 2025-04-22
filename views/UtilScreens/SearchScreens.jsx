@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, FlatList, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Image, ScrollView
+  View, 
+  Text, 
+  TextInput, 
+  FlatList, 
+  TouchableOpacity,
+  StyleSheet, 
+  ActivityIndicator, 
+  Image, 
+  ScrollView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from '../../components/BottomNav';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { getAuthToken } from '../../utils/authAPI';
-import { getFullImageUrl } from '../../utils/articleAPI'; // ✅ Import helper
+import { getFullImageUrl } from '../../utils/articleAPI';
 
 const BASE_URL = 'http://localhost:8000/api/';
 
@@ -17,11 +24,15 @@ const SearchScreen = () => {
   const [userResults, setUserResults] = useState([]);
   const [articleResults, setArticleResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [imageErrors, setImageErrors] = useState({});
   const navigation = useNavigation();
 
   const handleSearch = async () => {
     if (!query.trim()) return;
+    
     setLoading(true);
+    setImageErrors({});
+    
     try {
       const token = await getAuthToken();
       const response = await axios.get(`${BASE_URL}search?q=${query}`, {
@@ -37,15 +48,53 @@ const SearchScreen = () => {
     }
   };
 
-  const renderUser = ({ item }) => (
-    <TouchableOpacity
-      style={styles.resultItem}
-      onPress={() => navigation.navigate('UserProfile', { user: item })}
-    >
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.username}>@{item.userName}</Text>
-    </TouchableOpacity>
-  );
+  // Profile picture handling functions from dev branch
+  const handleImageError = (userId, name) => {
+    console.log(`Failed to load image for ${name} (${userId})`);
+    setImageErrors(prev => ({
+      ...prev,
+      [userId]: true
+    }));
+  };
+
+  const getInitialAvatar = (name) => {
+    const initial = name && name.length > 0 ? name.charAt(0).toUpperCase() : '?';
+    return (
+      <View style={styles.initialAvatar}>
+        <Text style={styles.initialText}>{initial}</Text>
+      </View>
+    );
+  };
+
+  // Enhanced user render function with profile picture handling
+  const renderUser = ({ item }) => {
+    const hasValidProfilePicture = 
+      item.profilePicture && 
+      typeof item.profilePicture === 'string' && 
+      !imageErrors[item.userId];
+    
+    return (
+      <TouchableOpacity
+        style={styles.userItem}
+        onPress={() => navigation.navigate('UserProfile', { user: item })}
+      >
+        {hasValidProfilePicture ? (
+          <Image 
+            source={{ uri: item.profilePicture }}
+            style={styles.profileImage}
+            onError={() => handleImageError(item.userId, item.name)}
+            defaultSource={require('../../assets/default-profile.png')}
+          />
+        ) : (
+          getInitialAvatar(item.name)
+        )}
+        <View style={styles.userInfo}>
+          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.username}>@{item.userName}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderArticle = ({ item }) => (
     <TouchableOpacity
@@ -76,6 +125,7 @@ const SearchScreen = () => {
         value={query}
         onChangeText={setQuery}
         onSubmitEditing={handleSearch}
+        returnKeyType="search"
       />
 
       {loading ? (
@@ -116,7 +166,10 @@ const SearchScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -136,14 +189,46 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  resultItem: {
-    paddingVertical: 12,
+  // User item styles with profile picture
+  userItem: {
+    padding: 12,
     borderBottomWidth: 1,
     borderColor: '#eee',
+    flexDirection: 'row',
+    alignItems: 'center'
   },
-  name: { fontSize: 16, fontWeight: '600' },
-  username: { color: '#777' },
-
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16
+  },
+  initialAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16
+  },
+  initialText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#666'
+  },
+  userInfo: {
+    flex: 1,
+  },
+  name: { 
+    fontSize: 16, 
+    fontWeight: '600' 
+  },
+  username: { 
+    color: '#777',
+    marginTop: 2
+  },
+  // Article styles
   articleCard: {
     flexDirection: 'row',
     backgroundColor: '#f9f9f9',
