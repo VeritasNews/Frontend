@@ -12,6 +12,19 @@ const Header = () => {
   if (!fontsLoaded) {
     return <AppLoading />;
   }
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+  const formatTurkishDate = () => {
+    const now = new Date();
+    const weekday = now.toLocaleDateString("tr-TR", { weekday: "long" });
+    const dayMonth = now.toLocaleDateString("tr-TR", {
+      day: "numeric",
+      month: "long",
+    });
+    const year = now.getFullYear();
+    return `${capitalize(weekday)} • ${capitalize(dayMonth)} ${year}`;
+  };
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -20,7 +33,8 @@ const Header = () => {
         <Image source={VeritasLogo} style={styles.logo} />
         <View style={styles.textContainer}>
           <Text style={styles.title}>Veritas</Text>
-          <Text style={styles.date}>{new Date().toDateString()}</Text>
+          <Text style={styles.date}>{formatTurkishDate()}</Text>
+
         </View>
       </View>
       <View style={styles.headerLine} />
@@ -59,13 +73,16 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "400",
     color: "#a91101",
-    fontFamily: "VT323_400Regular"
+    fontFamily: "Georgia-bold",
   },
   date: {
-    fontSize: 14,
-    color: "#888",
+    fontSize: 13,
+    color: "#555",
     fontFamily: "OldStandard",
+    letterSpacing: 1.2,
+    marginTop: 2,
   },
+  
 });
 
 export default Header;

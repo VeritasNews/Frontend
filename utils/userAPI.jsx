@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthToken } from './authAPI';
 
-const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = 'http://139.179.221.240:8000/api/';
 
 export const getUserProfile = async () => {
   const token = await getAuthToken();
@@ -95,4 +95,26 @@ export const updateProfilePicture = async (imageAsset) => {
     console.error('Error uploading profile picture:', error.response?.data || error.message);
     throw error;
   }
+};
+
+export const getPrivacySettings = async () => {
+  const token = await getAuthToken();
+  const res = await axios.get(`${BASE_URL}users/me/`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.data.privacySettings;
+};
+
+export const updatePrivacySettings = async (privacySettings) => {
+  const token = await getAuthToken();
+  const res = await axios.patch(`${BASE_URL}user/privacy/`, {
+    privacySettings
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.data;
 };

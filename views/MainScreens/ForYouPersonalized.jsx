@@ -264,9 +264,11 @@ const ForYouPersonalized = ({ navigation }) => {
     const itemWidth = 100 / numItems;
     const lastItemWidth = 100 - itemWidth * (numItems - 1);
   
+    // Base height for all
     const baseImageHeight = numItems === 3 ? 60 : 100;
     const bonusHeight = 40;
   
+    // Find index of the shortest summary
     let shortestSummaryIndex = 0;
     let shortestLength = Infinity;
   
@@ -284,15 +286,6 @@ const ForYouPersonalized = ({ navigation }) => {
           const isShortest = index === shortestSummaryIndex;
           const imageHeight = isShortest ? baseImageHeight + bonusHeight : baseImageHeight;
   
-          // ✨ Set size explicitly if there are 3 items
-          const sizedItem =
-            numItems === 3
-              ? {
-                  ...newsItem,
-                  size: index === 0 ? "small" : index === 1 ? "medium" : "large",
-                }
-              : newsItem;
-  
           return (
             <View
               key={newsItem.id}
@@ -301,7 +294,7 @@ const ForYouPersonalized = ({ navigation }) => {
                 { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` },
               ]}
             >
-              {renderNewsCard(sizedItem, true, imageHeight)}
+              {renderNewsCard(newsItem, true, imageHeight)}
             </View>
           );
         })}
