@@ -10,43 +10,67 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from 'react-native';
-import { loginUser, saveAuthToken, saveRefreshToken } from '../../utils/authAPI';
+import { requestPasswordReset } from '../../utils/authAPI';
 
-const Login = ({ navigation }) => {
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
+const ForgotPassword = ({ navigation }) => {
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = async () => {
-    if (!identifier || !password) {
-      Alert.alert('Error', 'Please enter both email/username and password');
+  const handleResetRequest = async () => {
+    if (!email) {
+      setError('Please enter your email address');
       return;
     }
   
     try {
       setLoading(true);
-      const response = await loginUser(identifier, password); // ✅ correct one and only call
-  
-      await saveAuthToken(response.access);
-      await saveRefreshToken(response.refresh);
-  
-      navigation.navigate('ForYouPersonalized'); // ✅ this should work if 'ForYou' screen is registered
+      setError('');
+      await requestPasswordReset(email);
+      setSuccess(true);
     } catch (error) {
-      Alert.alert('Login Failed', error.message);
+      setError(error.message || 'Failed to send password reset request. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
-  const handleCreateAccount = () => {
-    navigation.navigate('Register');
+
+  const handleBackToLogin = () => {
+    navigation.navigate('Login');
   };
 
-  const handleForgotPassword = () => {
-    navigation.navigate('ForgotPassword');
-  };
+  if (success) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.contentContainer}>
+          <Image
+            source={require('../../assets/set2_no_bg.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          
+          <View style={styles.successContainer}>
+            <Text style={styles.successTitle}>Check Your Email</Text>
+            <Text style={styles.successText}>
+              We've sent instructions to reset your password to {email}.
+              Please check your inbox and follow the link to reset your password.
+            </Text>
+            
+            <TouchableOpacity 
+              style={styles.loginButton}
+              onPress={handleBackToLogin}
+            >
+              <Text style={styles.loginButtonText}>Back to Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -66,60 +90,44 @@ const Login = ({ navigation }) => {
             </View>
             
             <Text style={styles.welcomeText}>
-              Welcome to Veritas
+              Forgot Password
             </Text>
             
             <Text style={styles.taglineText}>
-                Where Facts Find Their Voice.
+              Enter your email to receive password reset instructions.
             </Text>
             
             <View style={styles.formContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email or Username"
-              value={identifier}
-              onChangeText={setIdentifier}
-              autoCapitalize="none"
-            />
               <TextInput
                 style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
+                placeholder="Email Address"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
               />
               
-              {/* Forgot Password Link */}
-              <TouchableOpacity 
-                style={styles.forgotPasswordContainer}
-                onPress={handleForgotPassword}
-              >
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-              </TouchableOpacity>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
               
               <TouchableOpacity 
                 style={styles.loginButton}
-                onPress={handleLogin}
+                onPress={handleResetRequest}
                 disabled={loading}
               >
-                <Text style={styles.loginButtonText}>Login</Text>
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={styles.loginButtonText}>Send Reset Link</Text>
+                )}
               </TouchableOpacity>
 
-              {/* Create Account Button */}
               <TouchableOpacity 
                 style={styles.createAccountButton}
-                onPress={handleCreateAccount}
+                onPress={handleBackToLogin}
                 disabled={loading}
               >
-                <Text style={styles.createAccountButtonText}>Create Account</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.guestButton}
-                onPress={() => navigation.navigate('ForYou')}
-                disabled={loading}
-                >
-                <Text style={styles.guestButtonText}>Continue without registering</Text>
+                <Text style={styles.createAccountButtonText}>Back to Login</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -181,19 +189,15 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     fontSize: 16,
   },
-  forgotPasswordContainer: {
-    alignSelf: 'flex-end',
+  errorText: {
+    color: '#a91101',
     marginBottom: 16,
-  },
-  forgotPasswordText: {
-    color: '#8b0d01',
-    fontSize: 14,
-    fontWeight: '500',
+    textAlign: 'center',
   },
   loginButton: {
     width: '100%',
-    backgroundColor: "#a91101", // Red background for active category
-    borderColor: "#8b0d01", // Darker red border for contrast
+    backgroundColor: "#a91101",
+    borderColor: "#8b0d01",
     borderRadius: 6,
     paddingVertical: 14,
     marginBottom: 16,
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
   },
   createAccountButton: {
     width: '100%',
-    borderColor: "#8b0d01", // Darker red border for contrast
+    borderColor: "#8b0d01",
     borderWidth: 1,
     borderRadius: 6,
     paddingVertical: 14,
@@ -217,29 +221,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  guestButton: {
+  successContainer: {
     width: '100%',
-    backgroundColor: '#D9D9D9',
-    borderRadius: 6,
-    paddingVertical: 14,
+    maxWidth: 400,
     alignItems: 'center',
-    marginTop: 16,
-    borderColor: "#d4d4d4", // Light border for subtle distinction
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15, // Add slight shadow for 3D effect
-    shadowRadius: 3,
+    padding: 20,
   },
-  guestButtonText: {
+  successTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#333',
-    fontSize: 16,
-    fontWeight: '600',
+    marginBottom: 16,
   },
-  errorText: {
-    color: 'red',
-    marginTop: 8,
+  successText: {
+    fontSize: 16,
+    color: '#555',
     textAlign: 'center',
-  },  
+    marginBottom: 24,
+    lineHeight: 22,
+  },
 });
 
-export default Login;
+export default ForgotPassword;
