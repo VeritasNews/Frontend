@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
-import axios from "axios";
-import { Picker } from '@react-native-picker/picker'; // Use this if you're using @react-native-picker
-import { getAuthToken } from "../../utils/authAPI"; // ✅ Adjust the path if needed
-
-const BASE_URL = "http://139.179.221.240:8000/api/";
+import { Picker } from "@react-native-picker/picker";
+import { getPrivacySettings, updatePrivacySettings } from "../../utils/userAPI";
 
 const Settings = ({ navigation }) => {
   const [privacySettings, setPrivacySettings] = useState({
@@ -19,27 +16,19 @@ const Settings = ({ navigation }) => {
 
   const fetchSettings = async () => {
     try {
-      const token = await getAuthToken();
-      const res = await axios.get(`${BASE_URL}me/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPrivacySettings(res.data.privacySettings);
+      const settings = await getPrivacySettings();
+      setPrivacySettings(settings);
     } catch (error) {
       console.error("Error fetching settings:", error);
     }
   };
 
-  const updateSettings = async () => {
+  const saveSettings = async () => {
     try {
-      const token = await getAuthToken();
-      await axios.patch(`${BASE_URL}user/privacy/`, {
-        privacySettings
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await updatePrivacySettings(privacySettings);
       alert("✅ Privacy settings updated!");
     } catch (error) {
-      console.error("Error updating settings:", error);
+      console.error("Error saving settings:", error);
       alert("⚠️ Failed to update settings.");
     }
   };
@@ -53,9 +42,11 @@ const Settings = ({ navigation }) => {
       <Text style={styles.label}>{label}</Text>
       <Picker
         selectedValue={privacySettings[key]}
-        onValueChange={(value) => setPrivacySettings(prev => ({ ...prev, [key]: value }))}
+        onValueChange={(value) =>
+          setPrivacySettings((prev) => ({ ...prev, [key]: value }))
+        }
       >
-        {options.map(opt => (
+        {options.map((opt) => (
           <Picker.Item key={opt} label={opt} value={opt} />
         ))}
       </Picker>
@@ -70,8 +61,7 @@ const Settings = ({ navigation }) => {
       {renderPicker("Friends List", "friends_list")}
       {renderPicker("Profile Info", "profile_info")}
       {renderPicker("Activity Status", "activity_status")}
-
-      <Button title="Save Settings" onPress={updateSettings} />
+      <Button title="Save Settings" onPress={saveSettings} />
     </View>
   );
 };
