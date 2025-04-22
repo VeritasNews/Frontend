@@ -204,7 +204,12 @@ const ForYouPersonalized = ({ navigation }) => {
     }
   };
 
-  const renderNewsCard = (item, showImage = true, imageHeight = 100) => {
+  const renderNewsCard = (item, showImage = true, imageHeight = 100, fixedHeight = null) => {
+    if (item.isPlaceholder) return null;
+    
+    // Return null if there's no title (instead of rendering empty text)
+    if (!item.title) return null;
+  
     const fontSize = getFontSize(item.size);
     return (
       <TouchableOpacity
@@ -213,11 +218,23 @@ const ForYouPersonalized = ({ navigation }) => {
           navigation.navigate("NewsDetail", { articleId: item.id });
         }}
       >
-        <View style={[styles.newsCard, styles[item.size]]}>
-          <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
-          <View style={styles.horizontalLine} />
+        <View
+          style={[
+            styles.newsCard,
+            styles[item?.size] ?? {},
+            typeof fixedHeight === 'number' ? { minHeight: fixedHeight } : undefined,
+          ]}
+        >
+          {item.title && (
+            <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>
+              {item.title}
+            </Text>
+          )}
+          {item.title && item.summary && <View style={styles.horizontalLine} />}
           {item.summary && (
-            <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
+            <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
+              {item.summary}
+            </Text>
           )}
           {showImage && item.image && (
             <Image
@@ -229,19 +246,31 @@ const ForYouPersonalized = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
-  
 
-  const createDynamicColumns = (data, columnCount) => {
+  const createDynamicColumns = (data, columnCount, minItemsPerColumn = 3) => {
     const maxColumns = Math.min(columnCount, 3);
     const columns = Array.from({ length: maxColumns }, () => []);
+    
+    // First pass: distribute items evenly by count
     data.forEach((item, index) => {
       const columnIndex = index % maxColumns;
-      if (columns[columnIndex].length < 3) {
-        columns[columnIndex].push(item);
-      } else {
-        columns[(columnIndex + 1) % maxColumns].push(item);
+      columns[columnIndex].push(item);
+    });
+    
+    // Second pass: fill in empty spaces with placeholder items if needed
+    columns.forEach((column, colIndex) => {
+      while (column.length < minItemsPerColumn) {
+        // Create a placeholder item
+        column.push({ 
+          id: `placeholder-${colIndex}-${column.length}`,
+          title: null,  // Changed from "" to null
+          summary: null, // Changed from "" to null
+          isPlaceholder: true,
+          size: "small"
+        });
       }
     });
+    
     return columns;
   };
 
@@ -261,40 +290,32 @@ const ForYouPersonalized = ({ navigation }) => {
 
   const renderNewsRow = (row) => {
     const numItems = row.length;
+    const isThreeItemRow = numItems === 3;
+    
+    // Equal width distribution for all items in the row
     const itemWidth = 100 / numItems;
-    const lastItemWidth = 100 - itemWidth * (numItems - 1);
-  
-    // Base height for all
-    const baseImageHeight = numItems === 3 ? 60 : 100;
-    const bonusHeight = 40;
-  
-    // Find index of the shortest summary
-    let shortestSummaryIndex = 0;
-    let shortestLength = Infinity;
-  
-    row.forEach((item, idx) => {
-      const length = item.summary?.length || 0;
-      if (length < shortestLength) {
-        shortestLength = length;
-        shortestSummaryIndex = idx;
-      }
-    });
-  
+    
     return (
       <View key={row.map(item => item.id).join('-')} style={styles.row}>
         {row.map((newsItem, index) => {
-          const isShortest = index === shortestSummaryIndex;
-          const imageHeight = isShortest ? baseImageHeight + bonusHeight : baseImageHeight;
-  
           return (
             <View
               key={newsItem.id}
               style={[
                 styles.newsItem,
-                { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` },
+                { 
+                  width: `${itemWidth}%`,
+                  // Ensure consistent margin/padding for 3-item rows
+                  paddingHorizontal: isThreeItemRow ? 2 : 1 
+                },
               ]}
             >
-              {renderNewsCard(newsItem, true, imageHeight)}
+              {isThreeItemRow ? 
+                // Special rendering for 3-item rows with fixed dimensions
+                renderEqualSizedCard(newsItem) :
+                // Normal rendering for other row sizes
+                renderNewsCard(newsItem, true)
+              }
             </View>
           );
         })}
@@ -302,6 +323,48 @@ const ForYouPersonalized = ({ navigation }) => {
     );
   };
   
+  const renderEqualSizedCard = (item) => {
+    if (!item.title) return null; // Add this line
+    
+    const fontSize = { title: 16, summary: 12 };
+    const fixedImageHeight = 80;
+    const fixedSummaryLines = 3;
+    
+    return (
+      <TouchableOpacity
+        onPress={async () => {
+          await logInteraction(item.id, "click");
+          navigation.navigate("NewsDetail", { articleId: item.id });
+        }}
+      >
+        <View style={[styles.newsCard, styles.equalSizedCard]}>
+          <Text 
+            style={[styles.newsTitle, { fontSize: fontSize.title }]}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {item.title}
+          </Text>
+          {item.summary && <View style={styles.horizontalLine} />}
+          {item.summary && (
+            <Text 
+              style={[styles.summaryText, { fontSize: fontSize.summary }]}
+              numberOfLines={fixedSummaryLines}
+              ellipsizeMode="tail"
+            >
+              {item.summary}
+            </Text>
+          )}
+          {item.image && (
+            <Image
+              source={{ uri: getFullImageUrl(item.image) }}
+              style={[styles.imagePlaceholder, { height: fixedImageHeight }]}
+            />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
   
   const columnCount = portrait ? 2 : 3;
 
@@ -330,54 +393,86 @@ const ForYouPersonalized = ({ navigation }) => {
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
         </View>
-
-        {renderHeroArticle(mostImportant)}
-
+  
+        {mostImportant && renderHeroArticle(mostImportant)}
+  
         {sectionGroups.map((group, groupIndex) => (
-          <View key={groupIndex}>
-            {/* Column layout */}
+          <View key={`group-${groupIndex}`}>
+            {/* First Column Layout - with last two items fixed height */}
             {group[0] && (
               <View style={styles.section}>
                 <View style={styles.rowContainer}>
-                  {createDynamicColumns(group[0], columnCount).map((column, columnIndex) => (
-                    <View key={columnIndex} style={styles.column}>
-                      {column.map((item) => (
-                        <View key={item.id} style={styles.newsItem}>
-                          {renderNewsCard(item)}
-                        </View>
-                      ))}
-                    </View>
-                  ))}
+                  {createDynamicColumns(group[0], columnCount).map((column, columnIndex) => {
+                    // Get the last two items in THIS column
+                    const lastTwoInThisColumn = column.slice(-2).map(a => a.id);
+                    
+                    return (
+                      <View key={`col1-${groupIndex}-${columnIndex}`} style={styles.column}>
+                        {column.map((item) => {
+                          try {
+                            // Check if this item is one of the last two in its column
+                            const isFixed = lastTwoInThisColumn.includes(item.id);
+                            return (
+                              <View key={item.id} style={styles.newsItem}>
+                                {item.title ? renderNewsCard(item, true, 100, isFixed ? 300 : null) : <View style={styles.emptyCard} />}
+                              </View>
+                            );
+                          } catch (e) {
+                            console.warn("Render error for item:", item.id, e);
+                            return <View key={item.id} style={styles.emptyCard} />;
+                          }
+                        })}
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
             )}
-
-            {/* Row layout */}
+  
+            {/* Row Layout */}
             {group[1] && (
               <View style={styles.section}>
-                {createDynamicRows(group[1]).map((row) => renderNewsRow(row))}
+                {createDynamicRows(group[1]).map((row, rowIndex) => (
+                  <View key={`row-${groupIndex}-${rowIndex}`}>
+                    {renderNewsRow(row)}
+                  </View>
+                ))}
               </View>
             )}
-
-            {/* Column layout again */}
+  
+            {/* Second Column Layout - with last two items fixed height */}
             {group[2] && (
               <View style={styles.section}>
                 <View style={styles.rowContainer}>
-                  {createDynamicColumns(group[2], columnCount).map((column, columnIndex) => (
-                    <View key={columnIndex} style={styles.column}>
-                      {column.map((item) => (
-                        <View key={item.id} style={styles.newsItem}>
-                          {renderNewsCard(item)}
-                        </View>
-                      ))}
-                    </View>
-                  ))}
+                  {createDynamicColumns(group[2], columnCount).map((column, columnIndex) => {
+                    // Get the last two items in THIS column
+                    const lastTwoInThisColumn = column.slice(-2).map(a => a.id);
+                    
+                    return (
+                      <View key={`col2-${groupIndex}-${columnIndex}`} style={styles.column}>
+                        {column.map((item) => {
+                          try {
+                            // Check if this item is one of the last two in its column
+                            const isFixed = lastTwoInThisColumn.includes(item.id);
+                            return (
+                              <View key={item.id} style={styles.newsItem}>
+                                {item.title ? renderNewsCard(item, true, 100, isFixed ? 280 : null) : <View style={styles.emptyCard} />}
+                              </View>
+                            );
+                          } catch (e) {
+                            console.warn("Render error for item:", item.id, e);
+                            return <View key={item.id} style={styles.emptyCard} />;
+                          }
+                        })}
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
             )}
           </View>
         ))}
-
+  
         {sortedNewsData.length === 0 && (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>No articles found</Text>
@@ -388,7 +483,6 @@ const ForYouPersonalized = ({ navigation }) => {
     </View>
   );
 };
-
 
 // ✅ Styles
 const styles = StyleSheet.create({
@@ -413,11 +507,14 @@ const styles = StyleSheet.create({
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-  },
+    alignItems: "stretch", // ⬅️ Stretch all columns to max height
+  },  
   column: {
     flex: 1,
     alignItems: "center",
+    alignSelf: "stretch", // ⬅️ Ensure full height per column
   },
+
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -429,16 +526,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 1,
   },
   newsCard: {
-    backgroundColor: "transparent", // ← removes grey/white background
+    backgroundColor: "#f2f2f2", // light gray box background (or any subtle tone)
     padding: 10,
-    borderRadius: 0,                // ← optional: makes it flat
-    elevation: 0,                   // ← removes Android shadow
+    borderRadius: 4,            // optional: slightly rounded corners
+    borderWidth: 1,
+    borderColor: "#bbbbbb",        // soft border
+    elevation: 0,               // no Android shadow
+    shadowColor: "transparent", // no iOS shadow
     fontFamily: "OldStandard-Bold",
     alignItems: "center",
   },
+  
   horizontalLine: {
     height: 0.5,
-    backgroundColor: "#ccc",
+    backgroundColor: "black",
     width: "100%",  // ✅ Matches the width of the news card
     marginVertical: 8,
   },  
@@ -466,14 +567,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   heroCard: {
-    width: "100%",
-    backgroundColor: "transparent", // no background, clean like newspaper
-    paddingVertical: 12,
-    paddingHorizontal: 0,
-    borderRadius: 0,
-    shadowColor: "transparent", // removes any drop shadow
-    elevation: 0,
-    alignItems: "flex-start", // aligns content to the left like newsprint
+    backgroundColor: "#f2f2f2", // light gray box background (or any subtle tone)
+    padding: 10,
+    borderRadius: 4,            // optional: slightly rounded corners
+    borderWidth: 1,
+    borderColor: "#bbbbbb",        // soft border
+    elevation: 0,               // no Android shadow
+    shadowColor: "transparent", // no iOS shadow
+    fontFamily: "OldStandard-Bold",
+    alignItems: "center",
   },  
   heroImage: {
     width: "100%",
@@ -497,6 +599,11 @@ const styles = StyleSheet.create({
     textAlign: "justify",
     lineHeight: 22,
   },    
+  // Add to your StyleSheet
+  equalSizedCard: {
+    height: 240, // Fixed height for equal-sized cards
+    justifyContent: 'space-between',
+  },
 });
 
 export default ForYouPersonalized;
