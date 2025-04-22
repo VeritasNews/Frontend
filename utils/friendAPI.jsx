@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { getAuthToken } from './authAPI';
 
-const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = 'http://139.179.221.240:8000/api/';
 
 const formatProfilePictureUrl = (url) => {
   if (!url || typeof url !== 'string') return null;
   
   if (url.startsWith('http')) return url;
   
-  return `http://localhost:8000${url.startsWith('/') ? '' : '/'}${url}`;
+  return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
 const processFriendRequestData = (data) => {

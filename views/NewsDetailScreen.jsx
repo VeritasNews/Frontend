@@ -77,7 +77,7 @@ const NewsDetailScreen = ({ route, navigation }) => {
       
       setLiked(isLiked);
       
-      logInteraction(articleId, 'view');
+      logInteraction(data.id, 'view');
       
     } catch (error) {
       console.error("Error fetching article or likes:", error);
@@ -129,10 +129,10 @@ const NewsDetailScreen = ({ route, navigation }) => {
   
       if (updatedLiked) {
         await likeArticle(article.articleId, token);
-        logInteraction(article.articleId, 'like');
+        logInteraction(article.id, 'like');
       } else {
         await unlikeArticle(article.articleId, token);
-        logInteraction(article.articleId, 'unlike');
+        logInteraction(article.id, 'unlike');
       }
       
     } catch (err) {
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   fabLiked: {
-    backgroundColor: "#d32f2f",
+    backgroundColor: "#a91101",
   },
   wrapper: {
     flex: 1,
