@@ -3,6 +3,82 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'http://localhost:8000/api/';  // Update the base URL
 
+// Helper function to format profile picture URLs
+const formatProfilePictureUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  
+  // If the URL is already absolute, return it as is
+  if (url.startsWith('http')) return url;
+  
+  // Otherwise, prepend the domain
+  return `http://localhost:8000${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
+// Helper function to process user data and format profile picture URLs
+const processUserData = (data) => {
+  if (Array.isArray(data)) {
+    return data.map(user => {
+      const processed = { ...user };
+      
+      // Format profile picture URL if it exists
+      if (processed.profilePicture) {
+        processed.profilePicture = formatProfilePictureUrl(processed.profilePicture);
+      }
+      
+      return processed;
+    });
+  } else {
+    // Single user object
+    const processed = { ...data };
+    
+    if (processed.profilePicture) {
+      processed.profilePicture = formatProfilePictureUrl(processed.profilePicture);
+    }
+    
+    return processed;
+  }
+};
+
+// Helper function to process friend request data and format image URLs
+const processFriendRequestData = (data) => {
+  if (!Array.isArray(data)) return data;
+  
+  return data.map(request => {
+    // Create a copy to avoid mutating the original object
+    const processed = { ...request };
+    
+    // Possible property names for profile pictures
+    const pictureProps = ['profilePicture', 'profile_picture', 'avatar', 'profile_pic', 'profilePic'];
+    
+    // Format direct properties on the request object
+    pictureProps.forEach(prop => {
+      if (processed[prop]) {
+        processed[prop] = formatProfilePictureUrl(processed[prop]);
+      }
+    });
+    
+    // Format nested properties in sender object
+    if (processed.sender) {
+      pictureProps.forEach(prop => {
+        if (processed.sender[prop]) {
+          processed.sender[prop] = formatProfilePictureUrl(processed.sender[prop]);
+        }
+      });
+    }
+    
+    // Format nested properties in user object
+    if (processed.user) {
+      pictureProps.forEach(prop => {
+        if (processed.user[prop]) {
+          processed.user[prop] = formatProfilePictureUrl(processed.user[prop]);
+        }
+      });
+    }
+    
+    return processed;
+  });
+};
+
 /**
  * Fetch all articles
  */
@@ -128,8 +204,9 @@ export const getUserProfile = async () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      return response.data;
+      
+      // Process profile picture URLs
+      return processUserData(response.data);
     } catch (error) {
       console.error("Error fetching profile:", error);
       throw error;
@@ -296,7 +373,7 @@ export const fetchFriends = async () => {
   const response = await axios.get(`${BASE_URL}friends/`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  return response.data;
+  return processUserData(response.data);
 };
 
 export const searchUsers = async (query) => {
@@ -305,16 +382,27 @@ export const searchUsers = async (query) => {
     headers: { Authorization: `Bearer ${token}` },
     params: { q: query }
   });
-  return response.data;
+  return processUserData(response.data);
 };
 
-// Add this in your utils/api.jsx
 export const fetchFriendRequests = async () => {
   const token = await getAuthToken();
-  const response = await axios.get(`${BASE_URL}friends/requests/`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
+  try {
+    const response = await axios.get(`${BASE_URL}friends/requests/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    console.log('Original API response:', response.data);
+    
+    const processedData = processFriendRequestData(response.data);
+    
+    console.log('Processed data with formatted URLs:', processedData);
+    
+    return processedData;
+  } catch (error) {
+    console.error('Error in fetchFriendRequests:', error);
+    throw error;
+  }
 };
 
 export const getFriendsLikedArticles = async () => {
@@ -325,6 +413,15 @@ export const getFriendsLikedArticles = async () => {
     },
   });
   return response.data;
+};
+
+export const getFriendsWhoLikedArticle = async (articleId) => {
+  const token = await getAuthToken();
+  const response = await axios.get(`${BASE_URL}articles/${articleId}/friends_liked/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  
+  return processUserData(response.data);
 };
 
 export default api;
