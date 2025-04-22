@@ -88,7 +88,7 @@ const ProfileScreen = ({ navigation }) => {
   const renderArticleItem = ({ item }) => (
     <TouchableOpacity
       style={styles.articleCard}
-      onPress={() => navigation.navigate('NewsDetailScreen', { articleId: item.articleId })}
+      onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
     >
       {item.image ? (
         <Image source={{ uri: item.image }} style={styles.image} />
@@ -204,15 +204,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   inlineBtn: {
-    backgroundColor: '#f1f1f1',
+    backgroundColor: '#a91101',
+    borderColor: "#8b0d01", // Darker red border for contrast
+    borderRadius: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 20,
   },
   inlineBtnText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#333',
+    color: 'white',
   },
 
   statsRow: {

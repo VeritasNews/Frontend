@@ -129,11 +129,14 @@ const NewsDetailScreen = ({ route, navigation }) => {
   
       if (updatedLiked) {
         await likeArticle(article.articleId, token);
-        logInteraction(article.id, 'like');
+        console.log("🔁 Logging LIKE interaction...");
+        await logInteraction(article.id, 'like');
       } else {
         await unlikeArticle(article.articleId, token);
-        logInteraction(article.id, 'unlike');
+        console.log("🔁 Logging UNLIKE interaction...");
+        await logInteraction(article.id, 'unlike');
       }
+      
       
     } catch (err) {
       console.error("Like/unlike failed:", err);
@@ -150,7 +153,7 @@ const NewsDetailScreen = ({ route, navigation }) => {
   const handleShare = async () => {
     try {
       await Share.share({ message: `${article.title}\n\n${article.summary || ""}` });
-      logInteraction(article.articleId, 'share');
+      logInteraction(article.id, 'share');
     } catch (error) {
       console.error("Error sharing article:", error);
     }
