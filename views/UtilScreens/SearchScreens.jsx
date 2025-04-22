@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, FlatList, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Image
+  View, 
+  Text, 
+  TextInput, 
+  FlatList, 
+  TouchableOpacity,
+  StyleSheet, 
+  ActivityIndicator, 
+  Image, 
+  ScrollView
 } from 'react-native';
-import { searchUsers } from "../../utils/api";
 import { useNavigation } from '@react-navigation/native';
-import BottomNav from "../../components/BottomNav";
+import BottomNav from '../../components/BottomNav';
+import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
+import { getAuthToken } from '../../utils/authAPI';
+import { getFullImageUrl } from '../../utils/articleAPI';
+
+const BASE_URL = 'http://localhost:8000/api/';
 
 const SearchScreen = () => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+  const [userResults, setUserResults] = useState([]);
+  const [articleResults, setArticleResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState({});
   const navigation = useNavigation();
@@ -21,16 +34,21 @@ const SearchScreen = () => {
     setImageErrors({});
     
     try {
-      const users = await searchUsers(query);
-      console.log('Search results:', users);
-      setResults(users);
-    } catch (error) {
-      console.error("Search failed:", error);
+      const token = await getAuthToken();
+      const response = await axios.get(`${BASE_URL}search?q=${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setUserResults(response.data.users || []);
+      setArticleResults(response.data.articles || []);
+    } catch (err) {
+      console.error('Search failed:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  // Profile picture handling functions from dev branch
   const handleImageError = (userId, name) => {
     console.log(`Failed to load image for ${name} (${userId})`);
     setImageErrors(prev => ({
@@ -48,7 +66,8 @@ const SearchScreen = () => {
     );
   };
 
-  const renderUserItem = ({ item }) => {
+  // Enhanced user render function with profile picture handling
+  const renderUser = ({ item }) => {
     const hasValidProfilePicture = 
       item.profilePicture && 
       typeof item.profilePicture === 'string' && 
@@ -77,32 +96,70 @@ const SearchScreen = () => {
     );
   };
 
+  const renderArticle = ({ item }) => (
+    <TouchableOpacity
+      style={styles.articleCard}
+      onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
+    >
+      {item.image ? (
+        <Image source={{ uri: getFullImageUrl(item.image) }} style={styles.image} />
+      ) : (
+        <View style={[styles.image, styles.placeholder]}>
+          <Ionicons name="image-outline" size={40} color="#aaa" />
+        </View>
+      )}
+      <View style={styles.content}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.summary} numberOfLines={2}>
+          {item.summary || 'No summary available.'}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
       <TextInput
-        placeholder="Search users by name or username"
+        placeholder="Search users or articles"
         style={styles.input}
         value={query}
         onChangeText={setQuery}
         onSubmitEditing={handleSearch}
         returnKeyType="search"
       />
-      
+
       {loading ? (
-        <ActivityIndicator size="large" color="#a91101" style={styles.loader} />
+        <ActivityIndicator size="large" color="#a91101" style={{ marginTop: 20 }} />
       ) : (
-        <FlatList
-          data={results}
-          keyExtractor={(item) => item.userId}
-          renderItem={renderUserItem}
-          ListEmptyComponent={
-            query.length > 0 && !loading ? (
-              <Text style={styles.emptyText}>No users found</Text>
-            ) : null
-          }
-        />
+        <ScrollView contentContainerStyle={styles.resultsWrapper}>
+          {userResults.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Users</Text>
+              <FlatList
+                data={userResults}
+                keyExtractor={(item) => item.userId}
+                renderItem={renderUser}
+              />
+            </View>
+          )}
+
+          {articleResults.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Articles</Text>
+              <FlatList
+                data={articleResults}
+                keyExtractor={(item) => item.articleId}
+                renderItem={renderArticle}
+              />
+            </View>
+          )}
+
+          {!userResults.length && !articleResults.length && query.trim() !== '' && (
+            <Text style={styles.empty}>No results found.</Text>
+          )}
+        </ScrollView>
       )}
-      
+
       <BottomNav navigation={navigation} />
     </View>
   );
@@ -111,7 +168,6 @@ const SearchScreen = () => {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    padding: 16, 
     backgroundColor: '#fff' 
   },
   input: {
@@ -119,10 +175,23 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 12,
     borderRadius: 8,
-    marginBottom: 16
+    margin: 16,
   },
+  resultsWrapper: {
+    paddingHorizontal: 10,
+    paddingBottom: 100,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  // User item styles with profile picture
   userItem: {
-    padding: 14,
+    padding: 12,
     borderBottomWidth: 1,
     borderColor: '#eee',
     flexDirection: 'row',
@@ -159,15 +228,35 @@ const styles = StyleSheet.create({
     color: '#777',
     marginTop: 2
   },
-  loader: {
-    marginTop: 20
+  // Article styles
+  articleCard: {
+    flexDirection: 'row',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
+    elevation: 2,
   },
-  emptyText: {
+  image: { width: 100, height: 100 },
+  placeholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+  },
+  content: {
+    flex: 1,
+    padding: 5,
+    justifyContent: 'center',
+  },
+  title: { fontSize: 16, fontWeight: 'bold', color: '#222' },
+  summary: { fontSize: 14, color: '#666', marginTop: 4 },
+  empty: {
     textAlign: 'center',
     marginTop: 30,
-    color: '#777',
-    fontStyle: 'italic'
-  }
+    fontSize: 16,
+    color: '#999',
+    fontStyle: 'italic',
+  },
 });
 
 export default SearchScreen;

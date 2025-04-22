@@ -96,3 +96,25 @@ export const updateProfilePicture = async (imageAsset) => {
     throw error;
   }
 };
+
+export const getPrivacySettings = async () => {
+  const token = await getAuthToken();
+  const res = await axios.get(`${BASE_URL}users/me/`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.data.privacySettings;
+};
+
+export const updatePrivacySettings = async (privacySettings) => {
+  const token = await getAuthToken();
+  const res = await axios.patch(`${BASE_URL}user/privacy/`, {
+    privacySettings
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.data;
+};

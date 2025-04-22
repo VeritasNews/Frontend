@@ -19,6 +19,7 @@ import Login  from './views/AuthScreens/Login';
 import Register from './views/AuthScreens/Register';
 import ChooseCategoryScreen from './views/UtilScreens/ChooseCategoryScreen';
 import SearchScreen from './views/UtilScreens/SearchScreens';
+import Settings from './views/UtilScreens/Settings';
 
 import NewsDetailScreen from "./views/NewsDetailScreen";
 import LikedArticlesScreen from "./views/LikedArticlesScreen";
@@ -41,7 +42,7 @@ import IliskilerNewsScreen from './views/CategoryScreens/IliskilerNewsScreen';
 import KulturNewsScreen from './views/CategoryScreens/KulturNewsScreen';
 import MagazinNewsScreen from './views/CategoryScreens/MagazinNewsScreen';
 import ModaNewsScreen from './views/CategoryScreens/ModaNewsScreen';
-import OtomotivNewsScreen from './views/CategoryScreens/OtomotivNewsScreen';
+// import OtomotivNewsScreen from './views/CategoryScreens/OtomotivNewsScreen';
 import OyunNewsScreen from './views/CategoryScreens/OyunNewsScreen';
 import RuhSagligiNewsScreen from './views/CategoryScreens/RuhSagligiNewsScreen';
 // import SaglikNewsScreen from './views/CategoryScreens/SaglikNewsScreen';
@@ -79,6 +80,7 @@ export default function App() {
         <Stack.Screen name="LikedArticles" component={LikedArticlesScreen} />
 
         <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="Settings" component={Settings} />
 
         {/* category screens */}
         <Stack.Screen name="Suc" component={SucNewsScreen} />
@@ -92,7 +94,7 @@ export default function App() {
         <Stack.Screen name="Kultur" component={KulturNewsScreen} />
         <Stack.Screen name="Magazin" component={MagazinNewsScreen} />
         <Stack.Screen name="Moda" component={ModaNewsScreen} />
-        <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} />
+        {/* <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} /> */}
         <Stack.Screen name="Oyun" component={OyunNewsScreen} />
         <Stack.Screen name="RuhSagligi" component={RuhSagligiNewsScreen} />
         {/* <Stack.Screen name="Saglik" component={SaglikNewsScreen} /> */}

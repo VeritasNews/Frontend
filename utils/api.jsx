@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://localhost:8000/api/';  // Update the base URL
+const BASE_URL = 'http://localhost:8000/api/';
 
 // Helper function to format profile picture URLs
 const formatProfilePictureUrl = (url) => {
