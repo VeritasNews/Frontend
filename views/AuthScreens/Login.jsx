@@ -40,9 +40,12 @@ const Login = ({ navigation }) => {
     }
   };
   
-
   const handleCreateAccount = () => {
     navigation.navigate('Register');
+  };
+
+  const handleForgotPassword = () => {
+    navigation.navigate('ForgotPassword');
   };
 
   return (
@@ -86,6 +89,14 @@ const Login = ({ navigation }) => {
                 secureTextEntry
               />
               
+              {/* Forgot Password Link */}
+              <TouchableOpacity 
+                style={styles.forgotPasswordContainer}
+                onPress={handleForgotPassword}
+              >
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+              
               <TouchableOpacity 
                 style={styles.loginButton}
                 onPress={handleLogin}
@@ -109,9 +120,7 @@ const Login = ({ navigation }) => {
                 disabled={loading}
                 >
                 <Text style={styles.guestButtonText}>Continue without registering</Text>
-            </TouchableOpacity>
-
-
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -172,6 +181,15 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     fontSize: 16,
   },
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginBottom: 16,
+  },
+  forgotPasswordText: {
+    color: '#8b0d01',
+    fontSize: 14,
+    fontWeight: '500',
+  },
   loginButton: {
     width: '100%',
     backgroundColor: "#a91101", // Red background for active category
@@ -217,11 +235,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-    errorText: {
-        color: 'red',
-        marginTop: 8,
-        textAlign: 'center',
-    },  
+  errorText: {
+    color: 'red',
+    marginTop: 8,
+    textAlign: 'center',
+  },  
 });
 
 export default Login;

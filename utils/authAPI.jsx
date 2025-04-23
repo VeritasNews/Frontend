@@ -85,3 +85,35 @@ export const getUserProfile = async () => {
 
   return response.data;
 };
+
+export const requestPasswordReset = async (email) => {
+  try {
+    const response = await axios.post(`${BASE_URL}password-reset/`, { email });
+    return response.data;
+  } catch (error) {
+    console.error("Error requesting password reset:", error.response?.data || error.message);
+    throw new Error(
+      error.response?.data?.error || 
+      error.response?.data?.message || 
+      "Failed to send password reset email. Please try again."
+    );
+  }
+};
+
+export const resetPassword = async (uid, token, newPassword) => {
+  try {
+    const response = await axios.post(`${BASE_URL}password-reset/confirm/`, {
+      uid,
+      token,
+      new_password: newPassword
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error resetting password:", error.response?.data || error.message);
+    throw new Error(
+      error.response?.data?.error || 
+      error.response?.data?.message || 
+      "Password reset failed. The link may have expired."
+    );
+  }
+};

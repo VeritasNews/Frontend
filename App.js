@@ -1,6 +1,7 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { Linking } from "react-native";
 
 // Import Screens
 import { MessagesScreen } from "./views/MessagesScreen";
@@ -15,8 +16,10 @@ import ForYouPersonalized from "./views/MainScreens/ForYouPersonalized";
 import Deneme from "./views/MainScreens/Deneme";
 
 const Stack = createStackNavigator();
-import Login  from './views/AuthScreens/Login';
+import Login from './views/AuthScreens/Login';
 import Register from './views/AuthScreens/Register';
+import ForgotPassword from './views/AuthScreens/ForgotPassword'; // Import the new ForgotPassword screen
+import ResetPassword from './views/AuthScreens/ResetPassword'; // Import the new ResetPassword screen
 import ChooseCategoryScreen from './views/UtilScreens/ChooseCategoryScreen';
 import SearchScreen from './views/UtilScreens/SearchScreens';
 import Settings from './views/UtilScreens/Settings';
@@ -57,17 +60,34 @@ import YemekNewsScreen from './views/CategoryScreens/YemekNewsScreen';
 import EntertainmentNewsScreen from './views/CategoryScreens/EntertainmentNewsScreen';
 import SucNewsScreen from "./views/CategoryScreens/SucNewsScreen";
 
+// Define linking configuration for deep links (used for password reset)
+const linking = {
+  prefixes: [
+    'veritasnews://', 
+    'http://localhost:8000', 
+    'http://127.0.0.1:8000',
+    'exp://' // For Expo development
+  ],
+  config: {
+    screens: {
+      ResetPassword: {
+        path: 'reset-password/:uid/:token',
+        parse: {
+          uid: (uid) => decodeURIComponent(uid),
+          token: (token) => decodeURIComponent(token),
+        },
+      },
+    },
+  },
+};
+
 export default function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        {/* <Stack.Navigator initialRouteName="Deneme" screenOptions={{ headerShown: false }}> */}
-        {/* <Stack.Navigator initialRouteName="ForYou" screenOptions={{ headerShown: false }}> */}
         <Stack.Screen name="Deneme" component={Deneme} />
         <Stack.Screen name="ForYouPersonalized" component={ForYouPersonalized} />
         <Stack.Screen name="ForYou" component={ForYou} />
-
-        {/* <Stack.Screen name="MainPage" component={MainPage} /> */}
         <Stack.Screen name="Messages" component={MessagesScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Siyaset" component={SiyasetNewsScreen} />
@@ -76,15 +96,15 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="ChooseCategoryScreen" component={ChooseCategoryScreen} />
         <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} />
         <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
         <Stack.Screen name="LikedArticles" component={LikedArticlesScreen} />
-
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="Settings" component={Settings} />
-
-        {/* category screens */}
+        
+        {/* Category screens */}
         <Stack.Screen name="Suc" component={SucNewsScreen} />
-        {/* <Stack.Screen name="Bilim" component={BilimNewsScreen} /> */}
         <Stack.Screen name="Cevre" component={CevreNewsScreen} />
         <Stack.Screen name="Din" component={DinNewsScreen} />
         <Stack.Screen name="DunyaHaberleri" component={DunyaHaberleriNewsScreen} />
@@ -94,10 +114,8 @@ export default function App() {
         <Stack.Screen name="Kultur" component={KulturNewsScreen} />
         <Stack.Screen name="Magazin" component={MagazinNewsScreen} />
         <Stack.Screen name="Moda" component={ModaNewsScreen} />
-        {/* <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} /> */}
         <Stack.Screen name="Oyun" component={OyunNewsScreen} />
         <Stack.Screen name="RuhSagligi" component={RuhSagligiNewsScreen} />
-        {/* <Stack.Screen name="Saglik" component={SaglikNewsScreen} /> */}
         <Stack.Screen name="Sanat" component={SanatNewsScreen} />
         <Stack.Screen name="Seyahat" component={SeyahatNewsScreen} />
         <Stack.Screen name="Spor" component={SporNewsScreen} />
@@ -113,8 +131,6 @@ export default function App() {
         <Stack.Screen name="FriendsList" component={FriendsListScreen} />
         <Stack.Screen name="FriendsNews" component={FriendsNewsScreen} />
         <Stack.Screen name="FriendsArticleDetail" component={FriendsArticleDetailScreen} />
-
-        {/* Add other screens here */}
       </Stack.Navigator>
     </NavigationContainer>
   );
