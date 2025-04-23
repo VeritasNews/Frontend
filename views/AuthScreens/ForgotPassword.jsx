@@ -21,6 +21,16 @@ const ForgotPassword = ({ navigation }) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  // ALWAYS show a back button for emergency navigation
+  const BackButton = () => (
+    <TouchableOpacity 
+      style={styles.backButton}
+      onPress={() => navigation.navigate('Login')}
+    >
+      <Text style={styles.backButtonText}>← Back to Login</Text>
+    </TouchableOpacity>
+  );
+
   const handleResetRequest = async () => {
     if (!email) {
       setError('Please enter your email address');
@@ -31,21 +41,37 @@ const ForgotPassword = ({ navigation }) => {
       setLoading(true);
       setError('');
       await requestPasswordReset(email);
+      
+      // Important: Set success state to true
       setSuccess(true);
+      
+      // Show alert as additional confirmation
+      Alert.alert(
+        'Email Sent',
+        `We've sent password reset instructions to ${email}. Please check your inbox.`,
+        [
+          { text: 'OK' }
+        ]
+      );
     } catch (error) {
       setError(error.message || 'Failed to send password reset request. Please try again.');
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to send password reset request. Please try again.',
+        [
+          { text: 'OK' }
+        ]
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBackToLogin = () => {
-    navigation.navigate('Login');
-  };
-
+  // Success screen with back navigation
   if (success) {
     return (
       <SafeAreaView style={styles.container}>
+        <BackButton />
         <View style={styles.contentContainer}>
           <Image
             source={require('../../assets/set2_no_bg.png')}
@@ -62,7 +88,7 @@ const ForgotPassword = ({ navigation }) => {
             
             <TouchableOpacity 
               style={styles.loginButton}
-              onPress={handleBackToLogin}
+              onPress={() => navigation.navigate('Login')}
             >
               <Text style={styles.loginButtonText}>Back to Login</Text>
             </TouchableOpacity>
@@ -72,8 +98,11 @@ const ForgotPassword = ({ navigation }) => {
     );
   }
 
+  // Form screen with back navigation
   return (
     <SafeAreaView style={styles.container}>
+      <BackButton />
+      
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -124,7 +153,7 @@ const ForgotPassword = ({ navigation }) => {
 
               <TouchableOpacity 
                 style={styles.createAccountButton}
-                onPress={handleBackToLogin}
+                onPress={() => navigation.navigate('Login')}
                 disabled={loading}
               >
                 <Text style={styles.createAccountButtonText}>Back to Login</Text>
@@ -196,8 +225,8 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     width: '100%',
-    backgroundColor: "#a91101",
-    borderColor: "#8b0d01",
+    backgroundColor: "#a91101", // Red background for active category
+    borderColor: "#8b0d01", // Darker red border for contrast
     borderRadius: 6,
     paddingVertical: 14,
     marginBottom: 16,
@@ -210,7 +239,7 @@ const styles = StyleSheet.create({
   },
   createAccountButton: {
     width: '100%',
-    borderColor: "#8b0d01",
+    borderColor: "#8b0d01", // Darker red border for contrast
     borderWidth: 1,
     borderRadius: 6,
     paddingVertical: 14,
@@ -239,6 +268,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 22,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 999,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#a91101',
+    fontWeight: 'bold',
   },
 });
 
