@@ -74,18 +74,19 @@ const Login = ({ navigation }) => {
             <TextInput
               style={styles.input}
               placeholder="Email or Username"
+              placeholderTextColor="#888" // 👈 Add this
               value={identifier}
               onChangeText={setIdentifier}
               autoCapitalize="none"
             />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-              
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#888"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
               <TouchableOpacity 
                 style={styles.loginButton}
                 onPress={handleLogin}
@@ -105,7 +106,7 @@ const Login = ({ navigation }) => {
               
               <TouchableOpacity 
                 style={styles.guestButton}
-                onPress={() => navigation.navigate('ForYou')}
+                onPress={() => navigation.navigate('ForYouPersonalized')}
                 disabled={loading}
                 >
                 <Text style={styles.guestButtonText}>Continue without registering</Text>
@@ -171,7 +172,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 6,
     fontSize: 16,
-  },
+    color: 'black', // 👈 This makes input text black
+  },  
   loginButton: {
     width: '100%',
     backgroundColor: "#a91101", // Red background for active category
