@@ -85,21 +85,25 @@ const SiyasetNewsScreen = ({ navigation }) => {
 
   const renderHeroCard = (article) => {
     if (!article) return null;
-    const font = getFontSize("xl");
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: article.id })}>
+      <TouchableOpacity
+        onPress={async () => {
+          await logInteraction(article.id, "click");
+          navigation.navigate("NewsDetail", { articleId: article.id });
+        }}
+      >
         <View style={styles.heroCard}>
-          <Text style={[styles.heroTitle, { fontSize: font.title }]}>{article.title}</Text>
+          {typeof article.title === "string" && (
+            <Text style={styles.heroTitle}>{article.title}</Text>
+          )}
+          {typeof article.summary === "string" && (
+            <Text style={styles.heroSummary}>{article.summary}</Text>
+          )}
           {article.image && (
             <Image
               source={{ uri: getFullImageUrl(article.image) }}
               style={styles.heroImage}
             />
-          )}
-          {article.summary && (
-            <Text style={[styles.heroSummary, { fontSize: font.summary }]}>
-              {article.summary}
-            </Text>
           )}
         </View>
       </TouchableOpacity>
@@ -174,7 +178,6 @@ const SiyasetNewsScreen = ({ navigation }) => {
   );
 };
 
-// ✅ STYLES (same as ForYouPersonalized)
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -187,6 +190,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    color: "#a91101",
   },
   categoryContainer: {
     alignItems: "center",
@@ -198,9 +202,11 @@ const styles = StyleSheet.create({
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    width: "100%",
   },
   column: {
     flex: 1,
+    width: "100%",
     alignItems: "center",
   },
   newsItem: {
@@ -212,6 +218,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
     borderWidth: 1,
+    width: "100%",
     borderColor: "#bbb",
     alignItems: "center",
   },
@@ -225,18 +232,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroTitle: {
-    fontWeight: "bold",
-    fontFamily: "Georgia",
-    marginBottom: 8,
-    textAlign: "center",
-    lineHeight: 32,
+    fontSize: 30, // Make it visually loud like a newspaper headline
+    fontWeight: "900", // Maximum system boldness
+    fontFamily: "Georgia", // Elegant serif like newspapers
+    color: "#000", // Deep black for print-style contrast
+    marginBottom: 4,
+    textAlign: "center", // 'middle' is not valid — use 'center'
+    lineHeight: 36,
   },
   heroSummary: {
     fontFamily: "Georgia",
     color: "#333",
     textAlign: "justify",
-    marginTop: 10,
+    marginTop: 0,
     lineHeight: 20,
+    textAlign: "center", // 'middle' is not valid — use 'center'
   },
   heroImage: {
     width: "100%",

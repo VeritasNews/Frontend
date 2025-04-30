@@ -8,7 +8,7 @@ import { MessagesScreen } from "./views/MessagesScreen";
 import ProfileScreen from "./views/ProfileScreen";
 import MainPage from "./views/CategoryScreens/MainPage";
 import SiyasetNewsScreen from './views/CategoryScreens/SiyasetNewsScreen';
-import ScrollableScreen from './views/ScrollableScreen';
+import ScrollableScreen from './views/MainScreens/ScrollableScreen';
 
 //Main Screens
 import ForYou from './views/MainScreens/ForYou';

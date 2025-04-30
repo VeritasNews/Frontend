@@ -40,12 +40,9 @@ const Login = ({ navigation }) => {
     }
   };
   
+
   const handleCreateAccount = () => {
     navigation.navigate('Register');
-  };
-
-  const handleForgotPassword = () => {
-    navigation.navigate('ForgotPassword');
   };
 
   return (
@@ -77,26 +74,19 @@ const Login = ({ navigation }) => {
             <TextInput
               style={styles.input}
               placeholder="Email or Username"
+              placeholderTextColor="#888" // 👈 Add this
               value={identifier}
               onChangeText={setIdentifier}
               autoCapitalize="none"
             />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-              
-              {/* Forgot Password Link */}
-              <TouchableOpacity 
-                style={styles.forgotPasswordContainer}
-                onPress={handleForgotPassword}
-              >
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-              </TouchableOpacity>
-              
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#888"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
               <TouchableOpacity 
                 style={styles.loginButton}
                 onPress={handleLogin}
@@ -116,11 +106,13 @@ const Login = ({ navigation }) => {
               
               <TouchableOpacity 
                 style={styles.guestButton}
-                onPress={() => navigation.navigate('ForYou')}
+                onPress={() => navigation.navigate('ForYouPersonalized')}
                 disabled={loading}
                 >
                 <Text style={styles.guestButtonText}>Continue without registering</Text>
-              </TouchableOpacity>
+            </TouchableOpacity>
+
+
             </View>
           </View>
         </ScrollView>
@@ -180,16 +172,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 6,
     fontSize: 16,
-  },
-  forgotPasswordContainer: {
-    alignSelf: 'flex-end',
-    marginBottom: 16,
-  },
-  forgotPasswordText: {
-    color: '#8b0d01',
-    fontSize: 14,
-    fontWeight: '500',
-  },
+    color: 'black', // 👈 This makes input text black
+  },  
   loginButton: {
     width: '100%',
     backgroundColor: "#a91101", // Red background for active category
@@ -235,11 +219,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  errorText: {
-    color: 'red',
-    marginTop: 8,
-    textAlign: 'center',
-  },  
+    errorText: {
+        color: 'red',
+        marginTop: 8,
+        textAlign: 'center',
+    },  
 });
 
 export default Login;

@@ -7,14 +7,13 @@ import {
   Dimensions,
   ActivityIndicator,
   TouchableOpacity,
-  Image,
-  Platform
+  Image
 } from "react-native";
 import { getArticlesForUser, logInteraction } from "../../utils/articleAPI";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";
-import { getUserProfile } from "../../utils/authAPI"; // ✅ ADD THIS LINE
+import { getUserProfile } from "../../utils/authAPI";
 import { getFullImageUrl } from "../../utils/articleAPI";
 
 const isPortrait = () => {
@@ -22,15 +21,7 @@ const isPortrait = () => {
   return height >= width;
 };
 
-const chunkArray = (array, chunkSize = 4) => {
-  const result = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    result.push(array.slice(i, i + chunkSize));
-  }
-  return result;
-};
-
-const ForYouPersonalized = ({ navigation }) => {
+const ScrollableScreen = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
@@ -78,21 +69,6 @@ const ForYouPersonalized = ({ navigation }) => {
     }
   };
   
-  function shouldShowImage(article, rowLength, indexInRow) {
-    const priority = article.personalized_priority?.toLowerCase() || article.priority?.toLowerCase() || "";
-  
-    const isHighPriority = ["most", "high"].includes(priority);
-    const shortSummary = (article.summary?.length || 0) < 100;
-    const shortTitle = (article.title?.length || 0) < 50;
-  
-    if (rowLength < 3) return true; // Always show in 1-2 layouts
-    if (isHighPriority && shortSummary) return true; // priority + visual space
-    if (shortTitle && indexInRow === 1) return true; // middle one only
-  
-    return false;
-  }
-  
-  
   const sortNewsByPreferenceAndPriority = (articles, preferredCategories = []) => {
     const priorityGroups = {
       high: [],
@@ -133,8 +109,6 @@ const ForYouPersonalized = ({ navigation }) => {
     ];
   };
   
-  
-
   const assignNewsSizes = (data) => {
     const total = data.length;
     const xl = Math.ceil(total * 0.1);
@@ -150,23 +124,6 @@ const ForYouPersonalized = ({ navigation }) => {
     });
   };
 
-  const mostImportant = newsData.length > 0 && 
-  newsData.find(a => a.priority === "most" || a.personalized_priority === "most");
-
-  // Filter out the most important article from the data that will be used in the grid
-  const otherArticles = mostImportant ? 
-    newsData.filter(article => article.id !== mostImportant.id) : 
-    newsData;
-
-  // Sort and size the filtered list
-  const sortedNewsData = assignNewsSizes(
-    sortNewsByPreferenceAndPriority(otherArticles, preferredCategories)
-  );
-  const articleChunks = chunkArray(sortedNewsData, 4);
-  const sectionGroups = chunkArray(articleChunks, 1); // each group = column, row, column
-  // Find the most important article
-
-
   const renderHeroArticle = (article) => {
     if (!article) return null;
     return (
@@ -177,10 +134,8 @@ const ForYouPersonalized = ({ navigation }) => {
         }}
       >
         <View style={styles.heroCard}>
-          {typeof article.title === "string" && (
-            <Text style={styles.heroTitle}>{article.title}</Text>
-          )}
-          {typeof article.summary === "string" && (
+          <Text style={styles.heroTitle}>{article.title}</Text>
+          {article.summary && (
             <Text style={styles.heroSummary}>{article.summary}</Text>
           )}
           {article.image && (
@@ -194,7 +149,6 @@ const ForYouPersonalized = ({ navigation }) => {
     );
   };
   
-  
   const getFontSize = (size) => {
     switch (size) {
       case "xl": return { title: 20, summary: 13 };
@@ -206,7 +160,7 @@ const ForYouPersonalized = ({ navigation }) => {
     }
   };
 
-  const renderNewsCard = (item, showImage = true, imageHeight = 100) => {
+  const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
     return (
       <TouchableOpacity
@@ -221,91 +175,16 @@ const ForYouPersonalized = ({ navigation }) => {
           {item.summary && (
             <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
           )}
-          {showImage && item.image && (
+          {item.image && (
             <Image
               source={{ uri: getFullImageUrl(item.image) }}
-              style={[styles.imagePlaceholder, { height: imageHeight }]}
+              style={styles.imagePlaceholder}
             />
           )}
         </View>
       </TouchableOpacity>
     );
   };
-  
-
-  const createDynamicColumns = (data, columnCount) => {
-    const maxColumns = Math.min(columnCount, 3);
-    const columns = Array.from({ length: maxColumns }, () => []);
-    data.forEach((item, index) => {
-      const columnIndex = index % maxColumns;
-      if (columns[columnIndex].length < 3) {
-        columns[columnIndex].push(item);
-      } else {
-        columns[(columnIndex + 1) % maxColumns].push(item);
-      }
-    });
-    return columns;
-  };
-
-  const createDynamicRows = (data, maxItemsPerRow = 3) => {
-    const rows = [];
-    let currentRow = [];
-    data.forEach((item) => {
-      currentRow.push(item);
-      if (currentRow.length === maxItemsPerRow) {
-        rows.push(currentRow);
-        currentRow = [];
-      }
-    });
-    if (currentRow.length > 0) rows.push(currentRow);
-    return rows;
-  };
-
-  const renderNewsRow = (row) => {
-    const numItems = row.length;
-    const itemWidth = 100 / numItems;
-    const lastItemWidth = 100 - itemWidth * (numItems - 1);
-  
-    // Base height for all
-    const baseImageHeight = numItems === 3 ? 60 : 100;
-    const bonusHeight = 40;
-  
-    // Find index of the shortest summary
-    let shortestSummaryIndex = 0;
-    let shortestLength = Infinity;
-  
-    row.forEach((item, idx) => {
-      const length = item.summary?.length || 0;
-      if (length < shortestLength) {
-        shortestLength = length;
-        shortestSummaryIndex = idx;
-      }
-    });
-  
-    return (
-      <View key={row.map(item => item.id).join('-')} style={styles.row}>
-        {row.map((newsItem, index) => {
-          const isShortest = index === shortestSummaryIndex;
-          const imageHeight = isShortest ? baseImageHeight + bonusHeight : baseImageHeight;
-  
-          return (
-            <View
-              key={newsItem.id}
-              style={[
-                styles.newsItem,
-                { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` },
-              ]}
-            >
-              {renderNewsCard(newsItem, true, imageHeight)}
-            </View>
-          );
-        })}
-      </View>
-    );
-  };
-  
-  
-  const columnCount = portrait ? 2 : 3;
 
   if (loading) {
     return (
@@ -315,29 +194,12 @@ const ForYouPersonalized = ({ navigation }) => {
       </View>
     );
   }
-  console.log("🧠 Current platform:", Platform.OS);
 
-  const containerStyle = Platform.select({
-    web: {
-      height: "100vh",
-      width: "100vw",
-      backgroundColor: "#f4f4f4",
-      display: "flex",
-      justifyContent: "center", // center vertically
-      alignItems: "center",     // center horizontally
-    },
-    default: {
-      flex: 1,
-      backgroundColor: "#f4f4f4",
-    },
-  });
-  
   return (
-    <View style={containerStyle}>
+    <View style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          flexGrow: 1, // ✅ crucial to allow scrolling when content exceeds viewport
           backgroundColor: "#f4f4f4",
           paddingHorizontal: 4,
           paddingTop: 10,
@@ -349,24 +211,23 @@ const ForYouPersonalized = ({ navigation }) => {
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
         </View>
-  
-        {renderHeroArticle(mostImportant)}
-  
-        <View style={styles.section}>
-          <View style={styles.rowContainer}>
-            {createDynamicColumns(sortedNewsData, columnCount).map((column, columnIndex) => (
-              <View key={columnIndex} style={styles.column}>
-                {column.map((item) => (
-                  <View key={item.id} style={styles.newsItem}>
-                    {renderNewsCard(item)}
-                  </View>
-                ))}
+
+        {/* Render hero article if exists */}
+        {newsData.find(a => a.priority === "most" || a.personalized_priority === "most") && 
+          renderHeroArticle(newsData.find(a => a.priority === "most" || a.personalized_priority === "most"))}
+
+        {/* Render all other articles in single column */}
+        <View style={styles.singleColumnContainer}>
+          {newsData
+            .filter(article => !(article.priority === "most" || article.personalized_priority === "most"))
+            .map((article) => (
+              <View key={article.id} style={styles.singleArticleContainer}>
+                {renderNewsCard(article)}
               </View>
             ))}
-          </View>
         </View>
-  
-        {sortedNewsData.length === 0 && (
+
+        {newsData.length === 0 && (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>No articles found</Text>
           </View>
@@ -389,37 +250,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    color: "#a91101",
   },
   categoryContainer: {
     alignItems: "center",
     marginVertical: 1,
   },
-  section: {
-    marginBottom: 10,
-  },
-  rowContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  column: {
+  singleColumnContainer: {
     flex: 1,
-    width: "100%",
-    alignItems: "center",
+    paddingHorizontal: 8,
   },
-  newsItem: {
-    marginBottom: 5,
-    paddingHorizontal: 3,
-  },
-  newsCard: {
-    backgroundColor: "#f2f2f2",
-    padding: 10,
-    borderRadius: 4,
-    borderWidth: 1,
-    width: "100%",
-    borderColor: "#bbb",
-    alignItems: "center",
+  singleArticleContainer: {
+    marginBottom: 10,
   },
   heroCard: {
     backgroundColor: "#f2f2f2",
@@ -431,27 +272,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroTitle: {
-    fontSize: 30, // Make it visually loud like a newspaper headline
-    fontWeight: "900", // Maximum system boldness
-    fontFamily: "Georgia", // Elegant serif like newspapers
-    color: "#000", // Deep black for print-style contrast
-    marginBottom: 4,
-    textAlign: "center", // 'middle' is not valid — use 'center'
-    lineHeight: 36,
+    fontWeight: "bold",
+    fontFamily: "Georgia",
+    marginBottom: 8,
+    textAlign: "center",
+    lineHeight: 32,
+    fontWeight: "bold",
   },
   heroSummary: {
     fontFamily: "Georgia",
     color: "#333",
     textAlign: "justify",
-    marginTop: 0,
+    marginTop: 10,
     lineHeight: 20,
-    textAlign: "center", // 'middle' is not valid — use 'center'
   },
   heroImage: {
     width: "100%",
     height: 240,
     marginTop: 8,
     resizeMode: "cover",
+  },
+  newsCard: {
+    backgroundColor: "#f2f2f2",
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#bbb",
   },
   newsTitle: {
     fontWeight: "bold",
@@ -466,9 +312,10 @@ const styles = StyleSheet.create({
   },
   imagePlaceholder: {
     width: "100%",
-    height: 100,
+    height: 150,
     backgroundColor: "#ddd",
     marginTop: 10,
+    resizeMode: "cover",
   },
   horizontalLine: {
     height: 0.5,
@@ -476,6 +323,16 @@ const styles = StyleSheet.create({
     width: "100%",
     marginVertical: 6,
   },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    color: "#666",
+  },
 });
 
-export default ForYouPersonalized;
+export default ScrollableScreen;
