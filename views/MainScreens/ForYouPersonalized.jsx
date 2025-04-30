@@ -319,12 +319,10 @@ const ForYouPersonalized = ({ navigation }) => {
 
   const containerStyle = Platform.select({
     web: {
-      height: "100vh",
-      width: "100vw",
       backgroundColor: "#f4f4f4",
       display: "flex",
-      justifyContent: "center", // center vertically
-      alignItems: "center",     // center horizontally
+      height: "100vh",
+      width: "100vw",
     },
     default: {
       flex: 1,
