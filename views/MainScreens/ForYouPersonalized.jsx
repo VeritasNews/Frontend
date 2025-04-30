@@ -35,6 +35,7 @@ const ForYouPersonalized = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
   const [preferredCategories, setPreferredCategories] = useState([]);
+  const { width: deviceWidth } = Dimensions.get("window");
 
   useEffect(() => {
     fetchNews();
@@ -215,7 +216,13 @@ const ForYouPersonalized = ({ navigation }) => {
           navigation.navigate("NewsDetail", { articleId: item.id });
         }}
       >
-        <View style={[styles.newsCard, styles[item.size]]}>
+        <View style={[
+          styles.newsCard,
+          {
+            width: deviceWidth * 0.49, // About 46% of screen width
+          },
+        ]}>
+
           <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
           <View style={styles.horizontalLine} />
           {item.summary && (
@@ -234,7 +241,7 @@ const ForYouPersonalized = ({ navigation }) => {
   
 
   const createDynamicColumns = (data, columnCount) => {
-    const maxColumns = Math.min(columnCount, 3);
+    const maxColumns = Math.min(columnCount, 2);
     const columns = Array.from({ length: maxColumns }, () => []);
     data.forEach((item, index) => {
       const columnIndex = index % maxColumns;
@@ -400,6 +407,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
+    flexWrap: "wrap",
   },
   column: {
     flex: 1,

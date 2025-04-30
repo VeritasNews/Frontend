@@ -35,7 +35,7 @@ import FriendsNewsScreen from "./views/FriendScreens/FriendsNewsScreen";
 import FriendsArticleDetailScreen from "./views/FriendScreens/FriendsArticleDetailScreen";
 
 // category screens
-// import BilimNewsScreen from './views/CategoryScreens/BilimNewsScreen';
+import BilimNewsScreen from './views/CategoryScreens/BilimNewsScreen';
 import CevreNewsScreen from './views/CategoryScreens/CevreNewsScreen';
 import DinNewsScreen from './views/CategoryScreens/DinNewsScreen';
 import DunyaHaberleriNewsScreen from './views/CategoryScreens/DunyaHaberleriNewsScreen';
@@ -124,6 +124,7 @@ export default function App() {
         <Stack.Screen name="Uzay" component={UzayNewsScreen} />
         <Stack.Screen name="YasamTarzi" component={YasamTarziNewsScreen} />
         <Stack.Screen name="Yemek" component={YemekNewsScreen} />
+        <Stack.Screen name="Bilim" component={BilimNewsScreen} />
 
         {/* Friend Screens */}
         <Stack.Screen name="UserProfile" component={UserProfileScreen} />

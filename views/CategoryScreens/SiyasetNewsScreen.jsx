@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { getArticlesByCategory, logInteraction, getFullImageUrl } from "../../utils/articleAPI";
 import Header from "../../components/Header";
@@ -23,6 +24,7 @@ const SiyasetNewsScreen = ({ navigation }) => {
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
+  const { width: deviceWidth } = Dimensions.get("window");
 
   useEffect(() => {
     fetchNews();
@@ -83,21 +85,17 @@ const SiyasetNewsScreen = ({ navigation }) => {
     }
   };
 
-  const renderHeroCard = (article) => {
+  const renderHeroArticle = (article) => {
     if (!article) return null;
+    const font = getFontSize("xl");
     return (
-      <TouchableOpacity
-        onPress={async () => {
-          await logInteraction(article.id, "click");
-          navigation.navigate("NewsDetail", { articleId: article.id });
-        }}
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: article.id })}>
         <View style={styles.heroCard}>
-          {typeof article.title === "string" && (
-            <Text style={styles.heroTitle}>{article.title}</Text>
-          )}
-          {typeof article.summary === "string" && (
-            <Text style={styles.heroSummary}>{article.summary}</Text>
+          <Text style={[styles.heroTitle, { fontSize: font.title }]}>{article.title}</Text>
+          {article.summary && (
+            <Text style={[styles.heroSummary, { fontSize: font.summary }]}>
+              {article.summary}
+            </Text>
           )}
           {article.image && (
             <Image
@@ -118,7 +116,11 @@ const SiyasetNewsScreen = ({ navigation }) => {
     
     return (
       <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: item.id })}>
-        <View style={styles.newsCard}>
+        <View style={[
+          styles.newsCard,
+          { width: deviceWidth * 0.49 }
+        ]}>
+
           <Text style={[styles.newsTitle, { fontSize: font.title }]}>{item.title}</Text>
           <View style={styles.horizontalLine} />
           {item.summary && (
@@ -147,18 +149,41 @@ const SiyasetNewsScreen = ({ navigation }) => {
     );
   }
 
+    const containerStyle = Platform.select({
+      web: {
+        backgroundColor: "#f4f4f4",
+        display: "flex",
+        height: "100vh",
+        width: "100vw",
+      },
+      default: {
+        flex: 1,
+        backgroundColor: "#f4f4f4",
+      },
+    });
+    
+
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <View style={containerStyle}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1, // ✅ crucial to allow scrolling when content exceeds viewport
+          backgroundColor: "#f4f4f4",
+          paddingHorizontal: 4,
+          paddingTop: 10,
+          paddingBottom: 100,
+        }}
+        showsVerticalScrollIndicator
+      >
         <Header />
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
         </View>
-
+  
         {/* ✅ HERO CARD */}
-        {renderHeroCard(heroArticle)}
-
-        {/* ✅ COLUMN LAYOUT */}
+        {renderHeroArticle(heroArticle)}
+  
         <View style={styles.section}>
           <View style={styles.rowContainer}>
             {createDynamicColumns(columnData, columnCount).map((column, columnIndex) => (
@@ -172,6 +197,12 @@ const SiyasetNewsScreen = ({ navigation }) => {
             ))}
           </View>
         </View>
+  
+        {columnData.length === 0 && (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>No articles found</Text>
+          </View>
+        )}
       </ScrollView>
       <BottomNav navigation={navigation} />
     </View>
@@ -203,6 +234,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
+    flexWrap: "wrap",
   },
   column: {
     flex: 1,

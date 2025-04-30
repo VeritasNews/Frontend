@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { 
   View, 
   Text, 
@@ -12,12 +12,22 @@ import {
   Platform,
   ScrollView
 } from 'react-native';
-import { loginUser, saveAuthToken, saveRefreshToken } from '../../utils/authAPI';
+import { loginUser, saveAuthToken, saveRefreshToken, getAuthToken } from '../../utils/authAPI';
 
 const Login = ({ navigation }) => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await getAuthToken();
+      if (token) {
+        navigation.replace('ForYouPersonalized');
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -106,7 +116,7 @@ const Login = ({ navigation }) => {
               
               <TouchableOpacity 
                 style={styles.guestButton}
-                onPress={() => navigation.navigate('ForYouPersonalized')}
+                onPress={() => navigation.navigate('ForYou')}
                 disabled={loading}
                 >
                 <Text style={styles.guestButtonText}>Continue without registering</Text>
