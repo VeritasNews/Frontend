@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Image
 } from 'react-native';
 import { fetchFriends } from '../../utils/friendAPI';
 import { useNavigation } from '@react-navigation/native';
@@ -15,12 +16,14 @@ import { Ionicons } from '@expo/vector-icons';
 const FriendsListScreen = () => {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imageErrors, setImageErrors] = useState({});
   const navigation = useNavigation();
 
   useEffect(() => {
     const loadFriends = async () => {
       try {
         const data = await fetchFriends();
+        console.log('Friends data:', data);
         setFriends(data);
       } catch (error) {
         console.error('Error fetching friends:', error);
@@ -31,12 +34,52 @@ const FriendsListScreen = () => {
     loadFriends();
   }, []);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.friendCard}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.username}>@{item.userName}</Text>
-    </View>
-  );
+  const handleImageError = (userId, name) => {
+    console.log(`Failed to load image for ${name} (${userId})`);
+    setImageErrors(prev => ({
+      ...prev,
+      [userId]: true
+    }));
+  };
+
+  // Create an initial avatar based on name
+  const getInitialAvatar = (name) => {
+    const initial = name && name.length > 0 ? name.charAt(0).toUpperCase() : '?';
+    return (
+      <View style={styles.initialAvatar}>
+        <Text style={styles.initialText}>{initial}</Text>
+      </View>
+    );
+  };
+
+  const renderItem = ({ item }) => {
+    const hasValidProfilePicture = 
+      item.profilePicture && 
+      typeof item.profilePicture === 'string' && 
+      !imageErrors[item.userId];
+    
+    return (
+      <TouchableOpacity 
+        style={styles.friendCard}
+        onPress={() => navigation.navigate('UserProfile', { user: item })}
+      >
+        {hasValidProfilePicture ? (
+          <Image 
+            source={{ uri: item.profilePicture }}
+            style={styles.profileImage}
+            onError={() => handleImageError(item.userId, item.name)}
+            defaultSource={require('../../assets/default-profile.png')}
+          />
+        ) : (
+          getInitialAvatar(item.name)
+        )}
+        <View style={styles.friendInfo}>
+          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.username}>@{item.userName}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -65,7 +108,10 @@ const FriendsListScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -83,6 +129,31 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16
+  },
+  initialAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16
+  },
+  initialText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#666'
+  },
+  friendInfo: {
+    flex: 1
   },
   name: {
     fontSize: 16,
@@ -91,6 +162,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 14,
     color: '#666',
+    marginTop: 2
   },
   emptyText: {
     textAlign: 'center',
