@@ -216,12 +216,7 @@ const ForYouPersonalized = ({ navigation }) => {
           navigation.navigate("NewsDetail", { articleId: item.id });
         }}
       >
-        <View style={[
-          styles.newsCard,
-          {
-            width: deviceWidth * 0.49, // About 46% of screen width
-          },
-        ]}>
+        <View style={styles.newsCard}>
 
           <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
           <View style={styles.horizontalLine} />
@@ -419,13 +414,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   newsCard: {
+    flexGrow: 1,
+    flexBasis: "48%", // Adjusts based on container width
     backgroundColor: "#f2f2f2",
     padding: 10,
     borderRadius: 4,
     borderWidth: 1,
-    width: "100%",
     borderColor: "#bbb",
-    alignItems: "center",
+    margin: 4,
   },
   heroCard: {
     backgroundColor: "#f2f2f2",
