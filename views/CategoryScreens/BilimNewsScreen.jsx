@@ -197,12 +197,7 @@ const BilimNewsScreen = ({ navigation }) => {
             ))}
           </View>
         </View>
-  
-        {columnData.length === 0 && (
-          <View style={styles.emptyStateContainer}>
-            <Text style={styles.emptyStateText}>No articles found</Text>
-          </View>
-        )}
+
       </ScrollView>
       <BottomNav navigation={navigation} />
     </View>

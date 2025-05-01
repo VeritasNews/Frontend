@@ -45,10 +45,10 @@ import IliskilerNewsScreen from './views/CategoryScreens/IliskilerNewsScreen';
 import KulturNewsScreen from './views/CategoryScreens/KulturNewsScreen';
 import MagazinNewsScreen from './views/CategoryScreens/MagazinNewsScreen';
 import ModaNewsScreen from './views/CategoryScreens/ModaNewsScreen';
-// import OtomotivNewsScreen from './views/CategoryScreens/OtomotivNewsScreen';
+import OtomotivNewsScreen from './views/CategoryScreens/OtomotivNewsScreen';
 import OyunNewsScreen from './views/CategoryScreens/OyunNewsScreen';
 import RuhSagligiNewsScreen from './views/CategoryScreens/RuhSagligiNewsScreen';
-// import SaglikNewsScreen from './views/CategoryScreens/SaglikNewsScreen';
+import SaglikNewsScreen from './views/CategoryScreens/SaglikNewsScreen';
 import SanatNewsScreen from './views/CategoryScreens/SanatNewsScreen';
 import SeyahatNewsScreen from './views/CategoryScreens/SeyahatNewsScreen';
 import SporNewsScreen from './views/CategoryScreens/SporNewsScreen';
@@ -125,6 +125,8 @@ export default function App() {
         <Stack.Screen name="YasamTarzi" component={YasamTarziNewsScreen} />
         <Stack.Screen name="Yemek" component={YemekNewsScreen} />
         <Stack.Screen name="Bilim" component={BilimNewsScreen} />
+        <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} />
+        <Stack.Screen name="Saglik" component={SaglikNewsScreen} />
 
         {/* Friend Screens */}
         <Stack.Screen name="UserProfile" component={UserProfileScreen} />

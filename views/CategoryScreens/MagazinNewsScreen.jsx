@@ -1,302 +1,310 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Dimensions } from "react-native";
-import { getArticlesByCategory } from "../../utils/articleAPI";
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  Platform,
+} from "react-native";
+import { getArticlesByCategory, logInteraction, getFullImageUrl } from "../../utils/articleAPI";
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";
 
 const isPortrait = () => {
-    const { width, height } = Dimensions.get("window");
-    return height >= width;
+  const { width, height } = Dimensions.get("window");
+  return height >= width;
 };
 
 const MagazinNewsScreen = ({ navigation }) => {
-    const [newsData, setNewsData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [portrait, setPortrait] = useState(isPortrait());
+  const [newsData, setNewsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [portrait, setPortrait] = useState(isPortrait());
+  const { width: deviceWidth } = Dimensions.get("window");
 
-    useEffect(() => {
-        fetchMagazinNews();
+  useEffect(() => {
+    fetchNews();
+    const updateOrientation = () => setPortrait(isPortrait());
+    const sub = Dimensions.addEventListener("change", updateOrientation);
+    return () => sub?.remove();
+  }, []);
 
-        const updateOrientation = () => setPortrait(isPortrait());
-        const subscription = Dimensions.addEventListener("change", updateOrientation);
-        return () => subscription?.remove();
-    }, []);
+  const fetchNews = async () => {
+    setLoading(true);
+    const MagazinNews = await getArticlesByCategory("Magazin");
+    setNewsData(MagazinNews);
+    setLoading(false);
+    console.log("First 3 articles:", MagazinNews.slice(0, 3).map(a => ({
+        id: a.id,
+        title: a.title,
+        hasImage: !!a.image,
+        imageUrl: a.image
+      })));
+  };
 
-    const fetchMagazinNews = async () => {
-        setLoading(true);
-        const magazinNews = await getArticlesByCategory("Magazin");
-        setNewsData(magazinNews);
-        setLoading(false);
-    };
+  const assignNewsSizes = (data) => {
+    const total = data.length;
+    const xl = 1; // Only one hero
+    const rest = data.slice(1);
 
-    const sortNewsByPriorityAndSize = (data) => {
-        const priorityOrder = { high: 1, medium: 2, low: 3 };
+    return [
+      { ...data[0], size: "xl" },
+      ...rest.map((a, i) => ({
+        ...a,
+        size: i < 5 ? "medium" : "small",
+      })),
+    ];
+  };
 
-        return [...data].sort((a, b) => {
-            if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-                return priorityOrder[a.priority] - priorityOrder[b.priority];
-            }
+  const sortedNews = assignNewsSizes(newsData);
 
-            const summaryLengthA = a.summary ? a.summary.length : 0;
-            const summaryLengthB = b.summary ? b.summary.length : 0;
+  const heroArticle = sortedNews[0];
+  const columnData = sortedNews.slice(1);
 
-            return summaryLengthA - summaryLengthB;
-        });
-    };
+  const columnCount = portrait ? 2 : 3;
 
-    const assignNewsSizes = (data) => {
-        const totalArticles = data.length;
+  const createDynamicColumns = (data, columnCount) => {
+    const columns = Array.from({ length: columnCount }, () => []);
+    data.forEach((item, index) => {
+      columns[index % columnCount].push(item);
+    });
+    return columns;
+  };
 
-        const xlCount = Math.ceil(totalArticles * 0.1);
-        const largeCount = Math.ceil(totalArticles * 0.15);
-        const mediumCount = Math.ceil(totalArticles * 0.25);
-        const smallCount = Math.ceil(totalArticles * 0.30);
-
-        return data.map((article, index) => {
-            if (index < xlCount) {
-                return { ...article, size: "xl" };
-            } else if (index < xlCount + largeCount) {
-                return { ...article, size: "large" };
-            } else if (index < xlCount + largeCount + mediumCount) {
-                return { ...article, size: "medium" };
-            } else if (index < xlCount + largeCount + mediumCount + smallCount) {
-                return { ...article, size: "small" };
-            } else {
-                return { ...article, size: "xs" };
-            }
-        });
-    };
-
-    const sortedNewsData = assignNewsSizes(sortNewsByPriorityAndSize(newsData));
-
-    const getFontSize = (size) => {
-        switch (size) {
-            case "xl":
-                return { title: 20, summary: 13 };
-            case "large":
-                return { title: 19, summary: 12.7 };
-            case "medium":
-                return { title: 18, summary: 12.3 };
-            case "small":
-                return { title: 16, summary: 12 };
-            case "xs":
-            default:
-                return { title: 14, summary: 10 };
-        }
-    };
-
-    const renderNewsCard = (item) => {
-        const fontSize = getFontSize(item.size);
-
-        return (
-            <View style={[styles.newsCard, styles[item.size]]}>
-                <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
-                <View style={styles.horizontalLine} />
-                {item.summary && (
-                    <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>
-                        {item.summary}
-                    </Text>
-                )}
-                {item.image && <View style={styles.imagePlaceholder}><Text>Image</Text></View>}
-            </View>
-        );
-    };
-
-    const createDynamicColumns = (data, columnCount) => {
-        const maxColumns = Math.min(columnCount, 3);
-        const columns = Array.from({ length: maxColumns }, () => []);
-
-        data.forEach((item, index) => {
-            const columnIndex = index % maxColumns;
-
-            if (columns[columnIndex].length < 3) {
-                columns[columnIndex].push(item);
-            } else {
-                columns[(columnIndex + 1) % maxColumns].push(item);
-            }
-        });
-
-        return columns;
-    };
-
-    const createDynamicRows = (data, maxItemsPerRow = 3) => {
-        const rows = [];
-        let currentRow = [];
-
-        data.forEach((item) => {
-            currentRow.push(item);
-
-            if (currentRow.length === maxItemsPerRow) {
-                rows.push(currentRow);
-                currentRow = [];
-            }
-        });
-
-        if (currentRow.length > 0) {
-            rows.push(currentRow);
-        }
-
-        return rows;
-    };
-
-    const columnCount = portrait ? 2 : 3;
-
-    const totalArticles = sortedNewsData.length;
-    let section1Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-    let section3Count = Math.min(Math.ceil(totalArticles * 0.3), Math.floor(totalArticles / 3));
-    let section2Count = totalArticles - (section1Count + section3Count);
-
-    if (totalArticles < 6) {
-        const equalSize = Math.ceil(totalArticles / 3);
-        section1Count = equalSize;
-        section2Count = equalSize;
-        section3Count = totalArticles - (section1Count + section2Count);
+  const getFontSize = (size) => {
+    switch (size) {
+      case "xl": return { title: 24, summary: 14 };
+      case "large": return { title: 20, summary: 13 };
+      case "medium": return { title: 18, summary: 12 };
+      case "small": return { title: 16, summary: 11 };
+      default: return { title: 14, summary: 10 };
     }
+  };
 
-    const columnData1 = createDynamicColumns(sortedNewsData.slice(0, section1Count), columnCount);
-    const columnData3 = createDynamicColumns(sortedNewsData.slice(section1Count + section2Count), columnCount);
-    const rowData = createDynamicRows(sortedNewsData.slice(section1Count, section1Count + section2Count));
-
-    const renderNewsRow = (row) => {
-        const numItems = row.length;
-        const itemWidth = 100 / numItems;
-        const lastItemWidth = 100 - (itemWidth * (numItems - 1));
-
-        return (
-            <View key={Math.random()} style={styles.row}>
-                {row.map((newsItem, index) => (
-                    <View
-                        key={newsItem.id}
-                        style={[
-                            styles.newsItem,
-                            { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` }
-                        ]}
-                    >
-                        {renderNewsCard(newsItem)}
-                    </View>
-                ))}
-            </View>
-        );
-    };
-
+  const renderHeroArticle = (article) => {
+    if (!article) return null;
+    const font = getFontSize("xl");
     return (
-        <View style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={styles.container}>
-                <Header />
-                <View style={styles.categoryContainer}>
-                    <CategoryBar navigation={navigation} />
-                </View>
-
-                <View style={styles.section}>
-                    <View style={styles.rowContainer}>
-                        {columnData1.map((column, columnIndex) => (
-                            <View key={columnIndex} style={styles.column}>
-                                {column.map((newsItem) => (
-                                    <View key={newsItem.id} style={styles.newsItem}>
-                                        {renderNewsCard(newsItem)}
-                                    </View>
-                                ))}
-                            </View>
-                        ))}
-                    </View>
-                </View>
-
-                <View style={styles.section}>
-                    {rowData.map((row) => renderNewsRow(row))}
-                </View>
-
-                <View style={styles.section}>
-                    <View style={styles.rowContainer}>
-                        {columnData3.map((column, columnIndex) => (
-                            <View key={columnIndex} style={styles.column}>
-                                {column.map((newsItem) => (
-                                    <View key={newsItem.id} style={styles.newsItem}>
-                                        {renderNewsCard(newsItem)}
-                                    </View>
-                                ))}
-                            </View>
-                        ))}
-                    </View>
-                </View>
-            </ScrollView>
-            <BottomNav navigation={navigation} />
+      <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: article.id })}>
+        <View style={styles.heroCard}>
+          <Text style={[styles.heroTitle, { fontSize: font.title }]}>{article.title}</Text>
+          {article.summary && (
+            <Text style={[styles.heroSummary, { fontSize: font.summary }]}>
+              {article.summary}
+            </Text>
+          )}
+          {article.image && (
+            <Image
+              source={{ uri: getFullImageUrl(article.image) }}
+              style={styles.heroImage}
+            />
+          )}
         </View>
+      </TouchableOpacity>
     );
+  };
+
+  const renderNewsCard = (item) => {
+    const font = getFontSize(item.size);
+    // Log the full URL for debugging
+    const imageUrl = getFullImageUrl(item.image);
+    console.log(`Article ${item.id} image URL: ${imageUrl}`);
+    
+    return (
+      <TouchableOpacity onPress={() => navigation.navigate("NewsDetail", { articleId: item.id })}>
+        <View style={[
+          styles.newsCard,
+          { width: deviceWidth * 0.49 }
+        ]}>
+
+          <Text style={[styles.newsTitle, { fontSize: font.title }]}>{item.title}</Text>
+          <View style={styles.horizontalLine} />
+          {item.summary && (
+            <Text style={[styles.summaryText, { fontSize: font.summary }]}>
+              {item.summary}
+            </Text>
+          )}
+          {item.image && (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.imagePlaceholder}
+              onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
+            />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+    const containerStyle = Platform.select({
+      web: {
+        backgroundColor: "#f4f4f4",
+        display: "flex",
+        height: "100vh",
+        width: "100vw",
+      },
+      default: {
+        flex: 1,
+        backgroundColor: "#f4f4f4",
+      },
+    });
+    
+
+  return (
+    <View style={containerStyle}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1, // ✅ crucial to allow scrolling when content exceeds viewport
+          backgroundColor: "#f4f4f4",
+          paddingHorizontal: 4,
+          paddingTop: 10,
+          paddingBottom: 100,
+        }}
+        showsVerticalScrollIndicator
+      >
+        <Header />
+        <View style={styles.categoryContainer}>
+          <CategoryBar navigation={navigation} />
+        </View>
+  
+        {/* ✅ HERO CARD */}
+        {renderHeroArticle(heroArticle)}
+  
+        <View style={styles.section}>
+          <View style={styles.rowContainer}>
+            {createDynamicColumns(columnData, columnCount).map((column, columnIndex) => (
+              <View key={columnIndex} style={styles.column}>
+                {column.map((item) => (
+                  <View key={item.id} style={styles.newsItem}>
+                    {renderNewsCard(item)}
+                  </View>
+                ))}
+              </View>
+            ))}
+          </View>
+        </View>
+  
+
+      </ScrollView>
+      <BottomNav navigation={navigation} />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        backgroundColor: "#f4f4f4",
-        paddingHorizontal: 4,
-        paddingTop: 10,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    categoryContainer: {
-        alignItems: "center",
-        marginVertical: 1,
-    },
-    section: {
-        marginBottom: 0,
-    },
-    rowContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-    column: {
-        flex: 1,
-        alignItems: "center",
-    },
-    row: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%",
-        flexWrap: "wrap",
-    },
-    newsItem: {
-        marginBottom: 5,
-        paddingHorizontal: 3,
-    },
-    newsCard: {
-        backgroundColor: "#fff",
-        padding: 10,
-        borderRadius: 4,
-        elevation: 3,
-        fontFamily: "OldStandard-Bold",
-        alignItems: "center",
-    },
-    newsTitle: {
-        fontWeight: "bold",
-        fontSize: 18,
-        marginBottom: 3,
-        textAlign: "center",
-        fontFamily: "OldStandard-Bold",
-    },
-    horizontalLine: {
-        height: 0.5,
-        backgroundColor: "#ccc",
-        width: "100%",
-        marginVertical: 8,
-    },
-    imagePlaceholder: {
-        width: "100%",
-        height: 100,
-        backgroundColor: "#ddd",
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 4,
-        marginTop: 8,
-    },
-    summaryText: {
-        color: "#555",
-        lineHeight: 18,
-        marginTop: 4,
-    },
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#f4f4f4",
+    paddingHorizontal: 4,
+    paddingTop: 10,
+    paddingBottom: 100,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    color: "#a91101",
+  },
+  categoryContainer: {
+    alignItems: "center",
+    marginVertical: 1,
+  },
+  section: {
+    marginBottom: 10,
+  },
+  rowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    flexWrap: "wrap",
+  },
+  column: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+  },
+  newsItem: {
+    marginBottom: 5,
+    paddingHorizontal: 3,
+  },
+  newsCard: {
+    backgroundColor: "#f2f2f2",
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    width: "100%",
+    borderColor: "#bbb",
+    alignItems: "center",
+  },
+  heroCard: {
+    backgroundColor: "#f2f2f2",
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#bbb",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  heroTitle: {
+    fontSize: 30, // Make it visually loud like a newspaper headline
+    fontWeight: "900", // Maximum system boldness
+    fontFamily: "Georgia", // Elegant serif like newspapers
+    color: "#000", // Deep black for print-style contrast
+    marginBottom: 4,
+    textAlign: "center", // 'middle' is not valid — use 'center'
+    lineHeight: 36,
+  },
+  heroSummary: {
+    fontFamily: "Georgia",
+    color: "#333",
+    textAlign: "justify",
+    marginTop: 0,
+    lineHeight: 20,
+    textAlign: "center", // 'middle' is not valid — use 'center'
+  },
+  heroImage: {
+    width: "100%",
+    height: 240,
+    marginTop: 8,
+    resizeMode: "cover",
+  },
+  newsTitle: {
+    fontWeight: "bold",
+    fontFamily: "Georgia",
+    textAlign: "center",
+  },
+  summaryText: {
+    fontFamily: "Merriweather",
+    color: "#444",
+    textAlign: "center",
+    marginTop: 4,
+  },
+  imagePlaceholder: {
+    width: "100%",
+    height: 100,
+    backgroundColor: "#ddd",
+    marginTop: 10,
+  },
+  horizontalLine: {
+    height: 0.5,
+    backgroundColor: "#000",
+    width: "100%",
+    marginVertical: 6,
+  },
 });
 
 export default MagazinNewsScreen;
