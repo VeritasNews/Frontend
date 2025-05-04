@@ -2,28 +2,134 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   StyleSheet,
   Alert,
   SafeAreaView,
+  ActivityIndicator,
+  FlatList,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import BottomNav from '../../components/BottomNav';
-import { sendFriendRequest } from '../../utils/friendAPI';
+import { sendFriendRequest, fetchFriends } from '../../utils/friendAPI';
 import { Ionicons } from '@expo/vector-icons';
+import { getAuthToken } from '../../utils/authAPI';
+import axios from 'axios';
+import fallbackAvatar from '../../assets/default_profile.jpg';
 
-const UserProfileScreen = ({ route }) => {
-  const navigation = useNavigation();
-  const { user } = route.params;
+const BASE_URL = 'http://localhost:8000/api/';
+
+const UserProfileScreen = ({ route, navigation }) => {
+  const { user } = route.params || {};
+  
+  const [userData, setUserData] = useState(user || null);
   const [requestSent, setRequestSent] = useState(false);
-
+  const [friendStatus, setFriendStatus] = useState('not_friends');
+  const [activeTab, setActiveTab] = useState('liked');
+  const [likedArticles, setLikedArticles] = useState([]);
+  const [readHistory, setReadHistory] = useState([]);
+  const [loading, setLoading] = useState(user ? false : true);
+  const [friends, setFriends] = useState([]);
+  
+  const formatProfilePictureUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    if (url.startsWith('http')) return url;
+    return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+  
+  useEffect(() => {
+    if (!user || !user.userId) {
+      setLoading(false);
+      Alert.alert('Error', 'Invalid user data');
+      navigation.goBack();
+      return;
+    }
+    
+    const fetchFullUserProfile = async () => {
+      try {
+        const token = await getAuthToken();
+        if (!token) {
+          navigation.navigate('Login');
+          return;
+        }
+        
+        const meResponse = await axios.get(`${BASE_URL}users/me/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        const isSelf = meResponse.data.userId === user.userId;
+        
+        if (isSelf) {
+          setFriendStatus('self');
+          setUserData(meResponse.data);
+          
+          if (meResponse.data.likedArticles) {
+            setLikedArticles(meResponse.data.likedArticles || []);
+          }
+          
+          if (meResponse.data.readingHistory) {
+            setReadHistory(meResponse.data.readingHistory || []);
+          }
+        } else {
+          try {
+            const response = await axios.get(`${BASE_URL}users/${user.userId}/`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            // Update user data with additional info from the API
+            setUserData(prevData => ({
+              ...prevData,
+              ...response.data
+            }));
+            
+            if (response.data.likedArticles) {
+              setLikedArticles(response.data.likedArticles || []);
+            }
+            
+            if (response.data.readingHistory) {
+              setReadHistory(response.data.readingHistory || []);
+            }
+          } catch (error) {
+            console.log('Error fetching full profile:', error.response?.data || error.message);
+          }
+          
+          const friendsList = await fetchFriends();
+          setFriends(friendsList);
+          
+          const isFriend = friendsList.some(friend => 
+            friend.userId === user.userId || friend.id === user.userId
+          );
+          
+          if (isFriend) {
+            setFriendStatus('friends');
+          } else {
+            // Check pending requests status
+            if (userData.friendRequestStatus === 'pending') {
+              setRequestSent(true);
+              setFriendStatus('pending');
+            } else {
+              setFriendStatus('not_friends');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error.response?.data || error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchFullUserProfile();
+  }, [user, navigation]);
+  
   const handleAddFriend = async () => {
     if (requestSent) return;
   
     try {
       await sendFriendRequest(user.userId);
       setRequestSent(true);
-      Alert.alert('Friend Request Sent', `You sent a request to ${user.name}`);
+      setFriendStatus('pending');
+      Alert.alert('Friend Request Sent', `You sent a request to ${userData.name || userData.userName}`);
     } catch (error) {
       const msg = error?.response?.data?.error;
   
@@ -37,7 +143,82 @@ const UserProfileScreen = ({ route }) => {
         console.error("Friend request failed:", error);
       }
     }
-  };  
+  };
+
+  const renderArticleItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.articleCard}
+      onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
+    >
+      {item.image ? (
+        <Image source={{ uri: item.image }} style={styles.image} />
+      ) : (
+        <View style={[styles.image, styles.placeholder]}>
+          <Ionicons name="image-outline" size={40} color="#aaa" />
+        </View>
+      )}
+      <View style={styles.content}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.summary} numberOfLines={2}>
+          {item.summary || 'No summary available.'}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+  
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#a91101" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+  
+  if (!userData) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.container}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={26} color="#333" />
+          </TouchableOpacity>
+          <View style={styles.privateProfile}>
+            <Ionicons name="alert-circle-outline" size={50} color="#888" />
+            <Text style={styles.privateText}>User Not Found</Text>
+            <Text style={styles.privateSubtext}>The requested user could not be found</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+
+  const canViewProfile = 
+    !userData.privacySettings || 
+    (userData.privacySettings?.profile_info === 'public') || 
+    friendStatus === 'friends' ||
+    friendStatus === 'self';
+
+  const canViewLikedArticles = 
+    friendStatus === 'self' || 
+    friendStatus === 'friends' || 
+    (userData.privacySettings && userData.privacySettings.liked_articles === 'public');
+
+  const canViewReadHistory = 
+    friendStatus === 'self' || 
+    friendStatus === 'friends' || 
+    (userData.privacySettings && userData.privacySettings.reading_history === 'public');
+
+  const canViewFriends = 
+    friendStatus === 'self' || 
+    friendStatus === 'friends' || 
+    (userData.privacySettings && userData.privacySettings.friends_list === 'public');
+
+  const canViewStats = 
+    friendStatus === 'self' || 
+    friendStatus === 'friends' || 
+    (userData.privacySettings && userData.privacySettings.activity_status === 'public');
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -47,22 +228,135 @@ const UserProfileScreen = ({ route }) => {
           <Ionicons name="chevron-back" size={26} color="#333" />
         </TouchableOpacity>
 
-        {/* User Info */}
-        <View style={styles.profileBox}>
-          <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.username}>@{user.userName}</Text>
+        {!canViewProfile ? (
+          <View style={styles.privateProfile}>
+            <Ionicons name="lock-closed" size={50} color="#888" />
+            <Text style={styles.privateText}>This profile is private</Text>
+            <Text style={styles.privateSubtext}>Only friends can view this profile</Text>
+            
+            {!requestSent && friendStatus !== 'self' && (
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleAddFriend}
+              >
+                <Text style={styles.buttonText}>Add Friend</Text>
+              </TouchableOpacity>
+            )}
+            
+            {requestSent && friendStatus === 'pending' && (
+              <Text style={styles.requestSentText}>Friend request sent</Text>
+            )}
+          </View>
+        ) : (
+          <FlatList
+            ListHeaderComponent={
+              <>
+                <View style={styles.profileCard}>
+                  <Image
+                    source={userData.profilePicture ? 
+                      { uri: formatProfilePictureUrl(userData.profilePicture) } : 
+                      fallbackAvatar}
+                    style={styles.avatar}
+                  />
+                  <Text style={styles.name}>{userData.name || userData.userName}</Text>
+                  <Text style={styles.username}>@{userData.userName}</Text>
 
-          <TouchableOpacity
-            style={[styles.button, requestSent && { backgroundColor: '#ccc' }]}
-            onPress={handleAddFriend}
-            disabled={requestSent}
-          >
-            <Text style={styles.buttonText}>
-              {requestSent ? 'Request Sent' : 'Add Friend'}
-            </Text>
-          </TouchableOpacity>
+                  {friendStatus !== 'friends' && friendStatus !== 'self' && (
+                    <TouchableOpacity
+                      style={[styles.addButton, requestSent && { backgroundColor: '#ccc' }]}
+                      onPress={handleAddFriend}
+                      disabled={requestSent}
+                    >
+                      <Text style={styles.buttonText}>
+                        {requestSent ? 'Request Sent' : 'Add Friend'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
 
-        </View>
+                {/* Stats Section - Only show if we have access to data */}
+                {canViewStats && (
+                  <View style={styles.statsRow}>
+                    <TouchableOpacity 
+                      style={styles.stat} 
+                      onPress={() => setActiveTab('liked')}
+                      disabled={!canViewLikedArticles}
+                    >
+                      <Text style={styles.statNumber}>
+                        {canViewLikedArticles ? (likedArticles?.length || 0) : '-'}
+                      </Text>
+                      <Text style={styles.statLabel}>Liked</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.stat} 
+                      onPress={() => setActiveTab('history')}
+                      disabled={!canViewReadHistory}
+                    >
+                      <Text style={styles.statNumber}>
+                        {canViewReadHistory ? (readHistory?.length || 0) : '-'}
+                      </Text>
+                      <Text style={styles.statLabel}>History</Text>
+                    </TouchableOpacity>
+                    <View style={styles.stat}>
+                      <Text style={styles.statNumber}>
+                        {canViewFriends ? (userData.friends?.length || 0) : '-'}
+                      </Text>
+                      <Text style={styles.statLabel}>Friends</Text>
+                    </View>
+                  </View>
+                )}
+
+                {(canViewLikedArticles || canViewReadHistory) && (
+                  <View style={styles.tabs}>
+                    <TouchableOpacity 
+                      onPress={() => setActiveTab('liked')}
+                      disabled={!canViewLikedArticles}
+                    >
+                      <Text 
+                        style={[
+                          styles.tabText, 
+                          activeTab === 'liked' && styles.activeTab,
+                          !canViewLikedArticles && styles.disabledTab
+                        ]}
+                      >
+                        LIKED
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={() => setActiveTab('history')}
+                      disabled={!canViewReadHistory}
+                    >
+                      <Text 
+                        style={[
+                          styles.tabText, 
+                          activeTab === 'history' && styles.activeTab,
+                          !canViewReadHistory && styles.disabledTab
+                        ]}
+                      >
+                        HISTORY
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
+            }
+            data={activeTab === 'liked' && canViewLikedArticles 
+              ? likedArticles 
+              : activeTab === 'history' && canViewReadHistory
+                ? readHistory 
+                : []}
+            renderItem={renderArticleItem}
+            keyExtractor={(item) => item.articleId?.toString() || item.id?.toString()}
+            contentContainerStyle={styles.contentContainer}
+            ListEmptyComponent={
+              <Text style={styles.empty}>
+                {!canViewLikedArticles && !canViewReadHistory
+                  ? "This user's articles are private"
+                  : "No articles to show"}
+              </Text>
+            }
+          />
+        )}
       </View>
 
       <BottomNav navigation={navigation} />
@@ -77,9 +371,12 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 20,
-    paddingTop: 40,
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
+  },
+  loadingContainer: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
   },
   backButton: {
     position: 'absolute',
@@ -87,21 +384,132 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 10,
   },
-  profileBox: {
+  profileCard: {
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#fff',
+    margin: 16,
+    borderRadius: 16,
+    elevation: 2,
+  },
+  avatar: { 
+    width: 110, 
+    height: 110, 
+    borderRadius: 55, 
+    marginBottom: 12 
+  },
+  name: { 
+    fontSize: 20, 
+    fontWeight: '600' 
+  },
+  username: { 
+    color: '#666', 
+    fontSize: 14,
+    marginBottom: 10
+  },
+  addButton: {
+    backgroundColor: '#a91101',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  stat: { alignItems: 'center' },
+  statNumber: { fontSize: 18, fontWeight: 'bold' },
+  statLabel: { fontSize: 12, color: '#777' },
+  
+  tabs: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+    marginBottom: 8,
+  },
+  tabText: { 
+    fontSize: 15, 
+    color: '#888', 
+    paddingBottom: 4 
+  },
+  activeTab: { 
+    color: '#a91101', 
+    fontWeight: 'bold', 
+    borderBottomWidth: 2, 
+    borderBottomColor: '#a91101' 
+  },
+  disabledTab: {
+    color: '#ccc',
+  },
+  
+  contentContainer: { 
+    paddingHorizontal: 16, 
+    paddingBottom: 80 
+  },
+  
+  articleCard: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: "hidden",
+    elevation: 2,
+  },
+  image: {
+    width: 100,
+    height: 100,
+  },
+  placeholder: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#eee",
+  },
+  content: {
+    flex: 1,
+    padding: 10,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#222",
+  },
+  summary: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 4,
+  },
+  empty: {
+    textAlign: "center",
+    marginTop: 50,
+    fontSize: 16,
+    color: "#999",
+    fontStyle: "italic",
+  },
+  privateProfile: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 60,
+    padding: 20,
   },
-  name: {
-    fontSize: 26,
-    fontWeight: '700',
-    marginBottom: 6,
-    color: '#222',
+  privateText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 16,
+    color: '#333',
   },
-  username: {
+  privateSubtext: {
     fontSize: 16,
-    color: '#666',
+    color: '#777',
+    marginTop: 8,
     marginBottom: 20,
   },
   button: {
@@ -109,11 +517,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 8,
+    marginTop: 10,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
+  requestSentText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 12,
+    fontStyle: 'italic',
   },
 });
 
