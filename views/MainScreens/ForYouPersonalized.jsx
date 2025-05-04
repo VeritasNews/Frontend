@@ -59,15 +59,22 @@ const ForYouPersonalized = ({ navigation }) => {
       articles.forEach((a) =>
         console.log(`📰 ${a.title} — priority: ${a.personalized_priority}`)
       );
+
+      console.log("Fetched articles:", articles.map(a => ({
+        title: a.title,
+        score: a.relevance_score,
+        priority: a.personalized_priority,
+        date: a.createdAt
+      })));
       
       setPreferredCategories(userPrefs);
   
-      const most = articles.find(a => (a.priority?.toLowerCase() === "most" || a.personalized_priority?.toLowerCase() === "most"));
+      const most = articles.find(a => a.personalized_priority?.toLowerCase() === "most");
       console.log("👑 Most priority article:", most);
   
       const rest = articles.filter(a => a.priority?.toLowerCase() !== "most");
-      const sorted = sortNewsByPreferenceAndPriority(rest, userPrefs);
-      const sized = assignNewsSizes(sorted);
+      const sized = assignNewsSizes(rest); // use backend order directly
+
   
       const finalList = most ? [ { ...most, size: "xl" }, ...sized ] : sized;
       setNewsData(finalList);
@@ -81,7 +88,7 @@ const ForYouPersonalized = ({ navigation }) => {
   };
   
   function shouldShowImage(article, rowLength, indexInRow) {
-    const priority = article.personalized_priority?.toLowerCase() || article.priority?.toLowerCase() || "";
+    const priority = article.personalized_priority?.toLowerCase() || "low";
   
     const isHighPriority = ["most", "high"].includes(priority);
     const shortSummary = (article.summary?.length || 0) < 100;
@@ -161,9 +168,8 @@ const ForYouPersonalized = ({ navigation }) => {
     newsData;
 
   // Sort and size the filtered list
-  const sortedNewsData = assignNewsSizes(
-    sortNewsByPreferenceAndPriority(otherArticles, preferredCategories)
-  );
+  const sortedNewsData = assignNewsSizes(otherArticles);
+
   const articleChunks = chunkArray(sortedNewsData, 4);
   const sectionGroups = chunkArray(articleChunks, 1); // each group = column, row, column
   // Find the most important article

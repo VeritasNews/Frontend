@@ -20,10 +20,8 @@ const SearchBarWithResults = () => {
 
   const handleSearch = async () => {
     if (!query.trim()) return;
-
     setLoading(true);
     setImageErrors({});
-
     try {
       const token = await getAuthToken();
       const response = await axios.get(`${BASE_URL}search?q=${query}`, {
@@ -38,6 +36,16 @@ const SearchBarWithResults = () => {
     }
   };
 
+  const getInitialAvatar = (name) => (
+    <View style={styles.initialAvatar}>
+      <Text style={styles.initialText}>{name?.charAt(0).toUpperCase() || '?'}</Text>
+    </View>
+  );
+
+  const handleImageError = (userId) => {
+    setImageErrors((prev) => ({ ...prev, [userId]: true }));
+  };
+
   const renderUser = ({ item }) => {
     const failed = imageErrors[item.userId];
     return (
@@ -49,15 +57,9 @@ const SearchBarWithResults = () => {
           <Image
             source={{ uri: item.profilePicture }}
             style={styles.avatar}
-            onError={() =>
-              setImageErrors((prev) => ({ ...prev, [item.userId]: true }))
-            }
+            onError={() => handleImageError(item.userId)}
           />
-        ) : (
-          <View style={styles.initialAvatar}>
-            <Text style={styles.initialText}>{item.name?.[0]?.toUpperCase() || '?'}</Text>
-          </View>
-        )}
+        ) : getInitialAvatar(item.name)}
         <View>
           <Text style={styles.name}>{item.name}</Text>
           <Text style={styles.username}>@{item.userName}</Text>
@@ -68,28 +70,32 @@ const SearchBarWithResults = () => {
 
   const renderArticle = ({ item }) => (
     <TouchableOpacity
-      style={styles.resultItem}
+      style={styles.articleCard}
       onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
     >
       {item.image ? (
         <Image source={{ uri: getFullImageUrl(item.image) }} style={styles.articleImage} />
       ) : (
-        <Ionicons name="image-outline" size={40} color="#aaa" style={styles.articleImage} />
+        <View style={[styles.articleImage, styles.imagePlaceholder]}>
+          <Ionicons name="image-outline" size={30} color="#aaa" />
+        </View>
       )}
-      <View>
+      <View style={styles.articleText}>
         <Text style={styles.name}>{item.title}</Text>
-        <Text style={styles.username}>{item.summary?.slice(0, 60) || 'No summary'}</Text>
+        <Text style={styles.username} numberOfLines={2}>
+          {item.summary || 'No summary available.'}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.wrapper}>
-      {/* Search Bar + Bell Row */}
+      {/* Search Input + Bell */}
       <View style={styles.searchRow}>
         <View style={styles.searchBox}>
           <TextInput
-            placeholder="Dogecoin to the Moon..."
+            placeholder="Gerçeği bul...."
             value={query}
             onChangeText={setQuery}
             onSubmitEditing={handleSearch}
@@ -192,20 +198,48 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   avatar: {
-    width: 40, height: 40, borderRadius: 20,
-  },
-  articleImage: {
-    width: 60, height: 60,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   initialAvatar: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: '#eee',
-    alignItems: 'center', justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#eee',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   initialText: {
-    fontWeight: 'bold', color: '#444',
+    fontWeight: 'bold',
+    color: '#444',
   },
   name: { fontWeight: '600' },
   username: { color: '#666', fontSize: 12 },
+  articleCard: {
+    flexDirection: 'row',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
+    elevation: 1,
+  },
+  articleImage: {
+    width: 60,
+    height: 60,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  imagePlaceholder: {
+    backgroundColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  articleText: {
+    flex: 1,
+    padding: 8,
+    justifyContent: 'center',
+  },
 });
 
 export default SearchBarWithResults;
