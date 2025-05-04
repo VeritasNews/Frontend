@@ -16,6 +16,7 @@ import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";
 import { getUserProfile } from "../../utils/authAPI"; // ✅ ADD THIS LINE
 import { getFullImageUrl } from "../../utils/articleAPI";
+import SearchBarWithResults from '../../components/SearchBarWithResults';
 
 const isPortrait = () => {
   const { width, height } = Dimensions.get("window");
@@ -345,6 +346,8 @@ const ForYouPersonalized = ({ navigation }) => {
         }}
         showsVerticalScrollIndicator
       >
+        <SearchBarWithResults />
+
         <Header />
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
@@ -410,12 +413,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   newsItem: {
-    marginBottom: 5,
-    paddingHorizontal: 3,
+    marginBottom: 0,
+    paddingHorizontal: 0,
   },
   newsCard: {
     flexGrow: 1,
-    flexBasis: "48%", // Adjusts based on container width
+    flexBasis: "49%", // Adjusts based on container width
     backgroundColor: "#f2f2f2",
     padding: 10,
     borderRadius: 4,

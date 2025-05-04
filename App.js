@@ -23,7 +23,7 @@ import ResetPassword from './views/AuthScreens/ResetPassword'; // Import the new
 import ChooseCategoryScreen from './views/UtilScreens/ChooseCategoryScreen';
 import SearchScreen from './views/UtilScreens/SearchScreens';
 import Settings from './views/UtilScreens/Settings';
-
+import SearchBarWithResults from "./components/SearchBarWithResults";
 import NewsDetailScreen from "./views/NewsDetailScreen";
 import LikedArticlesScreen from "./views/LikedArticlesScreen";
 
@@ -134,6 +134,8 @@ export default function App() {
         <Stack.Screen name="FriendsList" component={FriendsListScreen} />
         <Stack.Screen name="FriendsNews" component={FriendsNewsScreen} />
         <Stack.Screen name="FriendsArticleDetail" component={FriendsArticleDetailScreen} />
+
+        <Stack.Screen name="SearchBarWithResults" component={SearchBarWithResults} />
       </Stack.Navigator>
     </NavigationContainer>
   );

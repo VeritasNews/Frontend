@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: "48%", // Adjusts based on container width
     backgroundColor: "#f2f2f2",
-    padding: 4,
+    padding: 6,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: "#bbb",
