@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/`;
 
 // Helper function to format profile picture URLs
 const formatProfilePictureUrl = (url) => {
@@ -11,7 +11,7 @@ const formatProfilePictureUrl = (url) => {
   if (url.startsWith('http')) return url;
   
   // Otherwise, prepend the domain
-  return `http://localhost:8000${url.startsWith('/') ? '' : '/'}${url}`;
+  return `${process.env.EXPO_PUBLIC_API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
 // Helper function to process user data and format profile picture URLs

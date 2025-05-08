@@ -37,6 +37,13 @@ const ForYouPersonalized = ({ navigation }) => {
   const [portrait, setPortrait] = useState(isPortrait());
   const [preferredCategories, setPreferredCategories] = useState([]);
   const { width: deviceWidth } = Dimensions.get("window");
+  const isWeb = Platform.OS === "web";
+  const windowWidth = Dimensions.get("window").width;
+  const isWideWeb = windowWidth >= 750;
+
+  console.log("📱 Device width:", deviceWidth);
+  console.log("📱 Is web:", isWeb);
+  console.log("📱 Is wide web:", isWideWeb);
 
   useEffect(() => {
     fetchNews();
@@ -56,27 +63,26 @@ const ForYouPersonalized = ({ navigation }) => {
       const userPrefs = user?.preferredCategories || [];
       console.log("✅ User preferred:", userPrefs);
   
-      articles.forEach((a) =>
-        console.log(`📰 ${a.title} — priority: ${a.personalized_priority}`)
-      );
-
-      console.log("Fetched articles:", articles.map(a => ({
-        title: a.title,
-        score: a.relevance_score,
-        priority: a.personalized_priority,
-        date: a.createdAt
-      })));
-      
       setPreferredCategories(userPrefs);
   
-      const most = articles.find(a => a.personalized_priority?.toLowerCase() === "most");
+      // Find the "most" scored article, if any
+      const most = articles.find(
+        (a) => a.personalized_priority?.toLowerCase() === "most"
+      );
       console.log("👑 Most priority article:", most);
   
-      const rest = articles.filter(a => a.priority?.toLowerCase() !== "most");
-      const sized = assignNewsSizes(rest); // use backend order directly
-
+      // Remove the "most" from the rest
+      const rest = articles.filter(
+        (a) => a.personalized_priority?.toLowerCase() !== "most"
+      );
   
-      const finalList = most ? [ { ...most, size: "xl" }, ...sized ] : sized;
+      // ✅ Sort remaining articles by score and preference
+      const sorted = sortNewsByScore(rest, userPrefs);
+  
+      // ✅ Assign sizes based on position
+      const sized = assignNewsSizes(sorted);
+  
+      const finalList = most ? [{ ...most, size: "xl" }, ...sized] : sized;
       setNewsData(finalList);
   
     } catch (err) {
@@ -87,61 +93,16 @@ const ForYouPersonalized = ({ navigation }) => {
     }
   };
   
-  function shouldShowImage(article, rowLength, indexInRow) {
-    const priority = article.personalized_priority?.toLowerCase() || "low";
   
-    const isHighPriority = ["most", "high"].includes(priority);
-    const shortSummary = (article.summary?.length || 0) < 100;
-    const shortTitle = (article.title?.length || 0) < 50;
-  
-    if (rowLength < 3) return true; // Always show in 1-2 layouts
-    if (isHighPriority && shortSummary) return true; // priority + visual space
-    if (shortTitle && indexInRow === 1) return true; // middle one only
-  
-    return false;
-  }
-  
-  
-  const sortNewsByPreferenceAndPriority = (articles, preferredCategories = []) => {
-    const priorityGroups = {
-      high: [],
-      medium: [],
-      low: [],
-      other: [],
-    };
-  
-    articles.forEach((article) => {
-      const priority = article.personalized_priority?.toLowerCase();
-      if (priority === "high") {
-        priorityGroups.high.push(article);
-      } else if (priority === "medium") {
-        priorityGroups.medium.push(article);
-      } else if (priority === "low") {
-        priorityGroups.low.push(article);
-      } else {
-        priorityGroups.other.push(article);
-      }
-    });
-  
-    const sortGroupBySummaryLength = (group) =>
-      group.sort((a, b) => (a.summary?.length || 0) - (b.summary?.length || 0));
-  
-    const preferredFirst = (group) => {
-      return [...group].sort((a, b) => {
+  const sortNewsByScore = (articles, preferredCategories = []) => {
+    return [...articles]
+      .sort((a, b) => parseFloat(b.relevance_score) - parseFloat(a.relevance_score))
+      .sort((a, b) => {
         const aPref = preferredCategories.includes(a.category);
         const bPref = preferredCategories.includes(b.category);
         return aPref === bPref ? 0 : aPref ? -1 : 1;
       });
-    };
-  
-    return [
-      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.high)),
-      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.medium)),
-      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.low)),
-      ...preferredFirst(sortGroupBySummaryLength(priorityGroups.other)),
-    ];
   };
-  
   
 
   const assignNewsSizes = (data) => {
@@ -223,7 +184,12 @@ const ForYouPersonalized = ({ navigation }) => {
           navigation.navigate("NewsDetail", { articleId: item.id });
         }}
       >
-        <View style={styles.newsCard}>
+        <View
+          style={[
+            styles.newsCard,
+            isWideWeb && styles.wideWebNewsCard,
+          ]}
+        >
 
           <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
           <View style={styles.horizontalLine} />
@@ -233,7 +199,7 @@ const ForYouPersonalized = ({ navigation }) => {
           {showImage && item.image && (
             <Image
               source={{ uri: getFullImageUrl(item.image) }}
-              style={[styles.imagePlaceholder, { height: imageHeight }]}
+              style={[styles.imagePlaceholder, { height: imageHeight }, isWideWeb && styles.wideWebNewsCardImage,]}
             />
           )}
         </View>
@@ -243,7 +209,7 @@ const ForYouPersonalized = ({ navigation }) => {
   
 
   const createDynamicColumns = (data, columnCount) => {
-    const maxColumns = Math.min(columnCount, 2);
+    const maxColumns = isWideWeb ? 3 : portrait ? 2 : 1;
     const columns = Array.from({ length: maxColumns }, () => []);
     data.forEach((item, index) => {
       const columnIndex = index % maxColumns;
@@ -256,64 +222,6 @@ const ForYouPersonalized = ({ navigation }) => {
     return columns;
   };
 
-  const createDynamicRows = (data, maxItemsPerRow = 3) => {
-    const rows = [];
-    let currentRow = [];
-    data.forEach((item) => {
-      currentRow.push(item);
-      if (currentRow.length === maxItemsPerRow) {
-        rows.push(currentRow);
-        currentRow = [];
-      }
-    });
-    if (currentRow.length > 0) rows.push(currentRow);
-    return rows;
-  };
-
-  const renderNewsRow = (row) => {
-    const numItems = row.length;
-    const itemWidth = 100 / numItems;
-    const lastItemWidth = 100 - itemWidth * (numItems - 1);
-  
-    // Base height for all
-    const baseImageHeight = numItems === 3 ? 60 : 100;
-    const bonusHeight = 40;
-  
-    // Find index of the shortest summary
-    let shortestSummaryIndex = 0;
-    let shortestLength = Infinity;
-  
-    row.forEach((item, idx) => {
-      const length = item.summary?.length || 0;
-      if (length < shortestLength) {
-        shortestLength = length;
-        shortestSummaryIndex = idx;
-      }
-    });
-  
-    return (
-      <View key={row.map(item => item.id).join('-')} style={styles.row}>
-        {row.map((newsItem, index) => {
-          const isShortest = index === shortestSummaryIndex;
-          const imageHeight = isShortest ? baseImageHeight + bonusHeight : baseImageHeight;
-  
-          return (
-            <View
-              key={newsItem.id}
-              style={[
-                styles.newsItem,
-                { width: `${index === numItems - 1 ? lastItemWidth : itemWidth}%` },
-              ]}
-            >
-              {renderNewsCard(newsItem, true, imageHeight)}
-            </View>
-          );
-        })}
-      </View>
-    );
-  };
-  
-  
   const columnCount = portrait ? 2 : 3;
 
   if (loading) {
@@ -328,68 +236,69 @@ const ForYouPersonalized = ({ navigation }) => {
 
   const containerStyle = Platform.select({
     web: {
-      backgroundColor: "#f4f4f4",
+      backgroundColor: "white",
       display: "flex",
       height: "100vh",
       width: "100vw",
     },
     default: {
       flex: 1,
-      backgroundColor: "#f4f4f4",
+      backgroundColor: "white",
     },
   });
-  
-  return (
-    <View style={containerStyle}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          flexGrow: 1, // ✅ crucial to allow scrolling when content exceeds viewport
-          backgroundColor: "#f4f4f4",
-          paddingHorizontal: 4,
-          paddingTop: 10,
-          paddingBottom: 100,
-        }}
-        showsVerticalScrollIndicator
-      >
-        <SearchBarWithResults />
 
-        <Header />
-        <View style={styles.categoryContainer}>
-          <CategoryBar navigation={navigation} />
+return (
+  <View style={containerStyle}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{
+        flexGrow: 1, // ✅ crucial to allow scrolling when content exceeds viewport
+        backgroundColor: "white",
+        alignItems: isWideWeb ? "center" : undefined,
+        paddingHorizontal: 4,
+        paddingTop: 10,
+        paddingBottom: 100,
+      }}
+      showsVerticalScrollIndicator
+    >
+      <SearchBarWithResults />
+
+      <Header />
+      <View style={styles.categoryContainer}>
+        <CategoryBar navigation={navigation} />
+      </View>
+
+      {renderHeroArticle(mostImportant)}
+
+      <View style={styles.section}>
+        <View style={styles.rowContainer}>
+          {createDynamicColumns(sortedNewsData, columnCount).map((column, columnIndex) => (
+            <View key={columnIndex} style={styles.column}>
+              {column.map((item) => (
+                <View key={item.id} style={styles.newsItem}>
+                  {renderNewsCard(item)}
+                </View>
+              ))}
+            </View>
+          ))}
         </View>
-  
-        {renderHeroArticle(mostImportant)}
-  
-        <View style={styles.section}>
-          <View style={styles.rowContainer}>
-            {createDynamicColumns(sortedNewsData, columnCount).map((column, columnIndex) => (
-              <View key={columnIndex} style={styles.column}>
-                {column.map((item) => (
-                  <View key={item.id} style={styles.newsItem}>
-                    {renderNewsCard(item)}
-                  </View>
-                ))}
-              </View>
-            ))}
-          </View>
+      </View>
+
+      {sortedNewsData.length === 0 && (
+        <View style={styles.emptyStateContainer}>
+          <Text style={styles.emptyStateText}>No articles found</Text>
         </View>
-  
-        {sortedNewsData.length === 0 && (
-          <View style={styles.emptyStateContainer}>
-            <Text style={styles.emptyStateText}>No articles found</Text>
-          </View>
-        )}
-      </ScrollView>
-      <BottomNav navigation={navigation} />
-    </View>
-  );
+      )}
+    </ScrollView>
+    <BottomNav navigation={navigation} />
+  </View>
+);
 };
 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "white",
     paddingHorizontal: 4,
     paddingTop: 10,
     paddingBottom: 100,
@@ -403,43 +312,81 @@ const styles = StyleSheet.create({
   categoryContainer: {
     alignItems: "center",
     marginVertical: 1,
+    backgroundColor: "white",
+
   },
   section: {
     marginBottom: 10,
+    backgroundColor: "white",
   },
-  rowContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    flexWrap: "wrap",
-  },
+  
   column: {
     flex: 1,
     width: "100%",
     alignItems: "center",
+    backgroundColor: "white",
+
   },
   newsItem: {
     marginBottom: 0,
     paddingHorizontal: 0,
+    backgroundColor: "white",
+
   },
+  webWrapper: {
+    width: "100%",
+    maxWidth: 1200,
+    paddingHorizontal: 16,
+    backgroundColor: "white",
+  },
+
+  rowContainer: Platform.select({
+    isWideWeb: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+      gap: 16,
+      width: "100%",
+      backgroundColor: "white",
+    },
+    default: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+      flexWrap: "wrap",
+    },
+  }),
+
   newsCard: {
-    flexGrow: 1,
-    flexBasis: "49%", // Adjusts based on container width
-    backgroundColor: "#f2f2f2",
+      flexGrow: 1,
+      flexBasis: "49%", // Adjusts based on container width
+      backgroundColor: "white",
+      padding: 10,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: "#bbb",
+      margin: 3,
+
+  },
+
+  wideWebNewsCard: {
+    width: 450,
+    backgroundColor: "white",
+    alignSelf: "center",
     padding: 10,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: "#bbb",
-    margin: 4,
+    margin: 8,
   },
+
   heroCard: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "white",
     padding: 10,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: "#bbb",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 3,
   },
   heroTitle: {
     fontSize: 30, // Make it visually loud like a newspaper headline
@@ -486,6 +433,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     width: "100%",
     marginVertical: 6,
+  },
+  wideWebNewsCardImage: {
+    width: "100%",
+    height: 240,
+    marginTop: 8,
+    resizeMode: "cover",
   },
 });
 

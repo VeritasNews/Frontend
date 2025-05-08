@@ -27,12 +27,15 @@ const Login = ({ navigation }) => {
   
     try {
       setLoading(true);
+      console.time("login");
       const response = await loginUser(identifier, password); // ✅ correct one and only call
-  
+      console.timeEnd("login");
+
       await saveAuthToken(response.access);
       await saveRefreshToken(response.refresh);
-  
+      console.time("navigate");
       navigation.navigate('ForYouPersonalized'); // ✅ this should work if 'ForYou' screen is registered
+      console.timeEnd("navigate");
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     } finally {

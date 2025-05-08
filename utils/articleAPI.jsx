@@ -2,7 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuthToken } from './authAPI';
 
-const BASE_URL = 'http://localhost:8000/api/';
+// const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/`;
 
 export const getArticles = async () => {
   try {
@@ -179,7 +180,7 @@ export const logInteraction = async (articleId, action, time_spent = null) => {
   }
 };
 
-const MEDIA_BASE_URL = 'http://localhost:8000/'; // or your production base URL
+const MEDIA_BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/`// or your production base URL
 
 export const getFullImageUrl = (imagePath) => {
   if (!imagePath) return null;

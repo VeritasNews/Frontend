@@ -137,10 +137,11 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexDirection: "row",
-    paddingLeft: 5,
     paddingVertical: 7,
-    alignItems: "center",
+    alignItems: "center",       // ✅ aligns buttons vertically
+    justifyContent: "center",   // ✅ optional: centers items horizontally if space allows
   },
+  
   categoryButton: {
     backgroundColor: "#D9D9D9",
     paddingVertical: 7,

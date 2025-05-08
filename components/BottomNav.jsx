@@ -7,18 +7,21 @@ import {
   StyleSheet,
   Dimensions,
   Platform,
+  Modal,
 } from "react-native";
 import { getAuthToken } from "../utils/authAPI";
 import { useRoute } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
+const isWideWeb = isWeb && width >= 1024;
 
-const ICON_SIZE = isWeb ? 24 : width > 768 ? 28 : 24;
-const TEXT_SIZE = isWeb ? 14 : width > 768 ? 13 : 11;
+const ICON_SIZE = 28;
+const TEXT_SIZE = 12;
 
 const BottomNav = ({ navigation }) => {
   const [authenticated, setAuthenticated] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const route = useRoute();
 
   useEffect(() => {
@@ -30,25 +33,25 @@ const BottomNav = ({ navigation }) => {
 
   const navigationItems = [
     {
-      icon: "https://cdn-icons-png.flaticon.com/512/1946/1946488.png", // Home
+      icon: "https://cdn-icons-png.flaticon.com/512/1946/1946488.png",
       label: "Home",
       route: authenticated ? "ForYouPersonalized" : "ForYou",
       protected: false,
     },
     {
-      icon: "https://cdn-icons-png.flaticon.com/512/5948/5948565.png", // Messages
+      icon: "https://cdn-icons-png.flaticon.com/512/5948/5948565.png",
       label: "Messages",
       route: "Messages",
       protected: true,
     },
     {
-      icon: "https://cdn-icons-png.flaticon.com/512/1077/1077063.png", // Profile
+      icon: "https://cdn-icons-png.flaticon.com/512/1077/1077063.png",
       label: "Profile",
       route: "Profile",
       protected: true,
     },
     {
-      icon: "https://cdn-icons-png.flaticon.com/512/54/54481.png", // Search
+      icon: "https://cdn-icons-png.flaticon.com/512/54/54481.png",
       label: "Search",
       route: "Search",
       protected: false,
@@ -56,6 +59,7 @@ const BottomNav = ({ navigation }) => {
   ];
 
   const handleNavigation = (routeName, isProtected) => {
+    setMenuOpen(false);
     if (isProtected && !authenticated) {
       navigation.navigate("Login");
     } else {
@@ -63,8 +67,61 @@ const BottomNav = ({ navigation }) => {
     }
   };
 
+  // ✅ Wide Web: Show 3-dot FAB only
+  if (isWideWeb) {
+    return (
+      <>
+        <TouchableOpacity
+          onPress={() => setMenuOpen(true)}
+          style={styles.fabButton}
+        >
+          <Text style={styles.fabText}>⋮</Text>
+        </TouchableOpacity>
+
+        <Modal
+          transparent
+          visible={menuOpen}
+          animationType="fade"
+          onRequestClose={() => setMenuOpen(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            onPress={() => setMenuOpen(false)}
+            activeOpacity={1}
+          >
+            <View style={styles.webMenu}>
+              {authenticated !== null &&
+                navigationItems.map((item, index) => {
+                  const isActive = route.name === item.route;
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleNavigation(item.route, item.protected)}
+                      style={styles.webMenuItem}
+                    >
+                      <Image
+                        source={{ uri: item.icon }}
+                        style={[
+                          styles.navIcon,
+                          isActive && { tintColor: "#a91101" },
+                        ]}
+                      />
+                      <Text style={[styles.navText, isActive && styles.activeText]}>
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </>
+    );
+  }
+
+  // ✅ Mobile or narrow web: bottom tab nav
   return (
-    <View style={[styles.navigationBar, isWeb && styles.webNav]}>
+    <View style={styles.navigationBar}>
       {authenticated !== null &&
         navigationItems.map((item, index) => {
           const isActive = route.name === item.route;
@@ -95,29 +152,22 @@ const BottomNav = ({ navigation }) => {
 const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "space-around",
     backgroundColor: "#fff",
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: "#eee",
     width: "100%",
-  },
-  webNav: {
-    position: "fixed",
-    bottom: 5,
-    left: "50%",
-    transform: [{ translateX: -width * 0.25 }],
-    width: "50%",
-    maxWidth: 600,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    elevation: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowRadius: 4,
+    zIndex: 100,
   },
   navItem: {
     alignItems: "center",
@@ -132,11 +182,61 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: TEXT_SIZE,
     color: "#666",
-    marginTop: 3,
+    marginTop: 2,
   },
   activeText: {
     color: "#a91101",
+    fontWeight: "700",
+  },
+
+  // FAB for wide web
+  fabButton: {
+    position: "fixed",
+    bottom: 20,
+    right: 20,
+    backgroundColor: "#a91101",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    zIndex: 1000,
+  },
+  fabText: {
+    color: "#fff",
+    fontSize: 30,
+    lineHeight: 34,
     fontWeight: "bold",
+  },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+  },
+  webMenu: {
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    margin: 20,
+    minWidth: 180,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  webMenuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
   },
 });
 

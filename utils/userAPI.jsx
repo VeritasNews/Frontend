@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthToken } from './authAPI';
 
-const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/`;
 
 export const getUserProfile = async () => {
   const token = await getAuthToken();

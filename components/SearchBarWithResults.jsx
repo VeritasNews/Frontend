@@ -8,7 +8,7 @@ import axios from 'axios';
 import { getAuthToken } from '../utils/authAPI';
 import { getFullImageUrl } from '../utils/articleAPI';
 
-const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/`;
 
 const SearchBarWithResults = () => {
   const [query, setQuery] = useState('');
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     backgroundColor: '#fff',
+    width: "100%",
   },
   searchRow: {
     flexDirection: 'row',
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginRight: 8,
-    color: '#333',
+    color: '#f4f4f4',
   },
   bell: {
     width: 40,
