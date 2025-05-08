@@ -180,10 +180,10 @@ export const logInteraction = async (articleId, action, time_spent = null) => {
   }
 };
 
-const MEDIA_BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}/`// or your production base URL
+const MEDIA_BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}`; // Make sure this is set correctly
 
 export const getFullImageUrl = (imagePath) => {
   if (!imagePath) return null;
-  if (imagePath.startsWith('http')) return imagePath;
-  return `${MEDIA_BASE_URL}${imagePath.replace(/^\/+/, '')}`;
+  if (imagePath.startsWith('http')) return imagePath; // Already a full URL
+  return `${MEDIA_BASE_URL}${imagePath.replace(/^\/+/, '')}`; // Append image path to base URL, remove any leading slashes
 };
