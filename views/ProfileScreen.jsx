@@ -82,7 +82,7 @@ const ProfileScreen = ({ navigation }) => {
 
   const getProfileImageUrl = (path) => {
     if (!path) return null;
-    return path.startsWith('http') ? path : `http://139.179.221.240:8000${path.startsWith('/media') ? '' : '/media/'}${path}`;
+    return path.startsWith('http') ? path : `http://144.91.84.230:8001${path.startsWith('/media') ? '' : '/media/'}${path}`;
   };
 
   const renderArticleItem = ({ item }) => (

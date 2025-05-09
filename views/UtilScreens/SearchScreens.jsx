@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getAuthToken } from '../../utils/authAPI';
 import { getFullImageUrl } from '../../utils/articleAPI';
 
-const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = 'http://144.91.84.230:8001/api/';
 
 const SearchScreen = () => {
   const [query, setQuery] = useState('');

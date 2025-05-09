@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   image: {
-    height: 220,
+    height: 350,
     backgroundColor: "#eee",
   },
   imagePlaceholder: {

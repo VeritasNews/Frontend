@@ -17,7 +17,7 @@ import { getAuthToken } from '../../utils/authAPI';
 import axios from 'axios';
 import fallbackAvatar from '../../assets/default_profile.jpg';
 
-const BASE_URL = 'http://localhost:8000/api/';
+const BASE_URL = 'http://144.91.84.230:8001/api/';
 
 const UserProfileScreen = ({ route, navigation }) => {
   const { user } = route.params || {};

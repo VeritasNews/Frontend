@@ -81,7 +81,7 @@ export const updateProfilePicture = async (imageAsset) => {
 
   try {
     const response = await axios.patch(
-      'http://localhost:8000/api/users/update-profile-picture/',
+      'http://144.91.84.230:8001/api/users/update-profile-picture/',
       formData,
       {
         headers: {

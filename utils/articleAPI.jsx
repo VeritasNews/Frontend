@@ -185,5 +185,5 @@ const MEDIA_BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}`; // Make sure this i
 export const getFullImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath; // Already a full URL
-  return `${MEDIA_BASE_URL}${imagePath.replace(/^\/+/, '')}`; // Append image path to base URL, remove any leading slashes
+  return `${MEDIA_BASE_URL}/${imagePath.replace(/^\/+/, '')}`; // Append image path to base URL, remove any leading slashes
 };

@@ -41,10 +41,6 @@ const ForYouPersonalized = ({ navigation }) => {
   const windowWidth = Dimensions.get("window").width;
   const isWideWeb = windowWidth >= 750;
 
-  console.log("📱 Device width:", deviceWidth);
-  console.log("📱 Is web:", isWeb);
-  console.log("📱 Is wide web:", isWideWeb);
-
   useEffect(() => {
     fetchNews();
     const updateOrientation = () => setPortrait(isPortrait());
@@ -138,6 +134,11 @@ const ForYouPersonalized = ({ navigation }) => {
 
   const renderHeroArticle = (article) => {
     if (!article) return null;
+    
+    // Process image URL with proper error handling
+    const imageUrl = article.image ? getFullImageUrl(article.image) : null;
+    console.log("📸 Hero image URL:", imageUrl);
+    
     return (
       <TouchableOpacity
         onPress={async () => {
@@ -145,24 +146,26 @@ const ForYouPersonalized = ({ navigation }) => {
           navigation.navigate("NewsDetail", { articleId: article.id });
         }}
       >
-        <View style={styles.heroCard}>
+        <View style={[styles.heroCard, isWideWeb && styles.wideWebHeroCard]}>
           {typeof article.title === "string" && (
             <Text style={styles.heroTitle}>{article.title}</Text>
           )}
           {typeof article.summary === "string" && (
             <Text style={styles.heroSummary}>{article.summary}</Text>
           )}
-          {article.image && (
+          {imageUrl && (
             <Image
-              source={{ uri: getFullImageUrl(article.image) }}
-              style={styles.heroImage}
+              source={{ uri: imageUrl }}
+              style={[styles.heroImage, isWideWeb && styles.wideWebHeroCardImage]}
+              resizeMode="cover"
+              onError={(e) => console.error("Image load error:", e.nativeEvent.error)}
             />
           )}
         </View>
       </TouchableOpacity>
     );
   };
-  
+
   
   const getFontSize = (size) => {
     switch (size) {
@@ -365,11 +368,23 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: "#bbb",
       margin: 3,
-
+      minWidth: 250,
   },
 
   wideWebNewsCard: {
     width: 450,
+    backgroundColor: "white",
+    alignSelf: "center",
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#bbb",
+    margin: 8,
+  },
+
+  wideWebHeroCard: {
+    width: 1250,
+    height: 450,
     backgroundColor: "white",
     alignSelf: "center",
     padding: 10,
@@ -389,38 +404,48 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   heroTitle: {
-    fontSize: 30, // Make it visually loud like a newspaper headline
-    fontWeight: "900", // Maximum system boldness
-    fontFamily: "Georgia", // Elegant serif like newspapers
-    color: "#000", // Deep black for print-style contrast
-    marginBottom: 4,
-    textAlign: "center", // 'middle' is not valid — use 'center'
-    lineHeight: 36,
+    fontSize: 34,
+    fontWeight: "700",
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", 
+             "SF Pro Text", sans-serif`,
+    color: "#333",
+    marginBottom: 3,
+    textAlign: "center",
+    lineHeight: 40,
+    letterSpacing: -0.3,
+    textAlign: "center",
   },
   heroSummary: {
-    fontFamily: "Georgia",
-    color: "#333",
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", 
+    "SF Pro Text", sans-serif`,
     textAlign: "justify",
-    marginTop: 0,
-    lineHeight: 20,
-    textAlign: "center", // 'middle' is not valid — use 'center'
+    marginTop: 4,
+    lineHeight: 24,
+    letterSpacing: 0.3,
+    textAlign: "center",
+
+  },
+  newsTitle: {
+    fontWeight: "600",
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", 
+    "SF Pro Text", sans-serif`,
+    color: "#333",
+    letterSpacing: -0.2,
+    textAlign: "center",
+  },
+  summaryText: {
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", 
+    "SF Pro Text", sans-serif`,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 6,
+    lineHeight: 22,
   },
   heroImage: {
     width: "100%",
     height: 240,
     marginTop: 8,
     resizeMode: "cover",
-  },
-  newsTitle: {
-    fontWeight: "bold",
-    fontFamily: "Georgia",
-    textAlign: "center",
-  },
-  summaryText: {
-    fontFamily: "Merriweather",
-    color: "#444",
-    textAlign: "center",
-    marginTop: 4,
   },
   imagePlaceholder: {
     width: "100%",
@@ -437,6 +462,12 @@ const styles = StyleSheet.create({
   wideWebNewsCardImage: {
     width: "100%",
     height: 240,
+    marginTop: 8,
+    resizeMode: "cover",
+  },
+  wideWebHeroCardImage: {
+    width: "100%",
+    height: 350,
     marginTop: 8,
     resizeMode: "cover",
   },

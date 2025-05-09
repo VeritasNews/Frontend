@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { Linking } from "react-native";
+import { Linking, ActivityIndicator, View, Text } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Import Screens
 import { MessagesScreen } from "./views/MessagesScreen";
@@ -18,8 +19,8 @@ import Deneme from "./views/MainScreens/Deneme";
 const Stack = createStackNavigator();
 import Login from './views/AuthScreens/Login';
 import Register from './views/AuthScreens/Register';
-import ForgotPassword from './views/AuthScreens/ForgotPassword'; // Import the new ForgotPassword screen
-import ResetPassword from './views/AuthScreens/ResetPassword'; // Import the new ResetPassword screen
+import ForgotPassword from './views/AuthScreens/ForgotPassword'; 
+import ResetPassword from './views/AuthScreens/ResetPassword'; 
 import ChooseCategoryScreen from './views/UtilScreens/ChooseCategoryScreen';
 import SearchScreen from './views/UtilScreens/SearchScreens';
 import Settings from './views/UtilScreens/Settings';
@@ -66,6 +67,7 @@ const linking = {
     'veritasnews://', 
     'http://localhost:8000', 
     'http://127.0.0.1:8000',
+    "http://144.91.84.230:8001",
     'exp://' // For Expo development
   ],
   config: {
@@ -82,10 +84,50 @@ const linking = {
 };
 
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        // Check for both authToken and refreshToken
+        const authToken = await AsyncStorage.getItem('authToken');
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
+        
+        if (authToken) {
+          // Token exists - verify it's not expired
+          setIsLoggedIn(true);
+        } else if (refreshToken) {
+          // Attempt to refresh the token
+          try {
+            const newToken = await refreshAuthToken();
+            if (newToken) {
+              setIsLoggedIn(true);
+              return;
+            }
+          } catch (refreshError) {
+            console.log('Token refresh failed:', refreshError);
+          }
+        }
+        
+        setIsLoggedIn(false);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setIsLoggedIn(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuthStatus();
+  }, []);
+
   return (
     <NavigationContainer linking={linking}>
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Deneme" component={Deneme} />
+      <Stack.Navigator 
+        initialRouteName={isLoggedIn ? "ForYouPersonalized" : "ForYou"} 
+        screenOptions={{ headerShown: false }}
+      >
         <Stack.Screen name="ForYouPersonalized" component={ForYouPersonalized} />
         <Stack.Screen name="ForYou" component={ForYou} />
         <Stack.Screen name="Messages" component={MessagesScreen} />
