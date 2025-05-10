@@ -332,7 +332,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 30,
     flexGrow: 1,
-    minHeight: "100%",
     backgroundColor: "#fff",
   },
 });

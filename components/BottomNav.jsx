@@ -25,10 +25,20 @@ const BottomNav = ({ navigation }) => {
   const route = useRoute();
 
   useEffect(() => {
-    (async () => {
-      const token = await getAuthToken();
-      setAuthenticated(!!token);
-    })();
+    console.log("BottomNav rendering, isWideWeb:", isWideWeb);
+    
+    const checkAuth = async () => {
+      try {
+        const token = await getAuthToken();
+        setAuthenticated(!!token);
+        console.log("Authentication status:", !!token);
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setAuthenticated(false);
+      }
+    };
+    
+    checkAuth();
   }, []);
 
   const navigationItems = [
@@ -67,7 +77,14 @@ const BottomNav = ({ navigation }) => {
     }
   };
 
-  // ✅ Wide Web: Show 3-dot FAB only
+  if (authenticated === null) {
+    return (
+      <View style={styles.navigationBar}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
   if (isWideWeb) {
     return (
       <>
@@ -90,28 +107,27 @@ const BottomNav = ({ navigation }) => {
             activeOpacity={1}
           >
             <View style={styles.webMenu}>
-              {authenticated !== null &&
-                navigationItems.map((item, index) => {
-                  const isActive = route.name === item.route;
-                  return (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => handleNavigation(item.route, item.protected)}
-                      style={styles.webMenuItem}
-                    >
-                      <Image
-                        source={{ uri: item.icon }}
-                        style={[
-                          styles.navIcon,
-                          isActive && { tintColor: "#a91101" },
-                        ]}
-                      />
-                      <Text style={[styles.navText, isActive && styles.activeText]}>
-                        {item.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+              {navigationItems.map((item, index) => {
+                const isActive = route.name === item.route;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleNavigation(item.route, item.protected)}
+                    style={styles.webMenuItem}
+                  >
+                    <Image
+                      source={{ uri: item.icon }}
+                      style={[
+                        styles.navIcon,
+                        isActive && { tintColor: "#a91101" },
+                      ]}
+                    />
+                    <Text style={[styles.navText, isActive && styles.activeText]}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </TouchableOpacity>
         </Modal>
@@ -119,32 +135,30 @@ const BottomNav = ({ navigation }) => {
     );
   }
 
-  // ✅ Mobile or narrow web: bottom tab nav
   return (
     <View style={styles.navigationBar}>
-      {authenticated !== null &&
-        navigationItems.map((item, index) => {
-          const isActive = route.name === item.route;
-          return (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleNavigation(item.route, item.protected)}
-              style={styles.navItem}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={{ uri: item.icon }}
-                style={[
-                  styles.navIcon,
-                  isActive && { tintColor: "#a91101" },
-                ]}
-              />
-              <Text style={[styles.navText, isActive && styles.activeText]}>
-                {item.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+      {navigationItems.map((item, index) => {
+        const isActive = route.name === item.route;
+        return (
+          <TouchableOpacity
+            key={index}
+            onPress={() => handleNavigation(item.route, item.protected)}
+            style={styles.navItem}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={{ uri: item.icon }}
+              style={[
+                styles.navIcon,
+                isActive && { tintColor: "#a91101" },
+              ]}
+            />
+            <Text style={[styles.navText, isActive && styles.activeText]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
@@ -153,21 +167,19 @@ const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: "row",
     justifyContent: "space-around",
+    alignItems: "center",
     backgroundColor: "#fff",
     paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: "#eee",
     width: "100%",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    zIndex: 100,
+    zIndex: 1000,
+    height: 60,
   },
   navItem: {
     alignItems: "center",
@@ -188,7 +200,10 @@ const styles = StyleSheet.create({
     color: "#a91101",
     fontWeight: "700",
   },
-
+  loadingText: {
+    color: "#666",
+    fontSize: 14,
+  },
   // FAB for wide web
   fabButton: {
     position: "fixed",
@@ -212,7 +227,6 @@ const styles = StyleSheet.create({
     lineHeight: 34,
     fontWeight: "bold",
   },
-
   modalBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.3)",
@@ -232,6 +246,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
+    zIndex: 1500,
   },
   webMenuItem: {
     flexDirection: "row",

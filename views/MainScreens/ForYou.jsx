@@ -71,7 +71,6 @@ const ForYou = ({ navigation, category }) => {
     }
   };
   
-
   const assignNewsSizes = (data) => {
     if (!data || data.length === 0) return [];
     
@@ -196,10 +195,12 @@ const ForYou = ({ navigation, category }) => {
       display: "flex",
       height: "100vh",
       width: "100vw",
+      position: "relative", // Add position relative to contain absolute children
     },
     default: {
       flex: 1,
       backgroundColor: "white",
+      position: "relative", // Add position relative to contain absolute children
     },
   });
 
@@ -222,7 +223,7 @@ const ForYou = ({ navigation, category }) => {
           alignItems: isWideWeb ? "center" : undefined,
           paddingHorizontal: 4,
           paddingTop: 10,
-          paddingBottom: 100,
+          paddingBottom: 120, // Increased to make room for navigation bar
         }}
         showsVerticalScrollIndicator
       >
@@ -255,7 +256,11 @@ const ForYou = ({ navigation, category }) => {
           </View>
         )}
       </ScrollView>
-      <BottomNav navigation={navigation} />
+      
+      {/* Bottom navigation with higher z-index */}
+      <View style={styles.navContainer}>
+        <BottomNav navigation={navigation} />
+      </View>
     </View>
   );
 };
@@ -278,25 +283,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 1,
     backgroundColor: "white",
-
   },
   section: {
     marginBottom: 10,
     backgroundColor: "white",
   },
-  
   column: {
     flex: 1,
     width: "100%",
     alignItems: "center",
     backgroundColor: "white",
-
   },
   newsItem: {
     marginBottom: 0,
     paddingHorizontal: 0,
     backgroundColor: "white",
-
   },
   webWrapper: {
     width: "100%",
@@ -304,7 +305,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: "white",
   },
-
+  navContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000, // Higher z-index to ensure visibility
+  },
   rowContainer: Platform.select({
     isWideWeb: {
       display: "grid",
@@ -320,7 +327,6 @@ const styles = StyleSheet.create({
       flexWrap: "wrap",
     },
   }),
-
   newsCard: {
       flexGrow: 1,
       flexBasis: "49%", // Adjusts based on container width
@@ -331,7 +337,6 @@ const styles = StyleSheet.create({
       borderColor: "#bbb",
       margin: 3,
   },
-
   wideWebNewsCard: {
     width: 450,
     backgroundColor: "white",
@@ -342,7 +347,6 @@ const styles = StyleSheet.create({
     borderColor: "#bbb",
     margin: 8,
   },
-
   wideWebHeroCard: {
     width: 1250,
     height: 450,
@@ -354,7 +358,6 @@ const styles = StyleSheet.create({
     borderColor: "#bbb",
     margin: 8,
   },
-
   heroCard: {
     backgroundColor: "white",
     padding: 10,
@@ -384,7 +387,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     letterSpacing: 0.3,
     textAlign: "center",
-
   },
   newsTitle: {
     fontWeight: "600",
@@ -431,6 +433,16 @@ const styles = StyleSheet.create({
     height: 350,
     marginTop: 8,
     resizeMode: "cover",
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    color: "#666",
   },
 });
 
