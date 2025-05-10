@@ -257,7 +257,7 @@ const ForYou = ({ navigation, category }) => {
         )}
       </ScrollView>
       
-      {/* Bottom navigation with higher z-index */}
+
       <View style={styles.navContainer}>
         <BottomNav navigation={navigation} />
       </View>
