@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Linking, ActivityIndicator, View, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Import Screens
 import { MessagesScreen } from "./views/MessagesScreen";
@@ -123,62 +124,82 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer linking={linking}>
-      <Stack.Navigator 
-        initialRouteName={isLoggedIn ? "ForYouPersonalized" : "ForYou"} 
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="ForYouPersonalized" component={ForYouPersonalized} />
-        <Stack.Screen name="ForYou" component={ForYou} />
-        <Stack.Screen name="Messages" component={MessagesScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="Siyaset" component={SiyasetNewsScreen} />
-        <Stack.Screen name="Scrollable" component={ScrollableScreen} />
-        <Stack.Screen name="Entertainment" component={EntertainmentNewsScreen} />
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="ChooseCategoryScreen" component={ChooseCategoryScreen} />
-        <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-        <Stack.Screen name="ResetPassword" component={ResetPassword} />
-        <Stack.Screen name="NewsDetail" component={NewsDetailScreen} />
-        <Stack.Screen name="LikedArticles" component={LikedArticlesScreen} />
-        <Stack.Screen name="Search" component={SearchScreen} />
-        <Stack.Screen name="Settings" component={Settings} />
-        
-        {/* Category screens */}
-        <Stack.Screen name="Suc" component={SucNewsScreen} />
-        <Stack.Screen name="Cevre" component={CevreNewsScreen} />
-        <Stack.Screen name="Din" component={DinNewsScreen} />
-        <Stack.Screen name="DunyaHaberleri" component={DunyaHaberleriNewsScreen} />
-        <Stack.Screen name="Egitim" component={EgitimNewsScreen} />
-        <Stack.Screen name="Ekonomi" component={EkonomiNewsScreen} />
-        <Stack.Screen name="Iliskiler" component={IliskilerNewsScreen} />
-        <Stack.Screen name="Kultur" component={KulturNewsScreen} />
-        <Stack.Screen name="Magazin" component={MagazinNewsScreen} />
-        <Stack.Screen name="Moda" component={ModaNewsScreen} />
-        <Stack.Screen name="Oyun" component={OyunNewsScreen} />
-        <Stack.Screen name="RuhSagligi" component={RuhSagligiNewsScreen} />
-        <Stack.Screen name="Sanat" component={SanatNewsScreen} />
-        <Stack.Screen name="Seyahat" component={SeyahatNewsScreen} />
-        <Stack.Screen name="Spor" component={SporNewsScreen} />
-        <Stack.Screen name="Tarih" component={TarihNewsScreen} />
-        <Stack.Screen name="Teknoloji" component={TeknolojiNewsScreen} />
-        <Stack.Screen name="Uzay" component={UzayNewsScreen} />
-        <Stack.Screen name="YasamTarzi" component={YasamTarziNewsScreen} />
-        <Stack.Screen name="Yemek" component={YemekNewsScreen} />
-        <Stack.Screen name="Bilim" component={BilimNewsScreen} />
-        <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} />
-        <Stack.Screen name="Saglik" component={SaglikNewsScreen} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer linking={linking}>
+        <Stack.Navigator 
+          initialRouteName={isLoggedIn ? "ForYouPersonalized" : "ForYou"} 
+          screenOptions={{ 
+            headerShown: false,
+            gestureEnabled: true,
+            cardStyle: { backgroundColor: 'white' },
+            gestureDirection: 'horizontal',
+            gestureResponseDistance: { horizontal: 50 },
+            animationEnabled: true,
+            cardStyleInterpolator: undefined
+          }}
+        >
+          <Stack.Screen name="ForYouPersonalized" component={ForYouPersonalized} />
+          <Stack.Screen name="ForYou" component={ForYou} />
+          <Stack.Screen name="Messages" component={MessagesScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Siyaset" component={SiyasetNewsScreen} />
+          <Stack.Screen name="Scrollable" component={ScrollableScreen} />
+          <Stack.Screen name="Entertainment" component={EntertainmentNewsScreen} />
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="ChooseCategoryScreen" component={ChooseCategoryScreen} />
+          <Stack.Screen name="Register" component={Register} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+          <Stack.Screen name="ResetPassword" component={ResetPassword} />
+          
+          <Stack.Screen 
+            name="NewsDetail" 
+            component={NewsDetailScreen} 
+            options={{
+              gestureEnabled: false,
+              cardStyle: { backgroundColor: 'white' },
+              animationEnabled: true,
+            }}
+          />
+          
+          <Stack.Screen name="LikedArticles" component={LikedArticlesScreen} />
+          <Stack.Screen name="Search" component={SearchScreen} />
+          <Stack.Screen name="Settings" component={Settings} />
+          
+          {/* Category screens */}
+          <Stack.Screen name="Suc" component={SucNewsScreen} />
+          <Stack.Screen name="Cevre" component={CevreNewsScreen} />
+          <Stack.Screen name="Din" component={DinNewsScreen} />
+          <Stack.Screen name="DunyaHaberleri" component={DunyaHaberleriNewsScreen} />
+          <Stack.Screen name="Egitim" component={EgitimNewsScreen} />
+          <Stack.Screen name="Ekonomi" component={EkonomiNewsScreen} />
+          <Stack.Screen name="Iliskiler" component={IliskilerNewsScreen} />
+          <Stack.Screen name="Kultur" component={KulturNewsScreen} />
+          <Stack.Screen name="Magazin" component={MagazinNewsScreen} />
+          <Stack.Screen name="Moda" component={ModaNewsScreen} />
+          <Stack.Screen name="Oyun" component={OyunNewsScreen} />
+          <Stack.Screen name="RuhSagligi" component={RuhSagligiNewsScreen} />
+          <Stack.Screen name="Sanat" component={SanatNewsScreen} />
+          <Stack.Screen name="Seyahat" component={SeyahatNewsScreen} />
+          <Stack.Screen name="Spor" component={SporNewsScreen} />
+          <Stack.Screen name="Tarih" component={TarihNewsScreen} />
+          <Stack.Screen name="Teknoloji" component={TeknolojiNewsScreen} />
+          <Stack.Screen name="Uzay" component={UzayNewsScreen} />
+          <Stack.Screen name="YasamTarzi" component={YasamTarziNewsScreen} />
+          <Stack.Screen name="Yemek" component={YemekNewsScreen} />
+          <Stack.Screen name="Bilim" component={BilimNewsScreen} />
+          <Stack.Screen name="Otomotiv" component={OtomotivNewsScreen} />
+          <Stack.Screen name="Saglik" component={SaglikNewsScreen} />
 
-        {/* Friend Screens */}
-        <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-        <Stack.Screen name="FriendRequests" component={FriendRequestsScreen} />
-        <Stack.Screen name="FriendsList" component={FriendsListScreen} />
-        <Stack.Screen name="FriendsNews" component={FriendsNewsScreen} />
-        <Stack.Screen name="FriendsArticleDetail" component={FriendsArticleDetailScreen} />
+          {/* Friend Screens */}
+          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+          <Stack.Screen name="FriendRequests" component={FriendRequestsScreen} />
+          <Stack.Screen name="FriendsList" component={FriendsListScreen} />
+          <Stack.Screen name="FriendsNews" component={FriendsNewsScreen} />
+          <Stack.Screen name="FriendsArticleDetail" component={FriendsArticleDetailScreen} />
 
-        <Stack.Screen name="SearchBarWithResults" component={SearchBarWithResults} />
-      </Stack.Navigator>
-    </NavigationContainer>
+          <Stack.Screen name="SearchBarWithResults" component={SearchBarWithResults} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
