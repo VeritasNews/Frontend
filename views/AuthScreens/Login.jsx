@@ -10,7 +10,9 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  ActivityIndicator,
+  NetInfo
 } from 'react-native';
 import { loginUser, saveAuthToken, saveRefreshToken } from '../../utils/authAPI';
 
@@ -18,26 +20,92 @@ const Login = ({ navigation }) => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    identifier: '',
+    password: '',
+    general: ''
+  });
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateInputs = () => {
+    let isValid = true;
+    const newErrors = {
+      identifier: '',
+      password: '',
+      general: ''
+    };
+
+    if (!identifier.trim()) {
+      newErrors.identifier = 'Email or username is required';
+      isValid = false;
+    } else if (identifier.includes('@') && !isValidEmail(identifier)) {
+      newErrors.identifier = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleLogin = async () => {
-    if (!identifier || !password) {
-      Alert.alert('Error', 'Please enter both email/username and password');
+    setErrors({
+      identifier: '',
+      password: '',
+      general: ''
+    });
+
+    if (!validateInputs()) {
       return;
     }
   
     try {
       setLoading(true);
       console.time("login");
-      const response = await loginUser(identifier, password); // ✅ correct one and only call
+      
+      const networkState = await NetInfo.fetch();
+      if (!networkState.isConnected) {
+        setErrors({ general: 'No internet connection. Please check your network settings.' });
+        return;
+      }
+      
+      const response = await loginUser(identifier, password);
       console.timeEnd("login");
 
       await saveAuthToken(response.access);
       await saveRefreshToken(response.refresh);
       console.time("navigate");
-      navigation.navigate('ForYouPersonalized'); // ✅ this should work if 'ForYou' screen is registered
+      navigation.navigate('ForYouPersonalized');
       console.timeEnd("navigate");
     } catch (error) {
-      Alert.alert('Login Failed', error.message);
+      console.error('Login error:', error);
+      
+      if (error.status === 401) {
+        setErrors({ general: 'Invalid username or password. Please try again.' });
+      } else if (error.status === 403) {
+        setErrors({ general: 'Your account has been locked. Please contact support.' });
+      } else if (error.status === 404) {
+        setErrors({ general: 'Account not found. Please check your credentials or create a new account.' });
+      } else if (error.status === 429) {
+        setErrors({ general: 'Too many failed attempts. Please try again later.' });
+      } else if (error.status >= 500) {
+        setErrors({ general: 'Server error. Please try again later or contact support.' });
+      } else if (error.message && error.message.includes('timeout')) {
+        setErrors({ general: 'Request timed out. Please check your internet connection and try again.' });
+      } else {
+        setErrors({ general: error.message || 'An unexpected error occurred. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -77,22 +145,49 @@ const Login = ({ navigation }) => {
             </Text>
             
             <View style={styles.formContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email or Username"
-              value={identifier}
-              onChangeText={setIdentifier}
-              autoCapitalize="none"
-            />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+              {errors.general ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{errors.general}</Text>
+                </View>
+              ) : null}
+            
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={[styles.input, errors.identifier ? styles.inputError : null]}
+                  placeholder="Email or Username"
+                  value={identifier}
+                  onChangeText={(text) => {
+                    setIdentifier(text);
+                    if (errors.identifier) {
+                      setErrors({...errors, identifier: ''});
+                    }
+                  }}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {errors.identifier ? (
+                  <Text style={styles.fieldErrorText}>{errors.identifier}</Text>
+                ) : null}
+              </View>
               
-              {/* Forgot Password Link */}
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={[styles.input, errors.password ? styles.inputError : null]}
+                  placeholder="Password"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) {
+                      setErrors({...errors, password: ''});
+                    }
+                  }}
+                  secureTextEntry
+                />
+                {errors.password ? (
+                  <Text style={styles.fieldErrorText}>{errors.password}</Text>
+                ) : null}
+              </View>
+              
               <TouchableOpacity 
                 style={styles.forgotPasswordContainer}
                 onPress={handleForgotPassword}
@@ -101,14 +196,17 @@ const Login = ({ navigation }) => {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.loginButton}
+                style={[styles.loginButton, loading ? styles.loginButtonDisabled : null]}
                 onPress={handleLogin}
                 disabled={loading}
               >
-                <Text style={styles.loginButtonText}>Login</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={styles.loginButtonText}>Login</Text>
+                )}
               </TouchableOpacity>
 
-              {/* Create Account Button */}
               <TouchableOpacity 
                 style={styles.createAccountButton}
                 onPress={handleCreateAccount}
@@ -175,14 +273,40 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
   },
+  inputContainer: {
+    marginBottom: 12,
+    width: '100%',
+  },
   input: {
     width: '100%',
     padding: 15,
-    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
     fontSize: 16,
+  },
+  inputError: {
+    borderColor: '#a91101',
+    borderWidth: 1,
+  },
+  errorContainer: {
+    backgroundColor: '#fde2e2',
+    borderWidth: 1,
+    borderColor: '#a91101',
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#a91101',
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  fieldErrorText: {
+    color: '#a91101',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
@@ -195,12 +319,17 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     width: '100%',
-    backgroundColor: "#a91101", // Red background for active category
-    borderColor: "#8b0d01", // Darker red border for contrast
+    backgroundColor: "#a91101",
+    borderColor: "#8b0d01",
     borderRadius: 6,
     paddingVertical: 14,
     marginBottom: 16,
     alignItems: 'center',
+    height: 50,
+    justifyContent: 'center',
+  },
+  loginButtonDisabled: {
+    backgroundColor: "#d27971",
   },
   loginButtonText: {
     color: 'white',
@@ -209,7 +338,7 @@ const styles = StyleSheet.create({
   },
   createAccountButton: {
     width: '100%',
-    borderColor: "#8b0d01", // Darker red border for contrast
+    borderColor: "#8b0d01",
     borderWidth: 1,
     borderRadius: 6,
     paddingVertical: 14,
@@ -227,10 +356,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 16,
-    borderColor: "#d4d4d4", // Light border for subtle distinction
+    borderColor: "#d4d4d4",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15, // Add slight shadow for 3D effect
+    shadowOpacity: 0.15,
     shadowRadius: 3,
   },
   guestButtonText: {
@@ -238,11 +367,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  errorText: {
-    color: 'red',
-    marginTop: 8,
-    textAlign: 'center',
-  },  
 });
 
 export default Login;
