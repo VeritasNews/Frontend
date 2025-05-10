@@ -125,9 +125,10 @@ export default function App() {
   return (
     <NavigationContainer linking={linking}>
       <Stack.Navigator 
-        initialRouteName={isLoggedIn ? "ForYouPersonalized" : "ForYou"} 
+        initialRouteName="Login" 
         screenOptions={{ headerShown: false }}
       >
+        <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="ForYouPersonalized" component={ForYouPersonalized} />
         <Stack.Screen name="ForYou" component={ForYou} />
         <Stack.Screen name="Messages" component={MessagesScreen} />
@@ -135,7 +136,6 @@ export default function App() {
         <Stack.Screen name="Siyaset" component={SiyasetNewsScreen} />
         <Stack.Screen name="Scrollable" component={ScrollableScreen} />
         <Stack.Screen name="Entertainment" component={EntertainmentNewsScreen} />
-        <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="ChooseCategoryScreen" component={ChooseCategoryScreen} />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />

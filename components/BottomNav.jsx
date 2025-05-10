@@ -40,12 +40,6 @@ const BottomNav = ({ navigation }) => {
       protected: false,
     },
     {
-      icon: "https://cdn-icons-png.flaticon.com/512/5948/5948565.png",
-      label: "Messages",
-      route: "Messages",
-      protected: true,
-    },
-    {
       icon: "https://cdn-icons-png.flaticon.com/512/1077/1077063.png",
       label: "Profile",
       route: "Profile",
