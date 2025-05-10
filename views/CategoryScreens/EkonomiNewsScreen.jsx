@@ -343,7 +343,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#bbb",
     margin: 3,
-    minWidth: 250,
   },
   wideWebNewsCard: {
     width: 450,

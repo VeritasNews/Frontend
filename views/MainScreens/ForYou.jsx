@@ -53,25 +53,24 @@ const ForYou = ({ navigation, category }) => {
     try {
       const news = await getArticlesByCategory(category);
       console.log(`✅ Loaded ${news.length} articles for ${category}`);
-      
-      // Verify article structure - check first article for debugging
-      if (news.length > 0) {
-        console.log("First article structure:", JSON.stringify({
-          id: news[0].id,
-          title: news[0].title,
-          hasImage: !!news[0].image,
-          imageUrl: news[0].image ? getFullImageUrl(news[0].image) : 'none'
-        }));
-      }
-      
-      setNewsData(news);
+  
+      // Sort articles by popularityScore (with fallback for missing popularityScore)
+      const sortedNews = news.sort((a, b) => {
+        const popA = a.popularityScore || 0;  // if missing, treat as 0
+        const popB = b.popularityScore || 0;
+        return popB - popA;  // descending order
+      });
+  
+      console.log("Sorted by popularity:", sortedNews);
+      setNewsData(sortedNews);
     } catch (err) {
       console.error(`Error loading ${category} feed:`, err);
-      setNewsData([]);
+      setNewsData([]); // fallback on error
     } finally {
       setLoading(false);
     }
   };
+  
 
   const assignNewsSizes = (data) => {
     if (!data || data.length === 0) return [];
@@ -331,7 +330,6 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: "#bbb",
       margin: 3,
-      minWidth: 250,
   },
 
   wideWebNewsCard: {
