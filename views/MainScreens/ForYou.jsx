@@ -8,11 +8,10 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Image,
-  Platform
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { getArticlesByCategory, logInteraction, getFullImageUrl } from "../../utils/articleAPI";
-// Make sure we're using the proper image URL function
-console.log("Image URL function available:", typeof getFullImageUrl === 'function');
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";
@@ -124,7 +123,6 @@ const ForYou = ({ navigation, category }) => {
     
     // Process image URL with proper error handling
     const imageUrl = article.image ? getFullImageUrl(article.image) : null;
-    console.log("📸 Hero image URL:", imageUrl);
     
     return (
       <TouchableOpacity
@@ -157,13 +155,12 @@ const ForYou = ({ navigation, category }) => {
     const fontSize = getFontSize(item.size);
     // Check if image exists and process it correctly
     const imageUrl = item.image ? getFullImageUrl(item.image) : null;
-    console.log("📸 Image URL for article:", item.id, imageUrl);
     
     return (
       <TouchableOpacity
         onPress={async () => {
           await logInteraction(item.id, "click");
-          navigation.navigate("NewsDetail", { articleId: item.id });
+          navigation.navigate("NewsDetail", { articleId: article.id });
         }}
       >
         <View
@@ -189,20 +186,8 @@ const ForYou = ({ navigation, category }) => {
     );
   };
 
-  const containerStyle = Platform.select({
-    web: {
-      backgroundColor: "white",
-      display: "flex",
-      height: "100vh",
-      width: "100vw",
-      position: "relative", // Add position relative to contain absolute children
-    },
-    default: {
-      flex: 1,
-      backgroundColor: "white",
-      position: "relative", // Add position relative to contain absolute children
-    },
-  });
+  // Use KeyboardAvoidingView for mobile platforms
+  const MainContainer = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 
   if (loading) {
     return (
@@ -214,21 +199,24 @@ const ForYou = ({ navigation, category }) => {
   }
 
   return (
-    <View style={containerStyle}>
+    <MainContainer 
+      style={styles.mainContainer} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+    >
       <ScrollView
-        style={{ flex: 1 }}
+        style={styles.scrollView}
         contentContainerStyle={{
           flexGrow: 1,
           backgroundColor: "white",
           alignItems: isWideWeb ? "center" : undefined,
           paddingHorizontal: 4,
           paddingTop: 10,
-          paddingBottom: 120, // Increased to make room for navigation bar
+          paddingBottom: Platform.OS === 'web' ? 120 : 80, // Different padding for web vs mobile
         }}
         showsVerticalScrollIndicator
       >
         <SearchBarWithResults />
-
         <Header />
         <View style={styles.categoryContainer}>
           <CategoryBar navigation={navigation} />
@@ -257,21 +245,36 @@ const ForYou = ({ navigation, category }) => {
         )}
       </ScrollView>
       
-      {/* Bottom navigation with higher z-index */}
-      <View style={styles.navContainer}>
+      {/* Footer space to ensure content isn't hidden under navigation */}
+      {Platform.OS !== 'web' && <View style={styles.footerSpace} />}
+
+      {/* Bottom navigation - different approach for mobile vs web */}
+      {Platform.OS === 'web' ? (
+        <View style={styles.webNavContainer}>
+          <BottomNav navigation={navigation} />
+        </View>
+      ) : (
         <BottomNav navigation={navigation} />
-      </View>
-    </View>
+      )}
+    </MainContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
+  mainContainer: {
+    flex: 1,
     backgroundColor: "white",
-    paddingHorizontal: 4,
-    paddingTop: 10,
-    paddingBottom: 100,
+    ...Platform.select({
+      web: {
+        position: "relative",
+      },
+      default: {
+        position: "relative",
+      },
+    }),
+  },
+  scrollView: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -299,21 +302,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     backgroundColor: "white",
   },
-  webWrapper: {
-    width: "100%",
-    maxWidth: 1200,
-    paddingHorizontal: 16,
-    backgroundColor: "white",
-  },
-  navContainer: {
+  // Different handling for web vs mobile navigation
+  webNavContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 1000, // Higher z-index to ensure visibility
+    zIndex: 1000,
+  },
+  footerSpace: {
+    height: 70,
+    backgroundColor: 'transparent',
   },
   rowContainer: Platform.select({
-    isWideWeb: {
+    web: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
       gap: 16,
@@ -328,14 +330,14 @@ const styles = StyleSheet.create({
     },
   }),
   newsCard: {
-      flexGrow: 1,
-      flexBasis: "49%", // Adjusts based on container width
-      backgroundColor: "white",
-      padding: 10,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: "#bbb",
-      margin: 3,
+    flexGrow: 1,
+    flexBasis: "49%",
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#bbb",
+    margin: 3,
   },
   wideWebNewsCard: {
     width: 450,
@@ -377,7 +379,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 40,
     letterSpacing: -0.3,
-    textAlign: "center",
   },
   heroSummary: {
     fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", 

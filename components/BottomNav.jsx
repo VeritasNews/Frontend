@@ -8,6 +8,7 @@ import {
   Dimensions,
   Platform,
   Modal,
+  SafeAreaView,
 } from "react-native";
 import { getAuthToken } from "../utils/authAPI";
 import { useRoute } from "@react-navigation/native";
@@ -25,7 +26,7 @@ const BottomNav = ({ navigation }) => {
   const route = useRoute();
 
   useEffect(() => {
-    console.log("BottomNav rendering, isWideWeb:", isWideWeb);
+    console.log("BottomNav rendering, Platform:", Platform.OS, "isWideWeb:", isWideWeb);
     
     const checkAuth = async () => {
       try {
@@ -77,6 +78,7 @@ const BottomNav = ({ navigation }) => {
     }
   };
 
+  // Handle the case where authentication is still loading
   if (authenticated === null) {
     return (
       <View style={styles.navigationBar}>
@@ -85,6 +87,7 @@ const BottomNav = ({ navigation }) => {
     );
   }
 
+  // Wide Web: Show 3-dot FAB only
   if (isWideWeb) {
     return (
       <>
@@ -135,35 +138,41 @@ const BottomNav = ({ navigation }) => {
     );
   }
 
+  // Mobile: bottom tab nav
   return (
-    <View style={styles.navigationBar}>
-      {navigationItems.map((item, index) => {
-        const isActive = route.name === item.route;
-        return (
-          <TouchableOpacity
-            key={index}
-            onPress={() => handleNavigation(item.route, item.protected)}
-            style={styles.navItem}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={{ uri: item.icon }}
-              style={[
-                styles.navIcon,
-                isActive && { tintColor: "#a91101" },
-              ]}
-            />
-            <Text style={[styles.navText, isActive && styles.activeText]}>
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.navigationBar, Platform.OS !== 'web' && styles.mobileNavigationBar]}>
+        {navigationItems.map((item, index) => {
+          const isActive = route.name === item.route;
+          return (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleNavigation(item.route, item.protected)}
+              style={styles.navItem}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={{ uri: item.icon }}
+                style={[
+                  styles.navIcon,
+                  isActive && { tintColor: "#a91101" },
+                ]}
+              />
+              <Text style={[styles.navText, isActive && styles.activeText]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: 'white',
+  },
   navigationBar: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -181,9 +190,20 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     height: 60,
   },
+  // Mobile-specific styles
+  mobileNavigationBar: {
+    position: 'relative', // Use relative instead of absolute on mobile
+    bottom: 0,
+    left: 0,
+    right: 0,
+    elevation: 24, // Higher elevation for Android
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+  },
   navItem: {
     alignItems: "center",
     flex: 1,
+    paddingVertical: 5,
   },
   navIcon: {
     width: ICON_SIZE,
