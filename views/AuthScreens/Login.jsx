@@ -11,9 +11,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
-  NetInfo
+  ActivityIndicator
 } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { loginUser, saveAuthToken, saveRefreshToken } from '../../utils/authAPI';
 
 const Login = ({ navigation }) => {
@@ -26,11 +26,13 @@ const Login = ({ navigation }) => {
     general: ''
   });
 
+  // Validate email format
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
+  // Validate inputs before submission
   const validateInputs = () => {
     let isValid = true;
     const newErrors = {
@@ -39,6 +41,7 @@ const Login = ({ navigation }) => {
       general: ''
     };
 
+    // Check if fields are empty
     if (!identifier.trim()) {
       newErrors.identifier = 'Email or username is required';
       isValid = false;
@@ -60,12 +63,14 @@ const Login = ({ navigation }) => {
   };
 
   const handleLogin = async () => {
+    // Clear previous error messages
     setErrors({
       identifier: '',
       password: '',
       general: ''
     });
 
+    // Validate inputs
     if (!validateInputs()) {
       return;
     }
@@ -74,6 +79,7 @@ const Login = ({ navigation }) => {
       setLoading(true);
       console.time("login");
       
+      // Check network connectivity
       const networkState = await NetInfo.fetch();
       if (!networkState.isConnected) {
         setErrors({ general: 'No internet connection. Please check your network settings.' });
@@ -91,20 +97,28 @@ const Login = ({ navigation }) => {
     } catch (error) {
       console.error('Login error:', error);
       
-      if (error.status === 401) {
-        setErrors({ general: 'Invalid username or password. Please try again.' });
-      } else if (error.status === 403) {
-        setErrors({ general: 'Your account has been locked. Please contact support.' });
-      } else if (error.status === 404) {
-        setErrors({ general: 'Account not found. Please check your credentials or create a new account.' });
-      } else if (error.status === 429) {
-        setErrors({ general: 'Too many failed attempts. Please try again later.' });
-      } else if (error.status >= 500) {
-        setErrors({ general: 'Server error. Please try again later or contact support.' });
-      } else if (error.message && error.message.includes('timeout')) {
-        setErrors({ general: 'Request timed out. Please check your internet connection and try again.' });
+      // Handle specific error types
+      if (error.response && error.response.status) {
+        const status = error.response.status;
+        if (status === 401) {
+          setErrors({ general: 'Invalid username or password. Please try again.' });
+        } else if (status === 403) {
+          setErrors({ general: 'Your account has been locked. Please contact support.' });
+        } else if (status === 404) {
+          setErrors({ general: 'Account not found. Please check your credentials or create a new account.' });
+        } else if (status === 429) {
+          setErrors({ general: 'Too many failed attempts. Please try again later.' });
+        } else if (status >= 500) {
+          setErrors({ general: 'Server error. Please try again later or contact support.' });
+        }
+      } else if (error.message) {
+        if (error.message.includes('Network Error') || error.message.includes('timeout')) {
+          setErrors({ general: 'Network error. Please check your internet connection and try again.' });
+        } else {
+          setErrors({ general: error.message });
+        }
       } else {
-        setErrors({ general: error.message || 'An unexpected error occurred. Please try again.' });
+        setErrors({ general: 'An unexpected error occurred. Please try again.' });
       }
     } finally {
       setLoading(false);
@@ -145,6 +159,7 @@ const Login = ({ navigation }) => {
             </Text>
             
             <View style={styles.formContainer}>
+              {/* Display general error message */}
               {errors.general ? (
                 <View style={styles.errorContainer}>
                   <Text style={styles.errorText}>{errors.general}</Text>
@@ -188,6 +203,7 @@ const Login = ({ navigation }) => {
                 ) : null}
               </View>
               
+              {/* Forgot Password Link */}
               <TouchableOpacity 
                 style={styles.forgotPasswordContainer}
                 onPress={handleForgotPassword}
@@ -207,6 +223,7 @@ const Login = ({ navigation }) => {
                 )}
               </TouchableOpacity>
 
+              {/* Create Account Button */}
               <TouchableOpacity 
                 style={styles.createAccountButton}
                 onPress={handleCreateAccount}
