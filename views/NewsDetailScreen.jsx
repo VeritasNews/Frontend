@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,9 @@ import {
   Platform,
   ActivityIndicator,
   Share,
-  Pressable,
-  ToastAndroid,
-  Alert,
+  Dimensions,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from '@react-navigation/native';
@@ -19,28 +19,18 @@ import { getArticleById, likeArticle, unlikeArticle, getLikedArticles, logIntera
 import { getAuthToken } from "../utils/authAPI";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+const { width } = Dimensions.get('window');
+
 const NewsDetailScreen = ({ route, navigation }) => {
   const { articleId } = route.params;
-
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   
-  useEffect(() => {
-    return () => {
-      setArticle(null);
-      setLiked(false);
-    };
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
-      console.log("Screen focused, fetching article...", articleId);
       fetchArticle();
-      
-      return () => {
-        console.log("Screen unfocused");
-      };
+      return () => {};
     }, [articleId])
   );
 
@@ -49,24 +39,17 @@ const NewsDetailScreen = ({ route, navigation }) => {
     try {
       const [data, likedList] = await Promise.all([
         getArticleById(articleId),
-        getLikedArticles(),
+        getLikedArticles().catch(() => []),
       ]);
 
       if (!data) {
         console.error("No article data returned for ID:", articleId);
-        if (Platform.OS === 'android') {
-          ToastAndroid.show('Failed to load article', ToastAndroid.LONG);
-        } else {
-          Alert.alert('Error', 'Failed to load article');
-        }
         return;
       }
 
       setArticle(data);
-
-
-      const apiArticleId = data.articleId || data.id;
       
+      const apiArticleId = data.articleId || data.id;
       const isLiked = likedList && likedList.some(
         (item) => {
           const likedId = item.articleId || item.id;
@@ -76,17 +59,10 @@ const NewsDetailScreen = ({ route, navigation }) => {
       );
       
       setLiked(isLiked);
-      
-      logInteraction(data.id, 'view');
+      logInteraction(data.id, 'view').catch(() => {});
       
     } catch (error) {
-      console.error("Error fetching article or likes:", error);
-      
-      if (Platform.OS === 'android') {
-        ToastAndroid.show('Failed to load article data', ToastAndroid.SHORT);
-      } else {
-        Alert.alert('Error', 'Failed to load article data');
-      }
+      console.error("Error fetching article:", error);
     } finally {
       setLoading(false);
     }
@@ -116,37 +92,21 @@ const NewsDetailScreen = ({ route, navigation }) => {
       const token = await getAuthToken();
   
       if (!token) {
-        console.warn("⚠️ No token found. User might not be logged in.");
+        console.warn("No token found. User might not be logged in.");
         setLiked(!updatedLiked);
-        
-        if (Platform.OS === 'android') {
-          ToastAndroid.show('Please log in to like articles', ToastAndroid.SHORT);
-        } else {
-          Alert.alert('Login Required', 'Please log in to like articles');
-        }
         return;
       }
   
       if (updatedLiked) {
         await likeArticle(article.articleId, token);
-        console.log("🔁 Logging LIKE interaction...");
         await logInteraction(article.id, 'like');
       } else {
         await unlikeArticle(article.articleId, token);
-        console.log("🔁 Logging UNLIKE interaction...");
         await logInteraction(article.id, 'unlike');
       }
-      
-      
     } catch (err) {
       console.error("Like/unlike failed:", err);
       setLiked(!updatedLiked);
-      
-      if (Platform.OS === 'android') {
-        ToastAndroid.show('Failed to update like status', ToastAndroid.SHORT);
-      } else {
-        Alert.alert('Error', 'Failed to update like status');
-      }
     }
   };
   
@@ -161,76 +121,130 @@ const NewsDetailScreen = ({ route, navigation }) => {
   
   if (loading || !article) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#999" />
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator 
+            size={Platform.OS === 'android' ? 48 : 'large'} 
+            color="#a91101" 
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.wrapper}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        scrollEnabled={true}
-      >
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+      <View style={styles.container}>
+        {/* Back Button */}
+        <TouchableOpacity 
+          style={[
+            styles.backButton, 
+            Platform.OS === 'android' ? styles.backButtonAndroid : styles.backButtonIOS
+          ]}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
           <Ionicons name="chevron-back" size={28} color="#333" />
         </TouchableOpacity>
-  
-        {article.image ? (
-          <Image source={{ uri: article.image }} style={styles.image} resizeMode="cover" />
-        ) : (
-          <View style={[styles.image, styles.imagePlaceholder]}>
-            <Ionicons name="image" size={48} color="#aaa" />
+        
+        {/* Main Scrollable Content */}
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={true}
+          bounces={Platform.OS === 'ios'}
+          overScrollMode={Platform.OS === 'android' ? 'always' : undefined}
+          indicatorStyle={Platform.OS === 'ios' ? 'black' : undefined}
+        >
+          {/* Article Image */}
+          {article.image ? (
+            <Image 
+              source={{ uri: article.image }} 
+              style={styles.image} 
+              resizeMode="cover" 
+            />
+          ) : (
+            <View style={[styles.image, styles.imagePlaceholder]}>
+              <Ionicons name="image" size={48} color="#aaa" />
+            </View>
+          )}
+          
+          {/* Article Title Card */}
+          <View style={styles.infoCard}>
+            <Text style={styles.title}>{article.title}</Text>
+            <Text style={styles.metaText}>
+              {article.createdAt
+                ? new Date(article.createdAt).toDateString()
+                : "Tarih Bilinmiyor"}
+            </Text>
           </View>
-        )}
-  
-        <View style={styles.infoCard}>
-          <Text style={styles.title}>{article.title}</Text>
-          <Text style={styles.metaText}>
-            {article.createdAt
-              ? new Date(article.createdAt).toDateString()
-              : "Tarih Bilinmiyor"}
-          </Text>
-        </View>
-  
-        <View style={styles.contentCard}>
-          <Text style={styles.summary}>
-            {renderWithBoldText(article.longerSummary)}
-          </Text>
-  
-          <View style={styles.metaBottomRow}>
-            <MaterialCommunityIcons name="folder-outline" size={18} color="#666" />
-            <Text style={styles.metaRowText}><Text style={styles.metaLabel}>Kategori:</Text> {article.category}</Text>
-          </View>
-          <View style={styles.metaBottomRow}>
-            <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#666" />
-            <Text style={styles.metaRowText}>
+          
+          {/* Article Content Card */}
+          <View style={styles.contentCard}>
+            <Text style={styles.summary}>
+              {renderWithBoldText(article.longerSummary)}
+            </Text>
+            
+            <View style={styles.metaBottomRow}>
+              <MaterialCommunityIcons name="folder-outline" size={18} color="#666" />
+              <Text style={styles.metaRowText}>
+                <Text style={styles.metaLabel}>Kategori:</Text> {article.category}
+              </Text>
+            </View>
+            
+            <View style={styles.metaBottomRow}>
+              <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#666" />
+              <Text style={styles.metaRowText}>
                 <Text style={styles.metaLabel}>Kaynak:</Text>{" "}
                 {article.source && typeof article.source === 'string' 
                   ? article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")
                   : "Kaynak Bilinmiyor"}
-            </Text>
+              </Text>
+            </View>
+            
+            {/* Space at the bottom to ensure content isn't hidden behind buttons */}
+            <View style={styles.bottomSpace} />
           </View>
+        </ScrollView>
+        
+        {/* Floating Action Buttons */}
+        <View style={styles.floatingButtons}>
+          <TouchableOpacity 
+            onPress={handleLike} 
+            style={[styles.fab, liked ? styles.fabLiked : null]}
+            activeOpacity={0.8}
+          >
+            <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={handleShare} 
+            style={styles.fab}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="share-social-outline" size={22} color="white" />
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-      <View style={styles.floatingButtons}>
-        <TouchableOpacity onPress={handleLike} style={[styles.fab, liked ? styles.fabLiked : null]}>
-          <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleShare} style={styles.fab}>
-          <Ionicons name="share-social-outline" size={22} color="white" />
-        </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    paddingBottom: 10,
+  safeArea: {
+    flex: 1,
     backgroundColor: "#fff",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 80,
   },
   loadingContainer: {
     flex: 1,
@@ -238,12 +252,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backButton: {
-    marginTop: Platform.OS === "ios" ? 60 : 40,
-    marginLeft: 20,
     position: "absolute",
-    zIndex: 2,
+    zIndex: 100,
+    backgroundColor: "rgba(255,255,255,0.8)",
+    padding: 8,
+    borderRadius: 20,
+  },
+  backButtonIOS: {
+    top: 10,
+    left: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  backButtonAndroid: {
+    top: 20,
+    left: 20,
+    elevation: 4,
   },
   image: {
+    width: width,
     height: 350,
     backgroundColor: "#eee",
   },
@@ -253,15 +282,21 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     backgroundColor: "#f5f5f5",
-    marginHorizontal: 40,
+    marginHorizontal: 16,
     padding: 16,
     borderRadius: 10,
     marginTop: -40,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
     zIndex: 1,
   },
   title: {
@@ -269,11 +304,34 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#222",
     marginBottom: 4,
+    ...Platform.select({
+      android: {
+        fontFamily: 'sans-serif-medium',
+      },
+    }),
   },
   metaText: {
     fontSize: 13,
     color: "#666",
     marginTop: 2,
+  },
+  contentCard: {
+    backgroundColor: "#ffffff",
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 15,
+    borderRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   summary: {
     fontSize: 15,
@@ -281,6 +339,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingTop: 10,
     lineHeight: 22,
+    ...Platform.select({
+      android: {
+        lineHeight: 24, // Android needs slightly larger line height for readability
+      },
+    }),
   },
   metaBottomRow: {
     flexDirection: "row",
@@ -295,17 +358,8 @@ const styles = StyleSheet.create({
   metaLabel: {
     fontWeight: "bold",
   },
-  contentCard: {
-    backgroundColor: "#ffffff",
-    marginHorizontal: 16,
-    marginTop: 12,
-    padding: 5,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+  bottomSpace: {
+    height: 60,
   },
   floatingButtons: {
     position: "absolute",
@@ -313,26 +367,28 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: "column",
     gap: 12,
+    zIndex: 10,
   },
   fab: {
     backgroundColor: "#a91101",
     borderRadius: 30,
     padding: 14,
-    elevation: 6,
     alignItems: "center",
     justifyContent: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   fabLiked: {
     backgroundColor: "#a91101",
-  },
-  wrapper: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollContent: {
-    paddingBottom: 30,
-    flexGrow: 1,
-    backgroundColor: "#fff",
   },
 });
 
