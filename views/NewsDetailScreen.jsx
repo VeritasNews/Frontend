@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Share,
   Dimensions,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,6 +20,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
+// This is a complete rewrite to mirror ForYou's structure exactly
 const NewsDetailScreen = ({ route, navigation }) => {
   const { articleId } = route.params;
   const [article, setArticle] = useState(null);
@@ -119,141 +119,144 @@ const NewsDetailScreen = ({ route, navigation }) => {
     }
   };
   
+  // Loading state exactly matching ForYou's pattern
   if (loading || !article) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-        <StatusBar backgroundColor="#fff" barStyle="dark-content" />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator 
-            size={Platform.OS === 'android' ? 48 : 'large'} 
-            color="#a91101" 
-          />
-        </View>
-      </SafeAreaView>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator 
+          size={Platform.OS === 'android' ? 48 : 'large'} 
+          color="#a91101" 
+        />
+        <Text>Loading article...</Text>
+      </View>
     );
   }
 
+  // This matches ForYou's structure exactly for consistent scrolling behavior
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.containerStyle}>
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
-      <View style={styles.container}>
-        {/* Back Button */}
-        <TouchableOpacity 
-          style={[
-            styles.backButton, 
-            Platform.OS === 'android' ? styles.backButtonAndroid : styles.backButtonIOS
-          ]}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="chevron-back" size={28} color="#333" />
-        </TouchableOpacity>
-        
-        {/* Main Scrollable Content */}
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={true}
-          bounces={Platform.OS === 'ios'}
-          overScrollMode={Platform.OS === 'android' ? 'always' : undefined}
-          indicatorStyle={Platform.OS === 'ios' ? 'black' : undefined}
-        >
-          {/* Article Image */}
-          {article.image ? (
-            <Image 
-              source={{ uri: article.image }} 
-              style={styles.image} 
-              resizeMode="cover" 
-            />
-          ) : (
-            <View style={[styles.image, styles.imagePlaceholder]}>
-              <Ionicons name="image" size={48} color="#aaa" />
-            </View>
-          )}
-          
-          {/* Article Title Card */}
-          <View style={styles.infoCard}>
-            <Text style={styles.title}>{article.title}</Text>
-            <Text style={styles.metaText}>
-              {article.createdAt
-                ? new Date(article.createdAt).toDateString()
-                : "Tarih Bilinmiyor"}
-            </Text>
+      
+      {/* Back Button */}
+      <TouchableOpacity 
+        style={[
+          styles.backButton, 
+          Platform.OS === 'android' ? styles.backButtonAndroid : styles.backButtonIOS
+        ]}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="chevron-back" size={28} color="#333" />
+      </TouchableOpacity>
+      
+      {/* Using exact same ScrollView implementation as ForYou */}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContentContainer}
+        showsVerticalScrollIndicator={true}
+      >
+        {/* Article Image */}
+        {article.image ? (
+          <Image 
+            source={{ uri: article.image }} 
+            style={styles.image} 
+            resizeMode="cover" 
+          />
+        ) : (
+          <View style={[styles.image, styles.imagePlaceholder]}>
+            <Ionicons name="image" size={48} color="#aaa" />
           </View>
-          
-          {/* Article Content Card */}
-          <View style={styles.contentCard}>
-            <Text style={styles.summary}>
-              {renderWithBoldText(article.longerSummary)}
-            </Text>
-            
-            <View style={styles.metaBottomRow}>
-              <MaterialCommunityIcons name="folder-outline" size={18} color="#666" />
-              <Text style={styles.metaRowText}>
-                <Text style={styles.metaLabel}>Kategori:</Text> {article.category}
-              </Text>
-            </View>
-            
-            <View style={styles.metaBottomRow}>
-              <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#666" />
-              <Text style={styles.metaRowText}>
-                <Text style={styles.metaLabel}>Kaynak:</Text>{" "}
-                {article.source && typeof article.source === 'string' 
-                  ? article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")
-                  : "Kaynak Bilinmiyor"}
-              </Text>
-            </View>
-            
-            {/* Space at the bottom to ensure content isn't hidden behind buttons */}
-            <View style={styles.bottomSpace} />
-          </View>
-        </ScrollView>
+        )}
         
-        {/* Floating Action Buttons */}
-        <View style={styles.floatingButtons}>
-          <TouchableOpacity 
-            onPress={handleLike} 
-            style={[styles.fab, liked ? styles.fabLiked : null]}
-            activeOpacity={0.8}
-          >
-            <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={handleShare} 
-            style={styles.fab}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="share-social-outline" size={22} color="white" />
-          </TouchableOpacity>
+        {/* Article Title Card */}
+        <View style={styles.infoCard}>
+          <Text style={styles.title}>{article.title}</Text>
+          <Text style={styles.metaText}>
+            {article.createdAt
+              ? new Date(article.createdAt).toDateString()
+              : "Tarih Bilinmiyor"}
+          </Text>
         </View>
+        
+        {/* Article Content Card */}
+        <View style={styles.contentCard}>
+          <Text style={styles.summary}>
+            {renderWithBoldText(article.longerSummary || article.summary)}
+          </Text>
+          
+          <View style={styles.metaBottomRow}>
+            <MaterialCommunityIcons name="folder-outline" size={18} color="#666" />
+            <Text style={styles.metaRowText}>
+              <Text style={styles.metaLabel}>Kategori:</Text> {article.category}
+            </Text>
+          </View>
+          
+          <View style={styles.metaBottomRow}>
+            <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#666" />
+            <Text style={styles.metaRowText}>
+              <Text style={styles.metaLabel}>Kaynak:</Text>{" "}
+              {article.source && typeof article.source === 'string' 
+                ? article.source.replace(/[\[\]']+/g, "").split(",").map(s => s.trim()).join(", ")
+                : "Kaynak Bilinmiyor"}
+            </Text>
+          </View>
+          
+          {/* Space at the bottom to ensure content isn't hidden behind buttons */}
+          <View style={styles.bottomSpace} />
+        </View>
+      </ScrollView>
+      
+      {/* Floating Action Buttons */}
+      <View style={styles.floatingButtons}>
+        <TouchableOpacity 
+          onPress={handleLike} 
+          style={[styles.fab, liked ? styles.fabLiked : null]}
+          activeOpacity={0.8}
+        >
+          <Ionicons name={liked ? "heart" : "heart-outline"} size={22} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          onPress={handleShare} 
+          style={styles.fab}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="share-social-outline" size={22} color="white" />
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 80,
+  // Direct copy of the working container style from ForYou
+  containerStyle: Platform.select({
+    web: {
+      backgroundColor: "white",
+      display: "flex",
+      height: "100vh",
+      width: "100vw",
+      position: "relative",
+    },
+    default: {
+      flex: 1,
+      backgroundColor: "white",
+      position: "relative",
+    },
+  }),
+  scrollContentContainer: {
+    flexGrow: 1,
+    backgroundColor: "white",
+    paddingBottom: 120, // Extra space for buttons
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "white", 
   },
   backButton: {
     position: "absolute",
-    zIndex: 100,
+    zIndex: 1000, // Ensuring it stays on top
     backgroundColor: "rgba(255,255,255,0.8)",
     padding: 8,
     borderRadius: 20,
@@ -272,7 +275,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   image: {
-    width: width,
+    width: "100%",
     height: 350,
     backgroundColor: "#eee",
   },
@@ -359,7 +362,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   bottomSpace: {
-    height: 60,
+    height: 100, // Increased for more space at bottom
   },
   floatingButtons: {
     position: "absolute",
@@ -367,7 +370,7 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: "column",
     gap: 12,
-    zIndex: 10,
+    zIndex: 1000, // Ensure visibility with high z-index
   },
   fab: {
     backgroundColor: "#a91101",

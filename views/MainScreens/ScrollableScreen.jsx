@@ -7,7 +7,8 @@ import {
   Dimensions,
   ActivityIndicator,
   TouchableOpacity,
-  Image
+  Image,
+  Platform
 } from "react-native";
 import { getArticlesForUser, logInteraction } from "../../utils/articleAPI";
 import Header from "../../components/Header";
@@ -26,6 +27,8 @@ const ScrollableScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState(isPortrait());
   const [preferredCategories, setPreferredCategories] = useState([]);
+  const windowWidth = Dimensions.get("window").width;
+  const isWideWeb = windowWidth >= 750;
 
   useEffect(() => {
     fetchNews();
@@ -41,26 +44,16 @@ const ScrollableScreen = ({ navigation }) => {
         getArticlesForUser(),
         getUserProfile(),
       ]);
-  
+
       const userPrefs = user?.preferredCategories || [];
-      console.log("✅ User preferred:", userPrefs);
-  
-      articles.forEach((a) =>
-        console.log(`📰 ${a.title} — priority: ${a.personalized_priority}`)
-      );
-      
-      setPreferredCategories(userPrefs);
-  
       const most = articles.find(a => (a.priority?.toLowerCase() === "most" || a.personalized_priority?.toLowerCase() === "most"));
-      console.log("👑 Most priority article:", most);
-  
-      const rest = articles.filter(a => a.priority?.toLowerCase() !== "most");
+      const rest = articles.filter(a => a !== most);
       const sorted = sortNewsByPreferenceAndPriority(rest, userPrefs);
       const sized = assignNewsSizes(sorted);
-  
+
       const finalList = most ? [ { ...most, size: "xl" }, ...sized ] : sized;
       setNewsData(finalList);
-  
+      setPreferredCategories(userPrefs);
     } catch (err) {
       console.error("Error loading personalized feed:", err);
       setNewsData([]);
@@ -68,31 +61,21 @@ const ScrollableScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
-  
+
   const sortNewsByPreferenceAndPriority = (articles, preferredCategories = []) => {
-    const priorityGroups = {
-      high: [],
-      medium: [],
-      low: [],
-      other: [],
-    };
-  
+    const priorityGroups = { high: [], medium: [], low: [], other: [] };
+
     articles.forEach((article) => {
       const priority = article.personalized_priority?.toLowerCase();
-      if (priority === "high") {
-        priorityGroups.high.push(article);
-      } else if (priority === "medium") {
-        priorityGroups.medium.push(article);
-      } else if (priority === "low") {
-        priorityGroups.low.push(article);
-      } else {
-        priorityGroups.other.push(article);
-      }
+      if (priority === "high") priorityGroups.high.push(article);
+      else if (priority === "medium") priorityGroups.medium.push(article);
+      else if (priority === "low") priorityGroups.low.push(article);
+      else priorityGroups.other.push(article);
     });
-  
+
     const sortGroupBySummaryLength = (group) =>
       group.sort((a, b) => (a.summary?.length || 0) - (b.summary?.length || 0));
-  
+
     const preferredFirst = (group) => {
       return [...group].sort((a, b) => {
         const aPref = preferredCategories.includes(a.category);
@@ -100,7 +83,7 @@ const ScrollableScreen = ({ navigation }) => {
         return aPref === bPref ? 0 : aPref ? -1 : 1;
       });
     };
-  
+
     return [
       ...preferredFirst(sortGroupBySummaryLength(priorityGroups.high)),
       ...preferredFirst(sortGroupBySummaryLength(priorityGroups.medium)),
@@ -108,7 +91,7 @@ const ScrollableScreen = ({ navigation }) => {
       ...preferredFirst(sortGroupBySummaryLength(priorityGroups.other)),
     ];
   };
-  
+
   const assignNewsSizes = (data) => {
     const total = data.length;
     const xl = Math.ceil(total * 0.1);
@@ -126,6 +109,8 @@ const ScrollableScreen = ({ navigation }) => {
 
   const renderHeroArticle = (article) => {
     if (!article) return null;
+    const imageUrl = article.image ? getFullImageUrl(article.image) : null;
+
     return (
       <TouchableOpacity
         onPress={async () => {
@@ -133,22 +118,23 @@ const ScrollableScreen = ({ navigation }) => {
           navigation.navigate("NewsDetail", { articleId: article.id });
         }}
       >
-        <View style={styles.heroCard}>
+        <View style={[styles.heroCard, isWideWeb && styles.wideWebHeroCard]}>
           <Text style={styles.heroTitle}>{article.title}</Text>
           {article.summary && (
             <Text style={styles.heroSummary}>{article.summary}</Text>
           )}
-          {article.image && (
+          {imageUrl && (
             <Image
-              source={{ uri: getFullImageUrl(article.image) }}
-              style={styles.heroImage}
+              source={{ uri: imageUrl }}
+              style={[styles.heroImage, isWideWeb && styles.wideWebHeroImage]}
+              onError={(e) => console.error("Image load error:", e.nativeEvent.error)}
             />
           )}
         </View>
       </TouchableOpacity>
     );
   };
-  
+
   const getFontSize = (size) => {
     switch (size) {
       case "xl": return { title: 20, summary: 13 };
@@ -162,6 +148,8 @@ const ScrollableScreen = ({ navigation }) => {
 
   const renderNewsCard = (item) => {
     const fontSize = getFontSize(item.size);
+    const imageUrl = item.image ? getFullImageUrl(item.image) : null;
+
     return (
       <TouchableOpacity
         onPress={async () => {
@@ -169,22 +157,27 @@ const ScrollableScreen = ({ navigation }) => {
           navigation.navigate("NewsDetail", { articleId: item.id });
         }}
       >
-        <View style={[styles.newsCard, styles[item.size]]}>
+        <View style={[styles.newsCard, isWideWeb && styles.wideWebNewsCard]}>
           <Text style={[styles.newsTitle, { fontSize: fontSize.title }]}>{item.title}</Text>
           <View style={styles.horizontalLine} />
           {item.summary && (
             <Text style={[styles.summaryText, { fontSize: fontSize.summary }]}>{item.summary}</Text>
           )}
-          {item.image && (
+          {imageUrl && (
             <Image
-              source={{ uri: getFullImageUrl(item.image) }}
+              source={{ uri: imageUrl }}
               style={styles.imagePlaceholder}
+              onError={(e) => console.error("Image load error:", e.nativeEvent.error)}
             />
           )}
         </View>
       </TouchableOpacity>
     );
   };
+
+  const mostPriorityArticle = newsData.find(
+    a => a.priority?.toLowerCase() === "most" || a.personalized_priority?.toLowerCase() === "most"
+  );
 
   if (loading) {
     return (
@@ -195,15 +188,32 @@ const ScrollableScreen = ({ navigation }) => {
     );
   }
 
+  const containerStyle = Platform.select({
+    web: {
+      backgroundColor: "white",
+      display: "flex",
+      height: "100vh",
+      width: "100vw",
+      position: "relative",
+    },
+    default: {
+      flex: 1,
+      backgroundColor: "white",
+      position: "relative",
+    },
+  });
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={containerStyle}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          backgroundColor: "#f4f4f4",
+          flexGrow: 1,
+          backgroundColor: "white",
+          alignItems: isWideWeb ? "center" : undefined,
           paddingHorizontal: 4,
           paddingTop: 10,
-          paddingBottom: 100,
+          paddingBottom: 120,
         }}
         showsVerticalScrollIndicator
       >
@@ -212,14 +222,15 @@ const ScrollableScreen = ({ navigation }) => {
           <CategoryBar navigation={navigation} />
         </View>
 
-        {/* Render hero article if exists */}
-        {newsData.find(a => a.priority === "most" || a.personalized_priority === "most") && 
-          renderHeroArticle(newsData.find(a => a.priority === "most" || a.personalized_priority === "most"))}
-
-        {/* Render all other articles in single column */}
         <View style={styles.singleColumnContainer}>
+          {mostPriorityArticle && (
+            <View style={styles.singleArticleContainer}>
+              {renderHeroArticle(mostPriorityArticle)}
+            </View>
+          )}
+
           {newsData
-            .filter(article => !(article.priority === "most" || article.personalized_priority === "most"))
+            .filter(a => a !== mostPriorityArticle)
             .map((article) => (
               <View key={article.id} style={styles.singleArticleContainer}>
                 {renderNewsCard(article)}
@@ -233,19 +244,15 @@ const ScrollableScreen = ({ navigation }) => {
           </View>
         )}
       </ScrollView>
-      <BottomNav navigation={navigation} />
+
+      <View style={styles.navContainer}>
+        <BottomNav navigation={navigation} />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: "#f4f4f4",
-    paddingHorizontal: 4,
-    paddingTop: 10,
-    paddingBottom: 100,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -257,34 +264,45 @@ const styles = StyleSheet.create({
   },
   singleColumnContainer: {
     flex: 1,
-    paddingHorizontal: 8,
+    width: "100%",
+    alignItems: "center",
   },
   singleArticleContainer: {
-    marginBottom: 10,
+    marginBottom: 5,
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
   },
   heroCard: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "white",
     padding: 10,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: "#bbb",
     alignItems: "center",
     marginBottom: 10,
+    width: "95%",
+    alignSelf: "center",
   },
-  heroTitle: {
-    fontWeight: "bold",
-    fontFamily: "Georgia",
-    marginBottom: 8,
-    textAlign: "center",
-    lineHeight: 32,
-    fontWeight: "bold",
+  wideWebHeroCard: {
+    width: 700,
+    alignSelf: "center",
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#bbb",
+    margin: 8,
   },
-  heroSummary: {
-    fontFamily: "Georgia",
-    color: "#333",
-    textAlign: "justify",
-    marginTop: 10,
-    lineHeight: 20,
+  wideWebNewsCard: {
+    width: 700,
+    alignSelf: "center",
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#bbb",
+    margin: 8,
   },
   heroImage: {
     width: "100%",
@@ -292,23 +310,50 @@ const styles = StyleSheet.create({
     marginTop: 8,
     resizeMode: "cover",
   },
+  wideWebHeroImage: {
+    width: "100%",
+    height: 300,
+    marginTop: 8,
+    resizeMode: "cover",
+  },
   newsCard: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "white",
     padding: 10,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: "#bbb",
+    margin: 3,
+  },
+  heroTitle: {
+    fontSize: 34,
+    fontWeight: "700",
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", "SF Pro Text", sans-serif`,
+    color: "#333",
+    marginBottom: 3,
+    textAlign: "center",
+    lineHeight: 40,
+    letterSpacing: -0.3,
+  },
+  heroSummary: {
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", "SF Pro Text", sans-serif`,
+    textAlign: "center",
+    marginTop: 4,
+    lineHeight: 24,
+    letterSpacing: 0.3,
   },
   newsTitle: {
-    fontWeight: "bold",
-    fontFamily: "Georgia",
+    fontWeight: "600",
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", "SF Pro Text", sans-serif`,
+    color: "#333",
+    letterSpacing: -0.2,
     textAlign: "center",
   },
   summaryText: {
-    fontFamily: "Merriweather",
-    color: "#444",
+    fontFamily: `"Inter Variable", -apple-system, "Segoe UI Variable Text", "SF Pro Text", sans-serif`,
+    color: "#666",
     textAlign: "center",
-    marginTop: 4,
+    marginTop: 6,
+    lineHeight: 22,
   },
   imagePlaceholder: {
     width: "100%",
@@ -332,6 +377,13 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 18,
     color: "#666",
+  },
+  navContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
   },
 });
 

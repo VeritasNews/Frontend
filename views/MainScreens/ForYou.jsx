@@ -11,8 +11,6 @@ import {
   Platform
 } from "react-native";
 import { getArticlesByCategory, logInteraction, getFullImageUrl } from "../../utils/articleAPI";
-// Make sure we're using the proper image URL function
-console.log("Image URL function available:", typeof getFullImageUrl === 'function');
 import Header from "../../components/Header";
 import CategoryBar from "../../components/CategoryBar";
 import BottomNav from "../../components/BottomNav";

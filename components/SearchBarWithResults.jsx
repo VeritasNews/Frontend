@@ -51,7 +51,7 @@ const SearchBarWithResults = () => {
     return (
       <TouchableOpacity
         style={styles.resultItem}
-        onPress={() => navigation.navigate('UserProfile', { user: item })}
+        onPress={() => navigation.navigate('Search', { query, type: 'user', user: item })}
       >
         {item.profilePicture && !failed ? (
           <Image
@@ -71,7 +71,7 @@ const SearchBarWithResults = () => {
   const renderArticle = ({ item }) => (
     <TouchableOpacity
       style={styles.articleCard}
-      onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
+      onPress={() => navigation.navigate('Search', { query, type: 'article', article: item })}
     >
       {item.image ? (
         <Image source={{ uri: getFullImageUrl(item.image) }} style={styles.articleImage} />
@@ -102,12 +102,18 @@ const SearchBarWithResults = () => {
             returnKeyType="search"
             placeholderTextColor="#aaa"
             style={styles.input}
+            onFocus={() => navigation.navigate('Search', { query })} // Navigate on focus
           />
-          <TouchableOpacity onPress={handleSearch}>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => navigation.navigate('Search', { query })} // Navigate on button press
+          >
             <Ionicons name="search" size={20} color="#888" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.bell}>
+        <TouchableOpacity style={styles.bell}             
+        onPress={() => navigation.navigate('Notification', { query })} // Navigate on button press
+        >
           <Ionicons name="notifications-outline" size={22} color="white" />
           <View style={styles.notificationDot} />
         </TouchableOpacity>
@@ -167,6 +173,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 8,
     color: '#f4f4f4',
+  },
+  searchButton: {
+    padding: 8,
   },
   bell: {
     width: 40,

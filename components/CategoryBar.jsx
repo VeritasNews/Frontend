@@ -27,7 +27,7 @@ const CategoryBar = ({ navigation }) => {
           { label: "Arkadaşlar", route: "FriendsNews" },
           { label: "Siyaset", route: "Siyaset" },
           { label: "Eğlence", route: "Entertainment" },
-          { label: "Scrollable", route: "Scrollable" },
+          { label: "Haber Akışı", route: "Scrollable" },
           { label: "Spor", route: "Spor" },
           { label: "Teknoloji", route: "Teknoloji" },
           { label: "Sağlık", route: "Saglik" },

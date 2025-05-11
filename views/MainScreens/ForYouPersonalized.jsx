@@ -39,7 +39,7 @@ const ForYouPersonalized = ({ navigation }) => {
   const { width: deviceWidth } = Dimensions.get("window");
   const isWeb = Platform.OS === "web";
   const windowWidth = Dimensions.get("window").width;
-  const isWideWeb = windowWidth >= 750;
+  const isWideWeb = windowWidth >= 1380;
 
   useEffect(() => {
     fetchNews();
@@ -57,7 +57,6 @@ const ForYouPersonalized = ({ navigation }) => {
       ]);
   
       const userPrefs = user?.preferredCategories || [];
-      console.log("✅ User preferred:", userPrefs);
   
       setPreferredCategories(userPrefs);
   
@@ -65,7 +64,6 @@ const ForYouPersonalized = ({ navigation }) => {
       const most = articles.find(
         (a) => a.personalized_priority?.toLowerCase() === "most"
       );
-      console.log("👑 Most priority article:", most);
   
       // Remove the "most" from the rest
       const rest = articles.filter(
@@ -137,7 +135,6 @@ const ForYouPersonalized = ({ navigation }) => {
     
     // Process image URL with proper error handling
     const imageUrl = article.image ? getFullImageUrl(article.image) : null;
-    console.log("📸 Hero image URL:", imageUrl);
     
     return (
       <TouchableOpacity
@@ -235,7 +232,6 @@ const ForYouPersonalized = ({ navigation }) => {
       </View>
     );
   }
-  console.log("🧠 Current platform:", Platform.OS);
 
   const containerStyle = Platform.select({
     web: {
