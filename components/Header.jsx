@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   logo: {
-    width: 50,
-    height: 50,
+    width: 65,
+    height: 65,
     resizeMode: "contain",
     marginRight: 10, // Space between logo and text
   },
