@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import BottomNav from '../../components/BottomNav';
-import { sendFriendRequest, fetchFriends } from '../../utils/friendAPI';
+import { sendFriendRequest, fetchFriends, unfriendUser } from '../../utils/friendAPI';
 import { Ionicons } from '@expo/vector-icons';
 import { getAuthToken } from '../../utils/authAPI';
 import axios from 'axios';
@@ -137,6 +137,18 @@ const UserProfileScreen = ({ route, navigation }) => {
         Alert.alert('Error', 'Could not send friend request.');
         console.error("Friend request failed:", error);
       }
+    }
+  };
+
+  const handleUnfriend = async () => {
+    try {
+      await unfriendUser(user.userId);
+      setFriendStatus('not_friends');
+      setRequestSent(false);
+      Alert.alert('Unfriended', `You have unfriended ${userData.name || userData.userName}`);
+    } catch (error) {
+      Alert.alert('Error', 'Could not unfriend this user.');
+      console.error('Unfriend failed:', error);
     }
   };
 
@@ -276,6 +288,16 @@ const UserProfileScreen = ({ route, navigation }) => {
               <Text style={styles.name}>{userData.name || userData.userName}</Text>
               <Text style={styles.username}>@{userData.userName}</Text>
               
+              {friendStatus === 'friends' && (
+                <View style={styles.inlineButtons}>
+                  <TouchableOpacity
+                    style={[styles.inlineBtn, { backgroundColor: '#888' }]}
+                    onPress={handleUnfriend}
+                  >
+                    <Text style={styles.inlineBtnText}>Unfriend</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               {friendStatus !== 'friends' && friendStatus !== 'self' && (
                 <View style={styles.inlineButtons}>
                   <TouchableOpacity

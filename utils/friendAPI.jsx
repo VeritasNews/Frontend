@@ -110,3 +110,10 @@ export const getFriendsWhoLikedArticle = async (articleId) => {
   });
   return response.data;
 };
+
+export const unfriendUser = async (userId) => {
+  const token = await getAuthToken();
+  return axios.delete(`${BASE_URL}friends/unfriend/${userId}/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
