@@ -3,10 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   ActivityIndicator,
   TouchableOpacity,
-  Image
+  Image,
+  SafeAreaView,
+  Platform
 } from 'react-native';
 import { fetchFriends } from '../../utils/friendAPI';
 import { useNavigation } from '@react-navigation/native';
@@ -52,65 +54,89 @@ const FriendsListScreen = () => {
     );
   };
 
-  const renderItem = ({ item }) => {
+  const renderFriend = (friend) => {
     const hasValidProfilePicture = 
-      item.profilePicture && 
-      typeof item.profilePicture === 'string' && 
-      !imageErrors[item.userId];
+      friend.profilePicture && 
+      typeof friend.profilePicture === 'string' && 
+      !imageErrors[friend.userId];
     
     return (
       <TouchableOpacity 
+        key={friend.userId}
         style={styles.friendCard}
-        onPress={() => navigation.navigate('UserProfile', { user: item })}
+        onPress={() => navigation.navigate('UserProfile', { user: friend })}
       >
         {hasValidProfilePicture ? (
           <Image 
-            source={{ uri: item.profilePicture }}
+            source={{ uri: friend.profilePicture }}
             style={styles.profileImage}
-            onError={() => handleImageError(item.userId, item.name)}
+            onError={() => handleImageError(friend.userId, friend.name)}
             defaultSource={require('../../assets/default-profile.png')}
           />
         ) : (
-          getInitialAvatar(item.name)
+          getInitialAvatar(friend.name)
         )}
         <View style={styles.friendInfo}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.username}>@{item.userName}</Text>
+          <Text style={styles.name}>{friend.name}</Text>
+          <Text style={styles.username}>@{friend.userName}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Your Friends</Text>
-      </View>
+  const containerStyle = Platform.select({
+    web: {
+      backgroundColor: "white",
+      display: "flex",
+      height: "100vh",
+      width: "100vw",
+      position: "relative",
+    },
+    default: {
+      flex: 1,
+      backgroundColor: "white",
+      position: "relative",
+    },
+  });
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#a91101" style={{ marginTop: 30 }} />
-      ) : friends.length === 0 ? (
-        <Text style={styles.emptyText}>You have no friends yet.</Text>
-      ) : (
-        <FlatList
-          data={friends}
-          keyExtractor={(item) => item.userId}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-        />
-      )}
-      <BottomNav navigation={navigation} />
+  return (
+    <View style={containerStyle}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Your Friends</Text>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#a91101" style={{ marginTop: 30 }} />
+        ) : friends.length === 0 ? (
+          <Text style={styles.emptyText}>You have no friends yet.</Text>
+        ) : (
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              backgroundColor: "white",
+              paddingHorizontal: 4,
+              paddingTop: 10,
+              paddingBottom: 120,
+            }}
+            showsVerticalScrollIndicator
+          >
+            {friends.map(renderFriend)}
+          </ScrollView>
+        )}
+        <BottomNav navigation={navigation} />
+      </SafeAreaView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#fff' 
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -169,9 +195,6 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 40,
     fontStyle: 'italic',
-  },
-  list: {
-    paddingBottom: 80,
   },
 });
 

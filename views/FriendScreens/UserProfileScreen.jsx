@@ -8,7 +8,8 @@ import {
   Alert,
   SafeAreaView,
   ActivityIndicator,
-  FlatList,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import BottomNav from '../../components/BottomNav';
 import { sendFriendRequest, fetchFriends } from '../../utils/friendAPI';
@@ -139,26 +140,42 @@ const UserProfileScreen = ({ route, navigation }) => {
     }
   };
 
-  const renderArticleItem = ({ item }) => (
+  const renderArticleItem = (article) => (
     <TouchableOpacity
+      key={article.id}
       style={styles.articleCard}
-      onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
+      onPress={() => navigation.navigate('NewsDetail', { articleId: article.id })}
     >
-      {item.image ? (
-        <Image source={{ uri: item.image }} style={styles.image} />
+      {article.image ? (
+        <Image source={{ uri: article.image }} style={styles.image} />
       ) : (
         <View style={[styles.image, styles.placeholder]}>
           <Ionicons name="image-outline" size={40} color="#aaa" />
         </View>
       )}
       <View style={styles.content}>
-        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.title}>{article.title}</Text>
         <Text style={styles.summary} numberOfLines={2}>
-          {item.summary || 'No summary available.'}
+          {article.summary || 'No summary available.'}
         </Text>
       </View>
     </TouchableOpacity>
   );
+
+  const containerStyle = Platform.select({
+    web: {
+      backgroundColor: "white",
+      display: "flex",
+      height: "100vh",
+      width: "100vw",
+      position: "relative",
+    },
+    default: {
+      flex: 1,
+      backgroundColor: "white",
+      position: "relative",
+    },
+  });
   
   if (loading || friendStatus === null) {
     return (
@@ -207,154 +224,164 @@ const UserProfileScreen = ({ route, navigation }) => {
     (userData.privacySettings && userData.privacySettings.friends_list === 'public');
 
   return (
-    <View style={styles.container}>
-      {!canViewProfile ? (
-        <View>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={26} color="#333" />
-          </TouchableOpacity>
-          <View style={styles.privateProfile}>
-            <Ionicons name="lock-closed" size={50} color="#888" />
-            <Text style={styles.privateText}>This profile is private</Text>
-            <Text style={styles.privateSubtext}>Only friends can view this profile</Text>
-            
-            {!requestSent && friendStatus !== 'self' && (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleAddFriend}
-              >
-                <Text style={styles.buttonText}>Add Friend</Text>
-              </TouchableOpacity>
-            )}
-            
-            {requestSent && friendStatus === 'pending' && (
-              <Text style={styles.requestSentText}>Friend request sent</Text>
-            )}
-          </View>
-        </View>
-      ) : (
-        <FlatList
-          ListHeaderComponent={
-            <>
-              <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Ionicons name="chevron-back" size={26} color="#333" />
-              </TouchableOpacity>
+    <View style={containerStyle}>
+      <SafeAreaView style={styles.safeArea}>
+        {!canViewProfile ? (
+          <View>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+              <Ionicons name="chevron-back" size={26} color="#333" />
+            </TouchableOpacity>
+            <View style={styles.privateProfile}>
+              <Ionicons name="lock-closed" size={50} color="#888" />
+              <Text style={styles.privateText}>This profile is private</Text>
+              <Text style={styles.privateSubtext}>Only friends can view this profile</Text>
               
-              <View style={styles.profileCard}>
-                <Image
-                  source={userData.profilePicture ? 
-                    { uri: formatProfilePictureUrl(userData.profilePicture) } : 
-                    fallbackAvatar}
-                  style={styles.avatar}
-                />
-                <Text style={styles.name}>{userData.name || userData.userName}</Text>
-                <Text style={styles.username}>@{userData.userName}</Text>
-                
-                {friendStatus !== 'friends' && friendStatus !== 'self' && (
-                  <View style={styles.inlineButtons}>
-                    <TouchableOpacity
-                      style={[styles.inlineBtn, requestSent && { backgroundColor: '#ccc' }]}
-                      onPress={handleAddFriend}
-                      disabled={requestSent}
-                    >
-                      <Text style={styles.inlineBtnText}>
-                        {requestSent ? 'Request Sent' : 'Add Friend'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.statsRow}>
-                <TouchableOpacity 
-                  style={styles.stat}
-                  onPress={() => canViewLikedArticles && setActiveTab('liked')}
-                  disabled={!canViewLikedArticles}
+              {!requestSent && friendStatus !== 'self' && (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={handleAddFriend}
                 >
-                  <Text style={[styles.statNumber, !canViewLikedArticles && { color: '#ccc' }]}>
-                    {canViewLikedArticles ? (likedArticles?.length || 0) : '-'}
-                  </Text>
-                  <Text style={[styles.statLabel, !canViewLikedArticles && { color: '#ccc' }]}>
-                    Liked
-                  </Text>
+                  <Text style={styles.buttonText}>Add Friend</Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.stat}
-                  onPress={() => canViewReadHistory && setActiveTab('history')}
-                  disabled={!canViewReadHistory}
-                >
-                  <Text style={[styles.statNumber, !canViewReadHistory && { color: '#ccc' }]}>
-                    {canViewReadHistory ? (readHistory?.length || 0) : '-'}
-                  </Text>
-                  <Text style={[styles.statLabel, !canViewReadHistory && { color: '#ccc' }]}>
-                    History
-                  </Text>
-                </TouchableOpacity>
-                
-                <View style={styles.stat}>
-                  <Text style={[styles.statNumber, !canViewFriends && { color: '#ccc' }]}>
-                    {canViewFriends ? (userData.friends?.length || 0) : '-'}
-                  </Text>
-                  <Text style={[styles.statLabel, !canViewFriends && { color: '#ccc' }]}>
-                    Friends
-                  </Text>
-                </View>
-              </View>
-
-              {(canViewLikedArticles || canViewReadHistory) && (
-                <View style={styles.tabs}>
-                  <TouchableOpacity onPress={() => canViewLikedArticles && setActiveTab('liked')}>
-                    <Text style={[
-                      styles.tabText, 
-                      activeTab === 'liked' && canViewLikedArticles && styles.activeTab,
-                      !canViewLikedArticles && { color: '#ccc' }
-                    ]}>
-                      LIKED
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => canViewReadHistory && setActiveTab('history')}>
-                    <Text style={[
-                      styles.tabText, 
-                      activeTab === 'history' && canViewReadHistory && styles.activeTab,
-                      !canViewReadHistory && { color: '#ccc' }
-                    ]}>
-                      HISTORY
+              )}
+              
+              {requestSent && friendStatus === 'pending' && (
+                <Text style={styles.requestSentText}>Friend request sent</Text>
+              )}
+            </View>
+          </View>
+        ) : (
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              backgroundColor: "white",
+              paddingHorizontal: 4,
+              paddingTop: 10,
+              paddingBottom: 120,
+            }}
+            showsVerticalScrollIndicator
+          >
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+              <Ionicons name="chevron-back" size={26} color="#333" />
+            </TouchableOpacity>
+            
+            <View style={styles.profileCard}>
+              <Image
+                source={userData.profilePicture ? 
+                  { uri: formatProfilePictureUrl(userData.profilePicture) } : 
+                  fallbackAvatar}
+                style={styles.avatar}
+              />
+              <Text style={styles.name}>{userData.name || userData.userName}</Text>
+              <Text style={styles.username}>@{userData.userName}</Text>
+              
+              {friendStatus !== 'friends' && friendStatus !== 'self' && (
+                <View style={styles.inlineButtons}>
+                  <TouchableOpacity
+                    style={[styles.inlineBtn, requestSent && { backgroundColor: '#ccc' }]}
+                    onPress={handleAddFriend}
+                    disabled={requestSent}
+                  >
+                    <Text style={styles.inlineBtnText}>
+                      {requestSent ? 'Request Sent' : 'Add Friend'}
                     </Text>
                   </TouchableOpacity>
                 </View>
               )}
-            </>
-          }
-          data={activeTab === 'liked' && canViewLikedArticles 
-            ? likedArticles 
-            : activeTab === 'history' && canViewReadHistory
-              ? readHistory 
-              : []}
-          renderItem={renderArticleItem}
-          keyExtractor={(item) => item.articleId?.toString() || item.id?.toString()}
-          contentContainerStyle={styles.contentContainer}
-          ListEmptyComponent={
-            <Text style={styles.empty}>
-              {(!canViewLikedArticles && !canViewReadHistory) || 
-               (activeTab === 'liked' && !canViewLikedArticles) ||
-               (activeTab === 'history' && !canViewReadHistory)
-                ? "This content is private"
-                : "No articles to show"}
-            </Text>
-          }
-        />
-      )}
+            </View>
 
-      <BottomNav navigation={navigation} />
+            <View style={styles.statsRow}>
+              <TouchableOpacity 
+                style={styles.stat}
+                onPress={() => canViewLikedArticles && setActiveTab('liked')}
+                disabled={!canViewLikedArticles}
+              >
+                <Text style={[styles.statNumber, !canViewLikedArticles && { color: '#ccc' }]}>
+                  {canViewLikedArticles ? (likedArticles?.length || 0) : '-'}
+                </Text>
+                <Text style={[styles.statLabel, !canViewLikedArticles && { color: '#ccc' }]}>
+                  Liked
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.stat}
+                onPress={() => canViewReadHistory && setActiveTab('history')}
+                disabled={!canViewReadHistory}
+              >
+                <Text style={[styles.statNumber, !canViewReadHistory && { color: '#ccc' }]}>
+                  {canViewReadHistory ? (readHistory?.length || 0) : '-'}
+                </Text>
+                <Text style={[styles.statLabel, !canViewReadHistory && { color: '#ccc' }]}>
+                  History
+                </Text>
+              </TouchableOpacity>
+              
+              <View style={styles.stat}>
+                <Text style={[styles.statNumber, !canViewFriends && { color: '#ccc' }]}>
+                  {canViewFriends ? (userData.friends?.length || 0) : '-'}
+                </Text>
+                <Text style={[styles.statLabel, !canViewFriends && { color: '#ccc' }]}>
+                  Friends
+                </Text>
+              </View>
+            </View>
+
+            {(canViewLikedArticles || canViewReadHistory) && (
+              <View style={styles.tabs}>
+                <TouchableOpacity onPress={() => canViewLikedArticles && setActiveTab('liked')}>
+                  <Text style={[
+                    styles.tabText, 
+                    activeTab === 'liked' && canViewLikedArticles && styles.activeTab,
+                    !canViewLikedArticles && { color: '#ccc' }
+                  ]}>
+                    LIKED
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => canViewReadHistory && setActiveTab('history')}>
+                  <Text style={[
+                    styles.tabText, 
+                    activeTab === 'history' && canViewReadHistory && styles.activeTab,
+                    !canViewReadHistory && { color: '#ccc' }
+                  ]}>
+                    HISTORY
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <View style={styles.articlesContainer}>
+              {(activeTab === 'liked' && canViewLikedArticles ? likedArticles : 
+                activeTab === 'history' && canViewReadHistory ? readHistory : []
+              )?.map(renderArticleItem)}
+              
+              {((!canViewLikedArticles && !canViewReadHistory) || 
+                (activeTab === 'liked' && !canViewLikedArticles) ||
+                (activeTab === 'history' && !canViewReadHistory) ||
+                (activeTab === 'liked' && canViewLikedArticles && likedArticles.length === 0) ||
+                (activeTab === 'history' && canViewReadHistory && readHistory.length === 0)) && (
+                <Text style={styles.empty}>
+                  {(!canViewLikedArticles && !canViewReadHistory) || 
+                   (activeTab === 'liked' && !canViewLikedArticles) ||
+                   (activeTab === 'history' && !canViewReadHistory)
+                    ? "This content is private"
+                    : "No articles to show"}
+                </Text>
+              )}
+            </View>
+          </ScrollView>
+        )}
+
+        <BottomNav navigation={navigation} />
+      </SafeAreaView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
   },
   loadingContainer: { 
     flex: 1, 
@@ -426,7 +453,6 @@ const styles = StyleSheet.create({
     fontSize: 12, 
     color: '#777' 
   },
-  
   tabs: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -444,12 +470,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2, 
     borderBottomColor: '#a91101' 
   },
-  
-  contentContainer: { 
-    paddingHorizontal: 16, 
-    paddingBottom: 80 
+  articlesContainer: {
+    paddingHorizontal: 16,
   },
-  
   articleCard: {
     flexDirection: "row",
     backgroundColor: "#f9f9f9",

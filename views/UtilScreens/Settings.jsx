@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  ScrollView, 
+  ActivityIndicator,
+  SafeAreaView,
+  Platform
+} from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { getPrivacySettings, updatePrivacySettings } from "../../utils/userAPI";
 import COLORS from "../../theme/colors";
@@ -185,58 +194,86 @@ const Settings = ({ navigation }) => {
     { label: "Activity Status", key: "activity_status" }
   ];
 
+  const containerStyle = Platform.select({
+    web: {
+      backgroundColor: "white",
+      display: "flex",
+      height: "100vh",
+      width: "100vw",
+      position: "relative",
+    },
+    default: {
+      flex: 1,
+      backgroundColor: "white",
+      position: "relative",
+    },
+  });
+
   return (
-    <ScrollView style={styles.scrollView}>
-      <View style={styles.container}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.header}>Privacy Settings</Text>
-          <View style={styles.spacer} />
-        </View>
-        <Text style={styles.subheader}>Control who can see your activity</Text>
-        
-        {renderSuccessMessage()}
-        
-        <View style={styles.settingsContainer}>
-          {settingsItems.map(item => (
-            <View key={item.key}>
-              <View style={styles.settingRow}>
-                <SettingsIcon name={item.key} />
-                {renderPicker(item.label, item.key)}
-              </View>
+    <View style={containerStyle}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            backgroundColor: COLORS.background,
+            paddingHorizontal: 4,
+            paddingTop: 10,
+            paddingBottom: 120,
+          }}
+          showsVerticalScrollIndicator
+        >
+          <View style={styles.container}>
+            <View style={styles.headerRow}>
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={styles.backButtonText}>← Back</Text>
+              </TouchableOpacity>
+              <Text style={styles.header}>Privacy Settings</Text>
+              <View style={styles.spacer} />
             </View>
-          ))}
-          
-          <TouchableOpacity 
-            style={[
-              styles.saveButton,
-              saving && styles.savingButton
-            ]}
-            onPress={saveSettings}
-            activeOpacity={0.8}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator size="small" color={COLORS.white} />
-            ) : (
-              <Text style={styles.saveButtonText}>Save Settings</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+            <Text style={styles.subheader}>Control who can see your activity</Text>
+            
+            {renderSuccessMessage()}
+            
+            <View style={styles.settingsContainer}>
+              {settingsItems.map(item => (
+                <View key={item.key}>
+                  <View style={styles.settingRow}>
+                    <SettingsIcon name={item.key} />
+                    {renderPicker(item.label, item.key)}
+                  </View>
+                </View>
+              ))}
+              
+              <TouchableOpacity 
+                style={[
+                  styles.saveButton,
+                  saving && styles.savingButton
+                ]}
+                onPress={saveSettings}
+                activeOpacity={0.8}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save Settings</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
+  safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   container: {
     flex: 1,
