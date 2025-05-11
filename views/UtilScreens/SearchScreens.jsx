@@ -3,12 +3,13 @@ import {
   View, 
   Text, 
   TextInput, 
-  FlatList, 
+  ScrollView, 
   TouchableOpacity,
   StyleSheet, 
   ActivityIndicator, 
   Image, 
-  ScrollView
+  SafeAreaView,
+  Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import BottomNav from '../../components/BottomNav';
@@ -27,7 +28,11 @@ const SearchScreen = () => {
   const [imageErrors, setImageErrors] = useState({});
   const navigation = useNavigation();
 
-  const handleSearch = async () => {
+  const handleSearch = async (e) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
     if (!query.trim()) return;
     
     setLoading(true);
@@ -35,7 +40,7 @@ const SearchScreen = () => {
     
     try {
       const token = await getAuthToken();
-      const response = await axios.get(`${BASE_URL}search?q=${query}`, {
+      const response = await axios.get(`${BASE_URL}search?q=${encodeURIComponent(query)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -48,7 +53,6 @@ const SearchScreen = () => {
     }
   };
 
-  // Profile picture handling functions from dev branch
   const handleImageError = (userId, name) => {
     console.log(`Failed to load image for ${name} (${userId})`);
     setImageErrors(prev => ({
@@ -66,120 +70,151 @@ const SearchScreen = () => {
     );
   };
 
-  // Enhanced user render function with profile picture handling
-  const renderUser = ({ item }) => {
+  const renderUser = (user) => {
     const hasValidProfilePicture = 
-      item.profilePicture && 
-      typeof item.profilePicture === 'string' && 
-      !imageErrors[item.userId];
+      user.profilePicture && 
+      typeof user.profilePicture === 'string' && 
+      !imageErrors[user.userId];
     
     return (
       <TouchableOpacity
+        key={user.userId}
         style={styles.userItem}
-        onPress={() => navigation.navigate('UserProfile', { user: item })}
+        onPress={() => navigation.navigate('UserProfile', { user })}
       >
         {hasValidProfilePicture ? (
           <Image 
-            source={{ uri: item.profilePicture }}
+            source={{ uri: user.profilePicture }}
             style={styles.profileImage}
-            onError={() => handleImageError(item.userId, item.name)}
+            onError={() => handleImageError(user.userId, user.name)}
             defaultSource={require('../../assets/default-profile.png')}
           />
         ) : (
-          getInitialAvatar(item.name)
+          getInitialAvatar(user.name)
         )}
         <View style={styles.userInfo}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.username}>@{item.userName}</Text>
+          <Text style={styles.name}>{user.name}</Text>
+          <Text style={styles.username}>@{user.userName}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
-  const renderArticle = ({ item }) => (
+  const renderArticle = (article) => (
     <TouchableOpacity
+      key={article.id}
       style={styles.articleCard}
-      onPress={() => navigation.navigate('NewsDetail', { articleId: item.id })}
+      onPress={() => navigation.navigate('NewsDetail', { articleId: article.id })}
     >
-      {item.image ? (
-        <Image source={{ uri: getFullImageUrl(item.image) }} style={styles.image} />
+      {article.image ? (
+        <Image source={{ uri: getFullImageUrl(article.image) }} style={styles.image} />
       ) : (
         <View style={[styles.image, styles.placeholder]}>
           <Ionicons name="image-outline" size={40} color="#aaa" />
         </View>
       )}
       <View style={styles.content}>
-        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.title}>{article.title}</Text>
         <Text style={styles.summary} numberOfLines={2}>
-          {item.summary || 'No summary available.'}
+          {article.summary || 'No summary available.'}
         </Text>
       </View>
     </TouchableOpacity>
   );
 
+  const containerStyle = Platform.select({
+    web: {
+      backgroundColor: "white",
+      display: "flex",
+      height: "100vh",
+      width: "100vw",
+      position: "relative",
+    },
+    default: {
+      flex: 1,
+      backgroundColor: "white",
+      position: "relative",
+    },
+  });
+
   return (
-    <View style={styles.container}>
-      <TextInput
-        placeholder="Search users or articles"
-        style={styles.input}
-        value={query}
-        onChangeText={setQuery}
-        onSubmitEditing={handleSearch}
-        returnKeyType="search"
-      />
+    <View style={containerStyle}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder="Search users or articles"
+            style={styles.input}
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
+            blurOnSubmit={false}
+          />
+        </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#a91101" style={{ marginTop: 20 }} />
-      ) : (
-        <ScrollView contentContainerStyle={styles.resultsWrapper}>
-          {userResults.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Users</Text>
-              <FlatList
-                data={userResults}
-                keyExtractor={(item) => item.userId}
-                renderItem={renderUser}
-              />
-            </View>
-          )}
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#a91101" />
+          </View>
+        ) : (
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              backgroundColor: "white",
+              paddingHorizontal: 4,
+              paddingTop: 10,
+              paddingBottom: 120,
+            }}
+            showsVerticalScrollIndicator
+          >
+            {userResults.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Users</Text>
+                {userResults.map(renderUser)}
+              </View>
+            )}
 
-          {articleResults.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Articles</Text>
-              <FlatList
-                data={articleResults}
-                keyExtractor={(item) => item.articleId}
-                renderItem={renderArticle}
-              />
-            </View>
-          )}
+            {articleResults.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Articles</Text>
+                {articleResults.map(renderArticle)}
+              </View>
+            )}
 
-          {!userResults.length && !articleResults.length && query.trim() !== '' && (
-            <Text style={styles.empty}>No results found.</Text>
-          )}
-        </ScrollView>
-      )}
+            {!userResults.length && !articleResults.length && query.trim() !== '' && (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.empty}>No results found.</Text>
+              </View>
+            )}
+          </ScrollView>
+        )}
 
-      <BottomNav navigation={navigation} />
+        <BottomNav navigation={navigation} />
+      </SafeAreaView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#fff' 
+  safeArea: {
+    flex: 1,
+  },
+  searchContainer: {
+    padding: 16,
+    backgroundColor: '#fff',
+    zIndex: 1,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 12,
     borderRadius: 8,
-    margin: 16,
   },
-  resultsWrapper: {
-    paddingHorizontal: 10,
-    paddingBottom: 100,
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   section: {
     marginBottom: 20,
@@ -187,21 +222,21 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
+    padding: 16,
+    backgroundColor: '#f8f8f8',
   },
-  // User item styles with profile picture
   userItem: {
     padding: 12,
     borderBottomWidth: 1,
     borderColor: '#eee',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   profileImage: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: 16
+    marginRight: 16,
   },
   initialAvatar: {
     width: 50,
@@ -210,34 +245,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16
+    marginRight: 16,
   },
   initialText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#666'
+    color: '#666',
   },
   userInfo: {
     flex: 1,
   },
-  name: { 
-    fontSize: 16, 
-    fontWeight: '600' 
+  name: {
+    fontSize: 16,
+    fontWeight: '600',
   },
-  username: { 
+  username: {
     color: '#777',
-    marginTop: 2
+    marginTop: 2,
   },
-  // Article styles
   articleCard: {
     flexDirection: 'row',
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
-    marginBottom: 10,
+    margin: 8,
     overflow: 'hidden',
     elevation: 2,
   },
-  image: { width: 100, height: 100 },
+  image: {
+    width: 100,
+    height: 100,
+  },
   placeholder: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -245,14 +282,26 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 5,
+    padding: 12,
     justifyContent: 'center',
   },
-  title: { fontSize: 16, fontWeight: 'bold', color: '#222' },
-  summary: { fontSize: 14, color: '#666', marginTop: 4 },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  summary: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
   empty: {
-    textAlign: 'center',
-    marginTop: 30,
     fontSize: 16,
     color: '#999',
     fontStyle: 'italic',
