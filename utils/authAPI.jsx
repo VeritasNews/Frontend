@@ -117,3 +117,13 @@ export const resetPassword = async (uid, token, newPassword) => {
     );
   }
 };
+
+export const logoutUser = async () => {
+  try {
+    await AsyncStorage.removeItem("authToken");
+    await AsyncStorage.removeItem("refreshToken");
+  } catch (error) {
+    console.error("Error during logout:", error);
+    throw error;
+  }
+};

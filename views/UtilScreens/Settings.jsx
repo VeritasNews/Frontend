@@ -7,21 +7,31 @@ import {
   ScrollView, 
   ActivityIndicator,
   SafeAreaView,
-  Platform
+  Platform,
+  Switch,
+  Alert
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { getPrivacySettings, updatePrivacySettings } from "../../utils/userAPI";
+import { logoutUser } from "../../utils/authAPI";
+import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../theme/colors";
 import FONTS from "../../theme/fonts";
 import { GLOBAL_STYLES } from "../../theme/globalStyles";
+import { Ionicons } from "@expo/vector-icons";
+import BottomNav from "../../components/BottomNav";
 
-const Settings = ({ navigation }) => {
+const Settings = () => {
+  const navigation = useNavigation();
   const [privacySettings, setPrivacySettings] = useState({
     liked_articles: "friends",
     reading_history: "private",
     friends_list: "public",
     profile_info: "public",
-    activity_status: "friends"
+    activity_status: "friends",
+    showLikedArticles: true,
+    showReadArticles: true,
+    showFriends: true,
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -109,6 +119,33 @@ const Settings = ({ navigation }) => {
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggle = async (setting) => {
+    try {
+      const newSettings = {
+        ...privacySettings,
+        [setting]: !privacySettings[setting],
+      };
+      await updatePrivacySettings(newSettings);
+      setPrivacySettings(newSettings);
+    } catch (error) {
+      console.error("Error updating privacy settings:", error);
+      Alert.alert("Error", "Failed to update privacy settings");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      Alert.alert("Error", "Failed to logout. Please try again.");
     }
   };
 
@@ -229,7 +266,7 @@ const Settings = ({ navigation }) => {
                 style={styles.backButton}
                 onPress={() => navigation.goBack()}
               >
-                <Text style={styles.backButtonText}>← Back</Text>
+                <Ionicons name="arrow-back" size={24} color="#333" />
               </TouchableOpacity>
               <Text style={styles.header}>Privacy Settings</Text>
               <View style={styles.spacer} />
@@ -263,9 +300,17 @@ const Settings = ({ navigation }) => {
                   <Text style={styles.saveButtonText}>Save Settings</Text>
                 )}
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.logoutButtonText}>Logout</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
+        <BottomNav navigation={navigation} />
       </SafeAreaView>
     </View>
   );
@@ -296,11 +341,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
-  },
-  backButtonText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.regular,
-    fontWeight: FONTS.weights.semiBold,
   },
   spacer: {
     width: 40,
@@ -414,6 +454,35 @@ const styles = StyleSheet.create({
   successText: {
     ...GLOBAL_STYLES.textBase,
     color: 'rgba(75, 181, 67, 1)',
+  },
+  settingItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  settingLabel: {
+    fontSize: 16,
+    color: "#333",
+  },
+  logoutButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 4,
+    alignItems: 'center',
+    marginTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    height: 50,
+  },
+  logoutButtonText: {
+    color: COLORS.white,
+    fontWeight: FONTS.weights.semiBold,
+    fontSize: FONTS.sizes.regular,
+    fontFamily: FONTS.families.primary,
   },
 });
 
